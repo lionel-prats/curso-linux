@@ -1,0 +1,152 @@
+VIDEO 18 
+
+El sistema de ficheros esta estructurado de manera jerarquica 
+Las carpetas y los ficheros se distribuyen en forma de arbol
+Tenemos una carpeta principal (carpeta o directorio raiz) y a partir de ahi empiezan a colgar el resto de directorios y archivos, con sus correspondientes subcarpetas y archivos
+
+1) Instalamos la utilidad tree (no viene por defecto) para poder explorar el sistema de ficheros desde la terminal vvv 
+
+sudo apt install tree
+
+*** ejecute el comando 'tree /' (apuntando al directorio raiz) antes de la instalacion y comprobe que la utilidad no existe por default vvv
+
+ejecucion -> tree / 
+
+return -> Command 'tree' not found, but can be installed with:
+sudo snap install tree # version 1.8.0+pkg-3fd6, or 
+sudo apt install tree  # version 2.0.2-1 
+See 'snap info tree' for additional versions.
+
+*** una vez instalada la utilidad vvv 
+
+tree / -> nos lista todo el arbol a partir de / 
+
+tree -L 1 / -> lista la estructura a partir del 1er nivel (-L), solo un nivel (1), a partir del directorio raiz (/)
+
+tree -L 2 /
+
+----------------------------------------
+
+VIDEO 19
+
+pwd (print working directory) -> para obtener la ruta absoluta del directorio donde nos encontramos
+
+* las rutas hacen referencia a un directorio o a un archivo dentro de nuestro sistema de ficheros
+
+* return == /home/lionel -> cuando abrimos la shell por defecto nos situa (dentro del sistema de ficheros) en la carpeta /home, en el directorio de trabajo del usuario que está ejecutando la propia shell.
+Cada uno de los usuarios del sistema Linux normalmente va a tener un directorio asociado dentro de /home.
+Dentro de su carpeta, cada usuario tiene permisos plenos, fuera de ahi (por ejemplo en niveles superiores - dentro de /home y/o de otros directorios del mismo nivel, 1er nivel de /, no va a tener esos priviliegios)
+
+ls -> directorios o archivos de la carpeta donde nos encontramos en el momento de la ejecucion del comando
+
+ls -t -> los muestra ordenados por fecha de modificacion
+ls -l -> info mas detallada del contenido 
+ls -lh -> igual al anterior formateando el dato del peso para hacerlo mas legible
+ls -a -> vemos tambien los archivos y directorios ocultos
+
+cd / -> para pararme en la raiz del sistema de ficheros de Linux
+
+cd /home/lionel -> para pararme en el directorio de trabajo del usuario con el que estoy en sesion en la shell
+
+----- 
+
+Dentro del sistema de fiicheros de Linux hay 2 tipos de rutas:
+1) Rutas absolutas -> siempre parten desde la raiz (/) -> cd /home/lionel/Desktop
+2) Rutas relativas ->
+
+. .. -> son 2 archivos ocultos que siempre estan dentro de un directorio, aunque aparentemente este vacio 
+
+. -> hace referencia al directorio actual (una especie de enlace al directorio actual)
+.. -> hace referencia al directorio anterior
+
+cd -> asi solo sirve para pararnos en nuestro directorio de trabajo sea donde sea que nos encontremos en el sistema de ficheros de Linux
+cd ~ -> hace lo mismo que cd 
+cd - -> vuelve al lugar inmediatamente anterior donde estabamos parados dentro del directorio de ficheros
+
+----------------------------------------
+
+VIDEO 20
+
+Ficheros y directorios ocultos -> por norma general, van a ser archivos y directorios de configuracion (suelen tener informacion de configuracion)
+
+en /home/lionel 
+
+.bash_history -> todo el historial de comandos que nosotros vamos ejecutando dentro de la shell 
+.bashrc -> fichero de configuracion de nuestra shell
+.profile -> nuestra configuracion del perfil
+
+*** Los ficheros en la shell no tienen extension 
+*** El propio SO Linux no utiliza las extensiones para nada
+
+----------------------------------------
+
+VIDEO 21 
+
+mkdir test -> creo una nueva carpeta en el lugar donde estoy parado
+
+*** Dentro del SO Linux (al igual que en Windows) tenemos editores de texto que vienen por defecto (aplicaciones que estan dentro de nuestro SO).
+
+*** En Linux tenemos un monton de editores que podemos usar en la shell y que vienen por defecto en el SO (uno de los mas populares es pico) 
+
+Algunos editores de texto por default:
+- pico 
+- nano 
+- vi (tuve que forzar el cierre de la terminal porque no me funciono ni q ni q+Enter)
+- emacs (no viene por defecto - ver comando en instalaciones.txt)
+
+emacs --help -> para buscar en la consola info acerca del editor
+emacs -nw -> para usar el editor desde la consola (omitimos la interfaz grafica por default)
+*** pude salir con Ctrl+x/Ctrl+c
+
+pico fichero_de_prueba.txt -> para abrir un archivo existente desde la consola y editarlo (con el editor nativo pico) 
+
+----------------------------------------
+
+VIDEO 22
+
+- EL SO no va a interpretar las extensiones para absolutamente nada
+
+file Desktop -> nos indica si se trata de un directorio o fichero (y si es fichero, de que tipo: datos, imagenes, etc)
+
+cat auth.log -> imprime por consola el contenido de un fichero o archivo
+
+more auth.log -> nos sirve para contenidos extensos de ficheros -> nos muestra ddesde el inicio del contenido y solo lo que cabe en la pantalla de la shell, luego podemos seguir bajando con Enter 
+
+less auth.log -> es la mejora de more (pagina el contenido del fichero)
+    h -> nos muestra el listado de acciones que podemos utilizar dentro de less 
+    space -> para avanzar una pagina 
+    b -> para volver una pagina 
+    / + string + Enter -> para buscar coincidencias en todo el contenido
+    g -> para ir al inicio del fichero 
+    Shift + g -> para ir al final del fichero
+    q -> para salir de la utilidad
+
+----------------------------------------
+
+VIDEO 23 
+
+cp nombre_fichero_copiado nombre_fichero_resultante -> duplicar un fichero con nombre nuevo (si ya existe un fichero con el nombre del segundo argumento, lo reescribe) 
+
+cp -i fichero fichero2 -> la consola genera una validacion si detecta que el fichero que quiero crear ya existe (si el archivo existe y en la validacion tipeo "y" se va a reescribir el archivo detectado)
+
+cp fichero fichero2 fichero3 directorio1/ -> copio los 3 achivos en una subcarpeta del espacio donde estoy parado
+
+cp -r directorio1/ directorio2/ -> creo la carpeta directorio2, copia de directorio1 (el parametro -r viene de recursivo)
+
+mv fichero_mover.txt directorio1 -> para mover un fichero desde el espacio donde estoy parado hata el espacio definido en el segundo parametro
+
+mv directorio2/ directorio1/ -> mover un directorio dentro de otro
+
+mv directorio2/ nombrenuevo/ -> renombrar un directorio (si ya existe nombrenuevo/, directorio2/ se moverá a nombrenuevo/) 
+
+mv fichero ficheroloco -> renombar un archivo (si ya exsite ficheroloco, su contenido va a ser reescrito con el contenido de fichero, y el archivo de fichero se va a borrar)
+
+mv -i fichero ficheroloco -> aplico una validacion de seguridad
+
+rm fichero -> eliminar un archivo de forma permanente
+
+rm -r directorio -> eliminar un directorio de forma permanente (-r == recursivo, significa que se va a borrar el directorio y todo lo que pueda tener dentro)
+
+touch ficherovacio -> para crear un fichero vacio
+
+re -rf piluso -> para forzar el borrado sin importar nada (sirve para archivos y directorios)

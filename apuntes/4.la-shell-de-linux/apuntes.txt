@@ -1,0 +1,36 @@
+VIDEO 7 
+
+Descargo cliente virtualizador Vmware workstation player 
+    -> https://www.vmware.com/products/workstation-player/workstation-player-evaluation.html
+
+Descargo imagen Ubuntu -> https://ubuntu.com/download/desktop
+
+----- 
+
+Creacion de la VM dentro de VMware 
+
+1) Cargo la imagen de Ubuntu descargada
+2) Personalize Linux vvv 
+Full name = lionel
+User name = lionel
+Password = 1234
+Confirm = 1234 + Next
+3) Virtual Machine Name = Ubuntu-curso-udemy + Next
+4) Maximum disk size (GB) = 20.0
+4) 2 GB de memoria RAM 
+4) 2 procesadores
+
+5) Who Are You?
+Your name = lionel
+Your computer's name = lionel-ubuntu
+Choose a password = 1234
+Confirm your password = 1234
+Check en "Require my password to login" + Continue
+
+Ya tenemos el SO Ubuntu (distribucion de Linux) instalado en nuestra maquina virtual (Ubuntu-curso-udemy), alojada dentro de nuestro SO anfitrion o host, Windows 10 Pro
+
+----------------------------------------
+
+VIDEO 9
+
+La terminal de Ubuntu es una interfaz gráfica que emula la shell de Linux (emulador de terminal) 
