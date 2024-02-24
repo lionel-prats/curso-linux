@@ -1,0 +1,24 @@
+Luego de clonar el repo remoto reseteado, y copiar el contenido dentro de la carpeta clonada (sincronizada al repo remoto), hago el primer push desde linux
+
+lionel@lionel-ubuntu:~/Desktop/curso-linux$ git add .
+
+lionel@lionel-ubuntu:~/Desktop/curso-linux$ git config user.email "lionel.prats@gmail.com"
+
+lionel@lionel-ubuntu:~/Desktop/curso-linux$ git config user.name "lionel-vmubuntu"
+
+lionel@lionel-ubuntu:~/Desktop/curso-linux$ git commit -m "Tarea 32 - Wildcards"
+[main 9590300] Tarea 32 - Wildcards
+ 9 files changed, 951 insertions(+)
+ create mode 100644 1.instalaciones.md
+ create mode 100644 2.listado-shorcuts.txt
+ create mode 100644 3.apuntes.txt
+ create mode 100644 4.shell.txt
+ create mode 100644 5.notas-generales.txt
+ create mode 100644 git/0.instalacion.txt
+ create mode 100644 git/1.resetear-repo-remoto.txt
+ create mode 100644 git/2.clone-repo-remoto.txt
+ create mode 100644 git/3.copiado-contenido-carpetas.txt
+
+lionel@lionel-ubuntu:~/Desktop/curso-linux$ git push origin main 
+
+*** luego hubo que hacer una serie de autenticaciones via github en la web, donde tuve que ingresar las credenciales del dueño del repo (lionel.prats.c@gmail.com), entiendo que para dar permisos al usuario lionel-vmubuntu

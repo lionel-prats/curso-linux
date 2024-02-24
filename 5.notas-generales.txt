@@ -571,4 +571,60 @@ SOLUCION -> find /var/log -name '*[!.log]' 2> /dev/null
 
 --------------------
 
-VIDEO 33 - Shell Expansions
+VIDEO 33 - Shell Expansions 
+
+lionel@lionel-ubuntu:~$ type echo
+echo is a shell builtin
+lionel@lionel-ubuntu:~$ 
+
+*** el comando echo viene implementado en la shell por defecto
+*** imprime por pantalla el texto que le proporcionemos como argumento
+*** realmente, lo que hace es echo es redirigir el argumento recibido a lo que se denomina standard output, que es un fichero especial del que ya hablaremos
+
+~ -> referencia nuestro directorio de trabajo, nuestro directorio /home
+
+lionel@lionel-ubuntu:~$ echo ~
+/home/lionel
+*** la shell expande "~" a "/home/lionel"
+
+lionel@lionel-ubuntu:~$ echo /*/log
+/dev/log /run/log /var/log
+*** listo todos los directorios dentro de la raiz, que contengan un subdirectorio /log
+
+lionel@lionel-ubuntu:/$ echo $((2 + 2))
+4
+
+lionel@lionel-ubuntu:/$ echo $((2 ** 3))
+8
+
+lionel@lionel-ubuntu:~$ cat fichero$((1+1))*
+contenido fichero2.txt
+
+Brace expansins ("{", "}")
+
+lionel@lionel-ubuntu:~$ echo fichero{1,2,3,Katopodis}.txt
+fichero1.txt fichero2.txt fichero3.txt ficheroKatopodis.txt
+
+lionel@lionel-ubuntu:~$ echo fichero{10..15}.txt
+fichero10.txt fichero11.txt fichero12.txt fichero13.txt fichero14.txt fichero15.txt
+
+lionel@lionel-ubuntu:~$ mkdir dir{1..5}
+*** creo en simultaneo /dir1, /dir2, /dir3, /dir4 y /dir5
+
+lionel@lionel-ubuntu:~$ echo {A..z}
+A B C D E F G H I J K L M N O P Q R S T U V W X Y Z [  ] ^ _ ` a b c d e f g h i j k l m n o p q r s t u v w x y z
+
+lionel@lionel-ubuntu:~$ echo {z..A}
+z y x w v u t s r q p o n m l k j i h g f e d c b a ` _ ^ ]  [ Z Y X W V U T S R Q P O N M L K J I H G F E D C B A
+
+lionel@lionel-ubuntu:~$ echo texto{A{1,2},B{3,4}}final
+textoA1final textoA2final textoB3final textoB4final
+
+lionel@lionel-ubuntu:~$ mkdir logs
+lionel@lionel-ubuntu:~$ cd logs/
+
+lionel@lionel-ubuntu:~/logs$ mkdir {2024..2030}-{01..12}
+*** creé carpetas desde 2024-01 hasta 2030-12 (84 carpetas)
+
+lionel@lionel-ubuntu:~/logs$ rmdir {2024..2030}-{01..12}
+*** borré las 84 carpetas anteriores
