@@ -1,0 +1,26 @@
+lionel@lionel-ubuntu:~/Desktop$ mkdir alpha
+
+lionel@lionel-ubuntu:~/Desktop/alpha$ pico fichero1.txt 
+...
+
+lionel@lionel-ubuntu:~/Desktop$ mkdir beta
+
+lionel@lionel-ubuntu:~/Desktop/beta$ pico fichero2.txt 
+...
+
+lionel@lionel-ubuntu:~/Desktop/beta$ pico fichero3.txt 
+...
+
+lionel@lionel-ubuntu:~/Desktop$ cp -r beta/* alpha/
+*** copie el contenido de beta dentro de alpha
+
+lionel@lionel-ubuntu:~/Desktop$ cp -r alpha/ alpha-security-copy/
+*** creé una copia de seguridad de alpha
+
+---------------------
+
+lionel@lionel-ubuntu:~/Desktop$ cp -r curso-linux-original/ curso-linux-original-security-copy/
+*** creé una copia de seguridad de /curso-linux-original
+
+lionel@lionel-ubuntu:~/Desktop$ cp -r curso-linux-original/* curso-linux/ 
+*** copie el contenido de /curso-linux-original dentro de /curso-linux

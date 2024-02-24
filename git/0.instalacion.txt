@@ -1,0 +1,35 @@
+lionel@lionel-ubuntu:~$ sudo apt-get install git
+[sudo] password for lionel: 
+Reading package lists... Done
+Building dependency tree... Done
+Reading state information... Done
+The following additional packages will be installed:
+  git-man liberror-perl
+Suggested packages:
+  git-daemon-run | git-daemon-sysvinit git-doc git-email git-gui gitk gitweb git-cvs git-mediawiki
+  git-svn
+The following NEW packages will be installed:
+  git git-man liberror-perl
+0 upgraded, 3 newly installed, 0 to remove and 91 not upgraded.
+Need to get 4.147 kB of archives.
+After this operation, 21,0 MB of additional disk space will be used.
+Do you want to continue? [Y/n] y 
+Get:1 http://ar.archive.ubuntu.com/ubuntu jammy/main amd64 liberror-perl all 0.17029-1 [26,5 kB]
+Get:2 http://ar.archive.ubuntu.com/ubuntu jammy-updates/main amd64 git-man all 1:2.34.1-1ubuntu1.10 [954 kB]
+Get:3 http://ar.archive.ubuntu.com/ubuntu jammy-updates/main amd64 git amd64 1:2.34.1-1ubuntu1.10 [3.166 kB]
+Fetched 4.147 kB in 1s (5.514 kB/s)
+Selecting previously unselected package liberror-perl.
+(Reading database ... 205765 files and directories currently installed.)
+Preparing to unpack .../liberror-perl_0.17029-1_all.deb ...
+Unpacking liberror-perl (0.17029-1) ...
+Selecting previously unselected package git-man.
+Preparing to unpack .../git-man_1%3a2.34.1-1ubuntu1.10_all.deb ...
+Unpacking git-man (1:2.34.1-1ubuntu1.10) ...
+Selecting previously unselected package git.
+Preparing to unpack .../git_1%3a2.34.1-1ubuntu1.10_amd64.deb ...
+Unpacking git (1:2.34.1-1ubuntu1.10) ...
+Setting up liberror-perl (0.17029-1) ...
+Setting up git-man (1:2.34.1-1ubuntu1.10) ...
+Setting up git (1:2.34.1-1ubuntu1.10) ...
+Processing triggers for man-db (2.10.2-1) ...
+lionel@lionel-ubuntu:~$

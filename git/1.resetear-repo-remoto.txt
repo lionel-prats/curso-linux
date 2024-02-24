@@ -1,0 +1,47 @@
+*** lo tuve que hacer desde Windows, lo intenté hacer desde la VM Ubuntu pero Github me rechazo la autenticacion
+
+1) 
+User@DESKTOP-0VF0DF8 MINGW64 ~/Desktop/cursos/curso-linux (main)
+$ git rm -rf *
+rm 'apuntes/4.la-shell-de-linux/apuntes.txt'
+rm 'apuntes/4.la-shell-de-linux/listado-shorcuts.txt'
+rm 'apuntes/4.la-shell-de-linux/shell.txt'
+rm 'apuntes/5.manejo-del-sistema-de-ficheros-de-linux/commands.txt'
+rm 'apuntes/instalaciones.txt'
+
+2) 
+User@DESKTOP-0VF0DF8 MINGW64 ~/Desktop/cursos/curso-linux (main)
+$ git commit -m "Reseteo del repo en github"
+[main 6323f2b] Reseteo del repo en github
+ 5 files changed, 387 deletions(-)
+ delete mode 100644 apuntes/4.la-shell-de-linux/apuntes.txt
+ delete mode 100644 apuntes/4.la-shell-de-linux/listado-shorcuts.txt
+ delete mode 100644 apuntes/4.la-shell-de-linux/shell.txt
+ delete mode 100644 apuntes/5.manejo-del-sistema-de-ficheros-de-linux/commands.txt
+ delete mode 100644 apuntes/instalaciones.txt
+
+3)
+User@DESKTOP-0VF0DF8 MINGW64 ~/Desktop/cursos/curso-linux (main)
+$ git status
+On branch main
+Your branch is ahead of 'origin/main' by 2 commits.
+  (use "git push" to publish your local commits)   
+
+nothing to commit, working tree clean
+
+4)
+User@DESKTOP-0VF0DF8 MINGW64 ~/Desktop/cursos/curso-linux (main)
+$ git branch
+* main
+
+5)
+User@DESKTOP-0VF0DF8 MINGW64 ~/Desktop/cursos/curso-linux (main)
+$ git push origin main
+Enumerating objects: 13, done.
+Counting objects: 100% (13/13), done.
+Delta compression using up to 12 threads
+Compressing objects: 100% (9/9), done.
+Writing objects: 100% (11/11), 194.47 KiB | 24.31 MiB/s, done.
+Total 11 (delta 0), reused 0 (delta 0), pack-reused 0
+To https://github.com/lionel-prats/curso-linux.git
+   28fe260..08d9891  main -> main
