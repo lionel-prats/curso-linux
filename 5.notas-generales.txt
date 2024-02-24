@@ -1,0 +1,465 @@
+VIDEO 18 
+
+El sistema de ficheros esta estructurado de manera jerarquica 
+Las carpetas y los ficheros se distribuyen en forma de arbol
+Tenemos una carpeta principal (carpeta o directorio raiz) y a partir de ahi empiezan a colgar el resto de directorios y archivos, con sus correspondientes subcarpetas y archivos
+
+1) Instalamos la utilidad tree (no viene por defecto) para poder explorar el sistema de ficheros desde la terminal vvv 
+
+sudo apt install tree
+
+*** ejecute el comando 'tree /' (apuntando al directorio raiz) antes de la instalacion y comprobe que la utilidad no existe por default vvv
+
+ejecucion -> tree / 
+
+return -> Command 'tree' not found, but can be installed with:
+sudo snap install tree # version 1.8.0+pkg-3fd6, or 
+sudo apt install tree  # version 2.0.2-1 
+See 'snap info tree' for additional versions.
+
+*** una vez instalada la utilidad vvv 
+
+tree / -> nos lista todo el arbol a partir de / 
+
+tree -L 1 / -> lista la estructura a partir del 1er nivel (-L), solo un nivel (1), a partir del directorio raiz (/)
+
+tree -L 2 /
+
+----------------------------------------
+
+VIDEO 19
+
+pwd (print working directory) -> para obtener la ruta absoluta del directorio donde nos encontramos
+
+* las rutas hacen referencia a un directorio o a un archivo dentro de nuestro sistema de ficheros
+
+* return == /home/lionel -> cuando abrimos la shell por defecto nos situa (dentro del sistema de ficheros) en la carpeta /home, en el directorio de trabajo del usuario que está ejecutando la propia shell.
+Cada uno de los usuarios del sistema Linux normalmente va a tener un directorio asociado dentro de /home.
+Dentro de su carpeta, cada usuario tiene permisos plenos, fuera de ahi (por ejemplo en niveles superiores - dentro de /home y/o de otros directorios del mismo nivel, 1er nivel de /, no va a tener esos priviliegios)
+
+ls -> directorios o archivos de la carpeta donde nos encontramos en el momento de la ejecucion del comando
+
+ls -t -> los muestra ordenados por fecha de modificacion
+ls -l -> info mas detallada del contenido 
+ls -lh -> igual al anterior formateando el dato del peso para hacerlo mas legible
+ls -a -> vemos tambien los archivos y directorios ocultos
+
+cd / -> para pararme en la raiz del sistema de ficheros de Linux
+
+cd /home/lionel -> para pararme en el directorio de trabajo del usuario con el que estoy en sesion en la shell
+
+----- 
+
+Dentro del sistema de fiicheros de Linux hay 2 tipos de rutas:
+1) Rutas absolutas -> siempre parten desde la raiz (/) -> cd /home/lionel/Desktop
+2) Rutas relativas ->
+
+. .. -> son 2 archivos ocultos que siempre estan dentro de un directorio, aunque aparentemente este vacio 
+
+. -> hace referencia al directorio actual (una especie de enlace al directorio actual)
+.. -> hace referencia al directorio anterior
+
+cd -> asi solo sirve para pararnos en nuestro directorio de trabajo sea donde sea que nos encontremos en el sistema de ficheros de Linux
+cd ~ -> hace lo mismo que cd 
+cd - -> vuelve al lugar inmediatamente anterior donde estabamos parados dentro del directorio de ficheros
+
+----------------------------------------
+
+VIDEO 20
+
+Ficheros y directorios ocultos -> por norma general, van a ser archivos y directorios de configuracion (suelen tener informacion de configuracion)
+
+en /home/lionel 
+
+.bash_history -> todo el historial de comandos que nosotros vamos ejecutando dentro de la shell 
+.bashrc -> fichero de configuracion de nuestra shell
+.profile -> nuestra configuracion del perfil
+
+*** Los ficheros en la shell no tienen extension 
+*** El propio SO Linux no utiliza las extensiones para nada
+
+----------------------------------------
+
+VIDEO 21 
+
+mkdir test -> creo una nueva carpeta en el lugar donde estoy parado
+
+*** Dentro del SO Linux (al igual que en Windows) tenemos editores de texto que vienen por defecto (aplicaciones que estan dentro de nuestro SO).
+
+*** En Linux tenemos un monton de editores que podemos usar en la shell y que vienen por defecto en el SO (uno de los mas populares es pico) 
+
+Algunos editores de texto por default:
+- pico 
+- nano 
+- vi (tuve que forzar el cierre de la terminal porque no me funciono ni q ni q+Enter)
+- emacs (no viene por defecto - ver comando en instalaciones.txt)
+
+emacs --help -> para buscar en la consola info acerca del editor
+emacs -nw -> para usar el editor desde la consola (omitimos la interfaz grafica por default)
+*** pude salir con Ctrl+x/Ctrl+c
+
+pico fichero_de_prueba.txt -> para abrir un archivo existente desde la consola y editarlo (con el editor nativo pico) 
+
+----------------------------------------
+
+VIDEO 22
+
+- EL SO no va a interpretar las extensiones para absolutamente nada
+
+file Desktop -> nos indica si se trata de un directorio o fichero (y si es fichero, de que tipo: datos, imagenes, etc)
+
+cat auth.log -> imprime por consola el contenido de un fichero o archivo
+
+more auth.log -> nos sirve para contenidos extensos de ficheros -> nos muestra ddesde el inicio del contenido y solo lo que cabe en la pantalla de la shell, luego podemos seguir bajando con Enter 
+
+less auth.log -> es la mejora de more (pagina el contenido del fichero)
+    h -> nos muestra el listado de acciones que podemos utilizar dentro de less 
+    space -> para avanzar una pagina 
+    b -> para volver una pagina 
+    / + string + Enter -> para buscar coincidencias en todo el contenido
+    g -> para ir al inicio del fichero 
+    Shift + g -> para ir al final del fichero
+    q -> para salir de la utilidad
+
+----------------------------------------
+
+VIDEO 23 
+
+cp nombre_fichero_copiado nombre_fichero_resultante -> duplicar un fichero con nombre nuevo (si ya existe un fichero con el nombre del segundo argumento, lo reescribe) 
+
+cp -i fichero fichero2 -> la consola genera una validacion si detecta que el fichero que quiero crear ya existe (si el archivo existe y en la validacion tipeo "y" se va a reescribir el archivo detectado)
+
+cp fichero fichero2 fichero3 directorio1/ -> copio los 3 achivos en una subcarpeta del espacio donde estoy parado
+
+cp -r directorio1/ directorio2/ -> creo la carpeta directorio2, copia de directorio1 (el parametro -r viene de recursivo)
+
+mv fichero_mover.txt directorio1 -> para mover un fichero desde el espacio donde estoy parado hata el espacio definido en el segundo parametro
+
+mv directorio2/ directorio1/ -> mover un directorio dentro de otro
+
+mv directorio2/ nombrenuevo/ -> renombrar un directorio (si ya existe nombrenuevo/, directorio2/ se moverá a nombrenuevo/) 
+
+mv fichero ficheroloco -> renombar un archivo (si ya exsite ficheroloco, su contenido va a ser reescrito con el contenido de fichero, y el archivo de fichero se va a borrar)
+
+mv -i fichero ficheroloco -> aplico una validacion de seguridad
+
+rm fichero -> eliminar un archivo de forma permanente
+
+rm -r directorio -> eliminar un directorio de forma permanente (-r == recursivo, significa que se va a borrar el directorio y todo lo que pueda tener dentro)
+
+touch ficherovacio -> para crear un fichero vacio
+
+rm -rf piluso -> para forzar el borrado sin importar nada (sirve para archivos y directorios)
+
+----------------------------------------
+
+VIDEO 24 
+
+find -> comando para buscar archivos en todo el sistema de archivos de linux -> find /var/log /home/lionel -name auth.log (busco la ruta completa de un archivo por nombre dentro de las dos rutas definidas de forma recursiva, es decir, dentro de los dos espacios definidos y dentro de los subdirectorios que puedan haber)
+
+find /var -name auth.log 2> /dev/null -> para eliminar los prompt de los avisos de acceso denegados que puedan aparecer (esto es, cuando encuentre algo relacionado a mi busqueda, pero que a lo que mi usuario no tenga acceso)
+
+find /var -name auth.log -ls 2> /dev/null -> ++ info sobre el archivo ademas de la ruta completa
+
+find . -name auth.log -> "busca en mi directorio actual y en sus subdirectorios un archivo que se llame auth.log"
+
+find /var/log -name '*.log' -> busca en el directorio indicado y en sus subdirectorios un archivo que termine en .log
+
+*** una carpeta es un tipo de archivo especial 
+
+find / -name server-202 -type d -> buscar carpetas en todo el arbol de archivos de linux
+find / -name curso-linux -type d 2> /dev/null
+
+buscar una carpeta o archivo creado por un usuario en particular 
+find /var/log -name "*" -user lionel
+find /var/log -name "*" -user lionel 2> /dev/null 
+
+find /home/lionel -name "*" -user lionel 2> /dev/null 
+
+----------------------------------------
+
+EJERCICIO: Utiliza el comando find para buscar los siguientes ficheros dentro de Linux.
+
+Preguntas de esta tarea
+
+1) Busca la ruta donde se encuentra el comando externo ls utilizando find. Asegúrate de eliminar los mensajes de acceso denegado que produzca el comando.
+
+find / -name ls 2> /dev/null
+
+2) Busca directorios de configuración del programa firefox que viene instalado por defecto en Ubuntu. El nombre de los directorios debe ser firefox (igual que el programa).
+
+find / -name "*firefox*" -type d 2> /dev/null
+
+3) Busca el usuario propietario del fichero shadow que se encuentra en algún lugar del sistema de ficheros de Linux excluyendo aquellos ficheros shadow que se encuentren dentro de la ruta /snap.
+
+find / -name shadow ! -path "/snap/*" -ls 2> /dev/null
+3.1) El usuario propietario del fichero es root (hablaremos más sobre esto en la sección de permisos).
+3.2) El comando se divide en las siguientes partes:
+3.3) find / -name shadow: Buscamos el fichero shadow en el directorio raíz
+3.4) ! -path "/snap/*": Excluimos todos los resultados cuya ruta comience por /snap
+3.5) -ls: Mostramos información avanzada sobre el fichero
+3.6) 2> /dev/null: Eliminamos los errores de permiso denegado.
+
+----------------------------------------
+
+VIDEO 25
+
+Sistema de archivos/ficheros de Linux -> Estructura de carpetas/directorios creada por defecto en Linux vvv 
+
+lionel@lionel-ubuntu:~$ tree / -L 1 -> primer nuivel de la jerarquia
+/
+├── bin -> usr/bin
+├── boot
+├── cdrom
+├── dev
+├── etc
+├── home
+├── lib -> usr/lib
+├── lib32 -> usr/lib32
+├── lib64 -> usr/lib64
+├── libx32 -> usr/libx32
+├── lost+found
+├── media
+├── mnt
+├── opt
+├── proc
+├── root
+├── run
+├── sbin -> usr/sbin
+├── snap
+├── srv
+├── swapfile
+├── sys
+├── tmp
+├── usr
+└── var
+
+1) /bin -> usr/bin
+    se utilizaba historicamente para almacenar binarios de algunos comandos esenciales del sistema operativo que debian estar disponibles incluso para cosas como por ejemplo levantar el sistema, arrancar el sistema o repararlo.
+    A dia de hoy, este directorio ya no existe propiamente, entonces realmente es un enlace simbolico (tambien se suele llamar soft link)
+    Seria lo mismo que un acceso directo en Windows, es decir, es un enlace que va a apuntar a otra carpeta dentro de nuestro sistema de ficheros, /usr/bin
+    A dia de hoy, todos esos binarios esenciales que almacenaba, estan dentro de la carpeta /user/bin
+2) /boot
+    continene los archivos que se utilizan para arrancar el SO
+    concretamente va a contener archivos del Kernel de Linux (tambien denominados archivos del cargador de arranque) y dependiendo del software (distribucion (?)) que utilizemos para cargar el arranque seran los ficheros y directorios que contendra (del Kernel (?))
+    Linux utiliza un cargador de arranque que se llama grub (cd /boot/grub)
+3) /cdrom
+   esta ahi por razones historicas
+   hoy practicamente no utilizamos cdrom, tenemos cosas en la nube, tenemos USBs 
+4) /dev
+    aqui lo que tenemos son diferentes interfaces tanto para leer como para escribir en diferentes dispositivos
+    tenemos incluso interfaces para escribir por pantalla en la propia terminal
+    estas interfaces son una especie de ficheros especiales (lo veremos mas adelante)
+5) /etc
+    va a contener la informacion de configuracion de nuestro SO
+6) /home
+    dentro se van a crear las carpetas de trabajo de cada uno de los usuarios que tenemos en el sistema donde tendra privilegios para escribir, leer ficheros y hacer todo lo que quiera
+    es la carpeta personal de cada usuario de Linux
+7) /lib -> usr/lib
+8) /lib32 -> usr/lib32
+9) /lib64 -> usr/lib64
+10) /libx32 -> usr/libx32
+    todos enlaces simbolicos a subdirectorios de /usr 
+    estos directorios /usr/* van a contener aquellas librerias que van a requerir los diferentes programas que tenemos dentro de nuestro SO para su funcionamiento
+    /lib es otra carpeta gestionada por el SO, aunque nosotros aqui si que podriamos llegar a introducir algunas librerias si la requiriese alguno de nuestros programas
+11) /lost+found
+    esta carpeta tiene que ver con una utilidad que es fsck 
+
+    fsck -> utilidad que utilizamos cuando queremos recuperar parte del sistema de ficheros que por alguna razon ha quedado inconsistente o dañado
+
+    por ejemplo, estamos trabajano en un archivo, se corta la luz y no llegamos a guardar cambios, podemos usar este tipo de comandos para tratar de recuperar la informacion que se haya podido perder durante esta interrupcion del SO
+
+    esta informacion que se recupera, normalmente queda almacenada en /lost+found
+
+12) /media
+    es muy similar a lo que vimos con /cdrom
+    va a ser la carpeta donde en teoria vamos a montar dispositivos externos
+13) /mnt
+    es otro punto de montaje (mnt viene de "mount")
+    esto esta creado para que nosotros montemos tambien dispositivos externos, pero mas bien esta pensado para que montemos esos dispositivos de manera manual
+    es como para contar con un directorio de montaje en el que si tu tienes que montar algo de manera manual utilizando una serie de utilidades que ya veremos mas adelante, utilizes este directorio 
+    es un poco redundante con /media y /cdrom 
+14) /opt
+    opt es la abreviacion de "optional"
+    se usaba antiguamente cuando te servian el SO, para alojar programas o modulos opcionales
+    hoy por default esta vacio y rara vez lo vamos a utilizar para meter algo 
+15) /proc
+    este directorio esta administrado por el sistema, no debemos tocar nada de lo que hay dentro
+    si tiramos un ls vamos a encontrar una interfaz con el Kernel
+    vamos a obtener un monton de informacion sobre como esta funcionando el Kernel y los dispositivos hardware que tenemos en nuestra maquina
+    el contenido de /proc no es propiamente un sistema de ficheros sino que se lo conoce como sistema de ficheros virtual porque esta como creado sobre la marcha, en tiempo de ejecucion 
+16) /root
+    es la carpeta de trabajo del usuario root
+17) /run
+    aqui van a guardar informacion algunos programas que inician muy rapido cuando nosotros arrancamos el SO 
+    van a almacenar informacion de runtime, informacion en tiempo de ejecucion
+18) /sbin -> usr/sbin
+    enlace simbolico a /usr/sbin 
+    es muy similar a /usr/bin, donde tenemos binarios esenciales del sistema, pero aqui vamos a tener otro tipo de binarios que normalmente estan reservados para tareas super vitales, super esenciales dentro del SO y que por norma general solamente van a poder ejecutarlos usuarios que tengan privilegios de administracion, que sean superusuarios
+19) /snap
+    es un gestor de paquetes 
+    es para intalar programas externos 
+    cuando instalamos paquetes utilizando este gestor se van a instalar en esta ruta
+20) /srv
+    contiene ciertos datos de servicios, normalmente informacion que nosotros estamos sirviendo hacia afuera
+    cuando nosotros instalamos ciertos softwares, como por ejemplo FTP, o cosas que esten sirviendo informacion, es posible que se cree aqui un directorio con el nombre de ese software o de ese protocolo (por ejemplo "/ftp") y tenga aqui cierta informacion que estemos sirviendo 
+21) /swapfile
+    hace el swap de la memoria RAM a disco para no saturar la memoria RAM 
+    cuando un proceso tiene mucha informacion almacenada comienza a paginar, comienza a tomar informacion que esta en memoria RAM y la empieza a volcar a disco
+    concretamente la vuelca a este fichero /swapfile
+    es un fichero grande (ls -lah 2.1G) donde el SO va haciendo swaping constantemente desde memoria RAM a disco
+22) /sys
+    otro directorio propio del SO
+    este directorio nos sirve tambien de interfaz con el Kernel
+    aqui tenemos algunos ficheros con parametros de configuracion que incluso podemos llegar a modificar para dar algunas instrucciones al kernel: cambiar ciertos comportamientos, etc. (esto representa una interfaz, una manera de transmitir informacion a ciertos procesos que funcionan dentro del kernel para que realizen algunas tareas)
+    aqui rara vez vamos a modificar ficheros, y cuando lo hagamos debemos tener muy claro lo que estamos haciendo
+23) /tmp
+    directorio temporal pensado para que el usuario almacene en el cualquier tipo de dato que simplemente lo este descargando 
+    en muchas ocasiones este directorio se borra cuando reiniciamos el equipo
+    todos los usuarios tienen permisos completos sobre este directorio
+24) /usr
+    es el directorio mas grande de tdos los que hemos visto y el mas grande dentro de la jerarquia de Linux 
+    tendremos todo lo que son programas, configuraciones, librerias, todo lo que es propio de los usuarios 
+25) /var
+aqui tenemos datos que cambian con frecuencia
+
+----------------------------------------
+
+VIDEO 26
+
+emacs /etc/passwd -> para leer un fichero con informacion de todos los usuarios del nuestra maquina Linux con el editor instalado emacs
+
+Ctrl + z -> envia el proceso anterior a segundo plano
+
+ps -> podemos observar el PID, que es un identificador de procesos vvv
+PID   TTY       TIME CMD
+2340  pts/0 00:00:00 bash
+14080 pts/0 00:00:01 emacs
+14151 pts/0 00:00:00 ps
+
+prlimit --as=1000 --pid 14080
+-> con esto estamos limitando la cantidad de memoria RAM que puede consumir este proceso emacs (ya que en comando incluimos el identificador PID)
+-> cuando llegue al limite (1000 == 1mb) emacs va a tratar de volcar la informacion que no puede mantener en memoria RAM a disco (al fichero swapfile)
+
+fg -> con este comando vuelvo a traer el proceso emacs a primer plano
+
+sudo cp /swapfile /home/lionel/Desktop/
+-> sudo nos permite elevar prvilegios
+-> con este comando hice una copia del fichero /swapfile en el escritorio de mi maquina Linux 
+
+sudo chmod 755 /home/lionel/Desktop/swapfile 
+-> con este comando le doy suficientes permisos al fichero en mi Desktop para poder cerrar la shell 
+
+cat /etc/passwd -> cat imprime el contenido de un archivo en la terminal
+
+*** el ejercicio consiste en hacer un copy paste del swapfile desde mi Desktop en la VM (SO Ubuntu) a mi maquina host (W10), pero no me funcionó
+*** Luego, en la maquina host instala Autopsy (https://www.autopsy.com/) para hacer busquedas en el swapfile copypasteado desde la VM 
+
+----------------------------------------
+
+VIDEO 28 - Inodos
+en la raiz del arbol de ficheros, con cd home/lionel me paro en el home de mi usuario
+
+Los datos relacionados a un directorio o fichero, como ser propietario, permisos, fecha de creacion, tamaño, etc, se denominan METADATOS
+Todos estos metadatos tienen que estar almacenados en alguna parte 
+La estructura que va a almacenar esta informacion se denomina INODO
+Todos los ficheros y directorios que tengamos dentro de nuestro sistema de ficheros en Linux van a tener asociado un INODO
+Estos INODOS van a contener la informacion de contexto, los metadatos, asociados a los archivos o directorios
+Cada inodo va a tener un identificador, que va a ser el que va a usar el SO por detras para gestionar todos los ficheros del sistema de ficheros
+
+df -i 
+-> nos devuelve informacion de todos los sistemas de ficheros existentes en nuestra VM
+-> en Linux podemos tener varios sistemas de ficheros
+-> el principal es el que esta montado en la raiz (Mounted on), que es el sistema con el que venimos trabajando vvv
+Filesystem   Inodes   IUsed    Ifree IUse%   Mounted on 
+/dev/sda3   1277952  225526 10524426   18%   /
+
+ls -i fichero.txt -> para acceder al nro de inodo de fichero.txt
+
+stat fichero.txt -> para ver info del fichero que nos proporciona su inodo (identificador = 529482)
+
+sudo debugfs -R "stat <529482>" /dev/sda3
+-> con sudo ejecutamos un comando con privilegios de administrador
+-> nos muestra la misma info que el comando anterior pero presentada de otra manera
+-> 529482 es el indo (identificador unico) del fichero
+
+----------------------------------------
+
+VIDEO 28 - Inodos (REPASO)
+
+df -i 
+-> nos devuelve informacion de todos los sistemas de ficheros existentes en nuestro SO 
+-> en Linux podemos tener varios sistemas de ficheros 
+-> el principar es el que esta montado en la raiz (Mounted on == /)   
+Filesystem      Inodes  IUsed   IFree IUse% Mounted on
+/dev/sda3      1277952 228000 1049952   18% /
+
+ls -i fichero.txt -> para acceder al nro de inodo de un fichero en particular
+
+stat fichero.txt -> para visualizar los metadatos de un fichero en particular
+
+sudo debugfs -R "stat <529047>" /dev/sda3
+-> nos muestra la misma info que el comando anterior pero presentada de otra manera
+
+sudo debugfs -R "stat <12>" /dev/sda3
+-> para ver los metadatos del archivo swapfile en la raiz de nuesto SO
+
+--------------------
+
+VIDEO 29 - Dentries
+
+Dentries -> Directory Entries
+
+ls -lid curso-linux -> para acceder al inodo de un directorio 
+
+stat curso-linux
+
+ls -lia /home/lionel
+
+--------------------
+
+VIDEO 30 - Enlaces simbólicos (Soft Links)
+
+ls -li / -> para acceder a los inodos e informacion de todos los directorios y archivos de un directorio
+
+ls -lid / -> para acceder al inodo e informacion de un directorio
+
+Ctrl + r 
+-> para buscar el substring mas reciente en el historial de comandos
+-> con mas Ctrl + r me voy moviendo hacia atras en los comandos que contengan ese substring
+
+pwd -> para saber la ubicacion en la que estoy parado dentro del sistema de ficheros de Linux 
+
+PRACTICA: crear enlace simbolico de un fichero vvv 
+1) En /home/lionel/Desktop creo el fichero "fichero_escritorio.txt"
+2) Retrocedo un nivel y desde /home/lionel creo un enlace simbolico al archivo creado en 1) vvv
+ln -s Desktop/fichero_escritorio.txt fich_sim 
+-> -s == soft link
+-> enlace simbolico creado usando una ruta relativa (Desktop/fichero)
+
+3) Desde /home/lionel tiro un cat fich_sim y compruebo que accedo al contenido de fichero_escritorio.txt, por lo tanto el enlace simbolico funciona
+
+* tambien se puede crear un enlace sombolico con rutas absolutas vvv
+ln -s /home/lionel/Desktop/fichero_enlazado enlace
+
+* tambien se pueden crear accesos simbolicos a directorios
+
+--------------------
+
+VIDEO 31 - Enlaces duros (Hard Links)
+
+- Los Hard Links son solo para ficheros 
+
+info ln -> para ver documentacion de una utilidad (ln es una utilidad)
+
+ln Desktop/fichero_con_hard_link.txt hard_link
+    -> creo el hardlink "hard_link" al archivo Desktop/fichero_con_hard_link.txt
+
+.  -> hardlink al directorio actual
+.. -> hardlink al directorio padre de un directorio 
+
+--------------------
+
+VIDEO 32 - Wildcards
+
+...

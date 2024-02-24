@@ -1,2 +1,0 @@
-1) sudo apt install tree -> tree (no viene por defecto) -> utilidad para poder explorar el sistema de ficheros desde la terminal vvv 
-2) sudo apt install emacs -> editor de texto (no viene por defecto)
