@@ -1,3 +1,4 @@
+backslash      -> \
 baktick        -> ``
 comilla simple -> ''
 virguilla      -> ~
