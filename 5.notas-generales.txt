@@ -579,7 +579,7 @@ lionel@lionel-ubuntu:~$
 
 *** el comando echo viene implementado en la shell por defecto
 *** imprime por pantalla el texto que le proporcionemos como argumento
-*** realmente, lo que hace es echo es redirigir el argumento recibido a lo que se denomina standard output, que es un fichero especial del que ya hablaremos
+*** realmente, lo que hace echo es redirigir el argumento recibido a lo que se denomina standard output, que es un fichero especial del que ya hablaremos
 
 ~ -> referencia nuestro directorio de trabajo, nuestro directorio /home
 
@@ -628,3 +628,59 @@ lionel@lionel-ubuntu:~/logs$ mkdir {2024..2030}-{01..12}
 
 lionel@lionel-ubuntu:~/logs$ rmdir {2024..2030}-{01..12}
 *** borré las 84 carpetas anteriores
+
+--------------------
+
+VIDEO 34 - Command Substitution 
+
+lionel@lionel-ubuntu:~$ which cat
+/usr/bin/cat
+
+lionel@lionel-ubuntu:~$ type cat
+cat is /usr/bin/cat
+
+- Buscamos pasar la salida de un ejecutable como parametro de entrada a otro ejecutable vvv
+
+lionel@lionel-ubuntu:~$ ls -la which cat
+ls: cannot access 'which': No such file or directory
+ls: cannot access 'cat': No such file or directory
+*** aca vemos que la terminal interpreta a which como el nombre de un fichero o directorio, y al no encontrarlo tira error
+
+lionel@lionel-ubuntu:~$ ls -al $(which cat)
+-rwxr-xr-x 1 root root 35280 feb  7  2022 /usr/bin/cat
+*** con esta expansion de la shell (command substitution), le pasamos la salida de la ejecucion del ejecutable which como parametro de entrada a la ejecucion del comando ls 
+
+lionel@lionel-ubuntu:~$ ls -al /usr/bin/cat
+-rwxr-xr-x 1 root root 35280 feb  7  2022 /usr/bin/cat
+*** en este caso, el cmando anterior es equivalente a este
+*** el comando cat es un binario 
+
+lionel@lionel-ubuntu:~$ python3
+Python 3.10.12 (main, Nov 20 2023, 15:14:05) [GCC 11.4.0] on linux
+Type "help", "copyright", "credits" or "license" for more information.
+>>> 
+
+*** se abre el interprete de Python 
+*** ENTIENDO que Python viene instalado por default en Ubuntu  (?)
+*** exit() para salir del interprete de python
+
+lionel@lionel-ubuntu:~$ python3 -c 'print("Hola mundo")'
+Hola mundo
+*** se va a ejecutar el codigo print("Hola mundo") interpretado como codigo en python y la salida va a mostrarse en el stdout
+
+lionel@lionel-ubuntu:~$ echo $(python3 -c 'print("Hola mundo")')
+Hola mundo
+
+*** en versiones antiguas de bash, que es el tipo de shell que estamos utilizando ahora, en lugar de usar el patron $() para indicar un command substitution
+*** sigue habiendo retrocompatibilidad vvv
+
+lionel@lionel-ubuntu:~$ ls -la `which cat`
+-rwxr-xr-x 1 root root 35280 feb  7  2022 /usr/bin/cat
+lionel@lionel-ubuntu:~$ ls -la $(which cat)
+-rwxr-xr-x 1 root root 35280 feb  7  2022 /usr/bin/cat
+
+--------------------
+
+VIDEO 35 - Comillas en la Shell de Linux
+
+...
