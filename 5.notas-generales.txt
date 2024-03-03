@@ -319,7 +319,7 @@ lionel@lionel-ubuntu:~$ tree / -L 1 -> primer nuivel de la jerarquia
     en muchas ocasiones este directorio se borra cuando reiniciamos el equipo
     todos los usuarios tienen permisos completos sobre este directorio
 24) /usr
-    es el directorio mas grande de tdos los que hemos visto y el mas grande dentro de la jerarquia de Linux 
+    es el directorio mas grande de todos los que hemos visto y el mas grande dentro de la jerarquia de Linux 
     tendremos todo lo que son programas, configuraciones, librerias, todo lo que es propio de los usuarios 
 25) /var
 aqui tenemos datos que cambian con frecuencia
