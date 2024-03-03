@@ -449,15 +449,38 @@ ln -s /home/lionel/Desktop/fichero_enlazado enlace
 
 VIDEO 31 - Enlaces duros (Hard Links)
 
-- Los Hard Links son solo para ficheros 
+- Los Hard Links son solo accesos o enlaces para ficheros 
+
+- un hard link se crea con la utilidad ln (igual que los soft links)
 
 info ln -> para ver documentacion de una utilidad (ln es una utilidad)
 
-ln Desktop/fichero_con_hard_link.txt hard_link
-    -> creo el hardlink "hard_link" al archivo Desktop/fichero_con_hard_link.txt
+lionel@lionel-ubuntu:~$ ln Desktop/fichero_con_hard_link.txt hard_link
+*** creo el hardlink "hard_link" al archivo Desktop/fichero_con_hard_link.txt
 
-.  -> hardlink al directorio actual
-.. -> hardlink al directorio padre de un directorio 
+- El nro de inodo de un hardlink coincide con el nro de inodo del archivo al que hace referencia 
+*** ls -li para acceder a los nros de inodos de ficheros y directorios vvv 
+
+lionel@lionel-ubuntu:~$ cat Desktop/fichero_enlazado hardlink enlace
+fichero de prueba
+
+fichero de prueba
+
+fichero de prueba
+
+lionel@lionel-ubuntu:~$ ls -li Desktop/fichero_enlazado hardlink enlace
+525321 -rw-rw-r-- 2 lionel lionel 19 feb 19 22:13 Desktop/fichero_enlazado
+525277 lrwxrwxrwx 1 lionel lionel 37 feb 19 22:14 enlace -> /home/lionel/Desktop/fichero_enlazado
+525321 -rw-rw-r-- 2 lionel lionel 19 feb 19 22:13 hardlink
+*** como se ve, un softlink tiene su propio inodo, en cambio un hardlink comparte el inodo con su referencia
+*** esto quiere decir que un hardlink es una referencia al mismo inodo del fichero al que esta enlazado 
+*** a efectos practicos, un hardlink es como si fuese el mismo fichero al que esta enlazado 
+
+- luego, el profesor demuestra que, luego de eliminar el fichero original con rm, el hardlink sigue funcionando y se puede acceder al contenido del fichero eliminado (en la misma situacion, un softlink se rompe)
+- esto es porque el hardlink sigue referenciando al nro de inodo original del fichero, y en ese inodo aparecen los bloques donde esa informacion del fichero estaba en memoria
+
+.  -> hardlink al directorio actual (mismo inodo)
+.. -> hardlink al directorio padre de un directorio (mismo inodo)
 
 --------------------
 
@@ -635,6 +658,7 @@ VIDEO 34 - Command Substitution
 
 lionel@lionel-ubuntu:~$ which cat
 /usr/bin/cat
+* which  returns the pathnames of the files (or links) which would be executed in the current environment (documentacion obtenida con info which)
 
 lionel@lionel-ubuntu:~$ type cat
 cat is /usr/bin/cat
@@ -652,7 +676,7 @@ lionel@lionel-ubuntu:~$ ls -al $(which cat)
 
 lionel@lionel-ubuntu:~$ ls -al /usr/bin/cat
 -rwxr-xr-x 1 root root 35280 feb  7  2022 /usr/bin/cat
-*** en este caso, el cmando anterior es equivalente a este
+*** en este caso, el comando anterior es equivalente a este
 *** el comando cat es un binario 
 
 lionel@lionel-ubuntu:~$ python3
@@ -671,7 +695,7 @@ Hola mundo
 lionel@lionel-ubuntu:~$ echo $(python3 -c 'print("Hola mundo")')
 Hola mundo
 
-*** en versiones antiguas de bash, que es el tipo de shell que estamos utilizando ahora, en lugar de usar el patron $() para indicar un command substitution
+*** en versiones antiguas de bash, que es el tipo de shell que estamos utilizando ahora, en lugar de usar el patron $() para indicar un command substitution, se utilizaban las ``
 *** sigue habiendo retrocompatibilidad vvv
 
 lionel@lionel-ubuntu:~$ ls -la `which cat`
@@ -683,4 +707,219 @@ lionel@lionel-ubuntu:~$ ls -la $(which cat)
 
 VIDEO 35 - Comillas en la Shell de Linux
 
-...
+todo lo que introduzcamos entre "" dentro de la shell de Linux va a provocar que pierdan su significado todos los caracteres especiales, menos 3 vvv
+- $
+- \
+- `
+
+Comillas dobles vvv 
+-------------------
+
+lionel@lionel-ubuntu:~$ echo fichero*
+fichero1.txt fichero2.txt ficheroC.txt
+*** el wild card * es interpretado correctamente
+
+lionel@lionel-ubuntu:~$ echo "fichero*"
+fichero*
+*** en este caso, * no es interpretado como un wildcard por la shell
+
+lionel@lionel-ubuntu:~$ echo "La ruta de cat es: $(which cat)"
+La ruta de cat es: /usr/bin/cat
+*** el command substitution $() se sigue interpretando correctamente
+
+lionel@lionel-ubuntu:~$ echo "La ruta de ls es: `which ls`"
+La ruta de ls es: /usr/bin/ls
+*** el command substitution `` se sigue interpretando correctamente
+
+Comillas simples vvv 
+--------------------
+
+- Las '' sirven para eliminar el comportamiento de todos los caracteres especiales que hay en la shell, incluidos $ \ ` vvv 
+
+lionel@lionel-ubuntu:~$ echo 'La ruta de ls es: `which ls`'
+La ruta de ls es: `which ls`
+*** aca vemos que el command substitution pierde su significado
+
+--------------------
+
+VIDEO 36 - Escapando caracteres especiales
+
+\ -> este caracter se denomina CARACTER DE ESCAPE vvv
+
+lionel@lionel-ubuntu:~$ echo "esto es una expansion -> $(which cat), pero si la escapo con \\ pierde su significado -> \$(which cat)"
+esto es una expansion -> /usr/bin/cat, pero si la escapo con \ pierde su significado -> $(which cat)
+
+lionel@lionel-ubuntu:~$ ls -la nombre\ separado2.txt 
+-rw-rw-r-- 1 lionel lionel 0 mar  2 22:44 'nombre separado2.txt'
+
+*** equivalente a vvv
+lionel@lionel-ubuntu:~$ ls -la "nombre separado2.txt" 
+-rw-rw-r-- 1 lionel lionel 0 mar  2 22:44 'nombre separado2.txt'
+lionel@lionel-ubuntu:~$ 
+
+-e -> codigo de control vvv
+---------------------------
+
+lionel@lionel-ubuntu:~$ echo -e "\a"
+*** le estamos transmitiendo la orden al ordenador de que haga un "bit" (un sonido)
+
+lionel@lionel-ubuntu:~$ echo "\a"
+\a
+
+lionel@lionel-ubuntu:~$ echo -e "Este texto \t \a esta tabulado"
+Este texto 	  esta tabulado
+*** tabula texto y se escucha el "bit"
+
+lionel@lionel-ubuntu:~$ echo "Este texto \t \a esta tabulado"
+Este texto \t \a esta tabulado
+*** texto plano
+
+lionel@lionel-ubuntu:~$ echo -e "Esta es la primera linea con una \ttabulacion \nLuego hay un salto de linea, y finalmente se escuche el \a'bit'"
+Esta es la primera linea con una 	tabulacion 
+Luego hay un salto de linea, y finalmente se escuche el 'bit'
+*** tabulacion, salti de linea y "bit"
+
+lionel@lionel-ubuntu:~$ echo "Esta es la primera linea con una \ttabulacion \nLuego hay un salto de linea, y finalmente se escuche el \a'bit'"
+Esta es la primera linea con una \ttabulacion \nLuego hay un salto de linea, y finalmente se escuche el \a'bit'
+*** texto plano
+
+\a \t \n \b \r vvv 
+
+lionel@lionel-ubuntu:~$ echo -e "palabra1\a palabra2\t palabra3\n palabra4\b palabra5\r palabra6"
+palabra1 palabra2	 palabra3
+ palabra6palabra5
+
+--------------------
+
+VIDEO 37 - Caso práctico: El programa vulnerable persistente 
+
+Ejercicio:
+- Tenemos un programa instalado en /usr/bin (donde tenemos la mayoria de los programas que utilizamos dentro de nuestro SO Linux, dentro de nuestra shell)
+- Uno de estos programas es vulnerable: tiene un fallo de seguridad cualquiera que se puede explotar para ganar por ejemplo una elevacion de privilegios, para poder convertirte en un usuario con mas privilegios. 
+- el programa implementa una backdoor, el administrador en un momento se da cuenta que alguien externo esta explotando la falla, elimina con rm el script original pero no soluciona el problema porque el atacante al acceder al script creó un hard link.
+
+*** planteo original del ejercicio vvv 
+https://www.hackinglinuxexposed.com/articles/20031214.html 
+
+Simulacion vvv
+
+V37.1) el administrador crea el script que va a tener la falla de seguridad 
+lionel@lionel-ubuntu:~$ nano vulnprog
+V37.2) escribí y guardé el archivo
+#! /bin/bash
+
+read -p "Introduce un valor de entrada: " entrada
+
+if [ "$entrada" = "backdoor" ]; then
+        echo "Proporcionaste shell de root"
+else
+        echo "Funcionamiento normal del programa"
+fi
+
+V37.3) intento ejecutarlo escribiendo vulnprog
+lionel@lionel-ubuntu:~$ vulnprog
+vulnprog: command not found
+
+V37.4) intento ejecutarlo escribiendo ./vulnprog (sugerencia chatGTP)
+lionel@lionel-ubuntu:~$ ./vulnprog
+bash: ./vulnprog: Permission denied
+
+V37.5) le damos permisos de ejecucion (lo saqué de los comentarios del video)
+lionel@lionel-ubuntu:~$ chmod 777 vulnprog
+
+V37.6) repito paso 3)
+ionel@lionel-ubuntu:~$ vulnprog
+vulnprog: command not found
+
+V37.7) repito paso 4)
+lionel@lionel-ubuntu:~$ ./vulnprog
+Introduce un valor de entrada: inputcualquiera
+Funcionamiento normal del programa
+
+lionel@lionel-ubuntu:~$ ./vulnprog
+Introduce un valor de entrada: backdoor
+Proporcionaste shell de root
+
+V37.8) copio el script en /usr/bin con permisos de administrador
+lionel@lionel-ubuntu:~$ sudo cp vulnprog /usr/bin/
+[sudo] password for lionel: 
+
+V37.9) chequeo la existencia y los permisos de ambos archivos 
+lionel@lionel-ubuntu:~$ ls -l vulnprog /usr/bin/vulnprog 
+-rwxr-xr-x 1 root   root   191 mar  3 02:41 /usr/bin/vulnprog
+-rwxrwxrwx 1 lionel lionel 191 mar  3 02:36 vulnprog
+
+V37.10) creo un hard link de /usr/bin/vulnprog en ~
+lionel@lionel-ubuntu:~$ sudo ln /usr/bin/vulnprog vulnprog.hardlink
+
+V37.11) chequeo los inodos de los 2 archivos y del hard link
+lionel@lionel-ubuntu:~$ ls -lai /usr/bin/vulnprog vulnprog vulnprog.hardlink 
+1049104 -rwxr-xr-x 2 root   root   191 mar  3 02:41 /usr/bin/vulnprog
+ 535012 -rwxrwxrwx 1 lionel lionel 191 mar  3 02:36 vulnprog
+1049104 -rwxr-xr-x 2 root   root   191 mar  3 02:41 vulnprog.hardlink
+*** observar que /usr/bin/vulnprog y vulnprog.hardlink apuntan a los mismos espacios de memoria
+
+V37.12) chequeo que el hard link funciona
+lionel@lionel-ubuntu:~$ ./vulnprog.hardlink
+Introduce un valor de entrada: backdoor
+Proporcionaste shell de root
+
+V37.13) elimino los 2 archivos dejando solo el hardlink 
+lionel@lionel-ubuntu:~$ rm vulnprog  
+lionel@lionel-ubuntu:~$ sudo rm /usr/bin/vulnprog 
+
+V37.14) chequeo que se hayan borrado correctamente los 2 archivos y que aun exista el hard link
+lionel@lionel-ubuntu:~$ ls -lai vulnprog.hardlink /usr/bin/vulnprog vulnprog
+ls: cannot access '/usr/bin/vulnprog': No such file or directory
+ls: cannot access 'vulnprog': No such file or directory
+1049104 -rwxr-xr-x 1 root root 191 mar  3 02:41 vulnprog.hardlink
+*** observar que solo quedo el hard link apuntando a los mismos espacios de memoria donde apuntaba tambien /usr/bin/vulnprog
+
+V37.15) creo un nuevo /usr/bin/vulnprog solucionando la falla de seguridad
+lionel@lionel-ubuntu:~$ sudo nano /usr/bin/vulnprog
+
+#!/bin/bash
+read -p "Introduce un valor de entrada: " entrada
+echo "Funcionamiento normal del programa"
+
+V37.16) verifico existencia y permisos del nuevo archivo y del hard link
+lionel@lionel-ubuntu:~$ ls -lai /usr/bin/vulnprog vulnprog.hardlink 
+1136253 -rw-r--r-- 1 root root 104 mar  3 02:57 /usr/bin/vulnprog
+1049104 -rwxr-xr-x 1 root root 191 mar  3 02:41 vulnprog.hardlink
+
+V37.17) doy permisos de ejecucion al nuevo script
+lionel@lionel-ubuntu:~$ sudo chmod 777 /usr/bin/vulnprog 
+
+V37.18) ejecuto el nuevo script y chequeo que se soluciono la falla de seguridad
+lionel@lionel-ubuntu:~$ /usr/bin/vulnprog
+Introduce un valor de entrada: backdoor
+Funcionamiento normal del programa
+
+V37.19) vuelvo a ejecutar el hardlink del script eliminado y compruebo que puedo seguir ejecutando el codigo fuente del script original y explotando las fallas de seguridad
+lionel@lionel-ubuntu:~$ ./vulnprog.hardlink 
+Introduce un valor de entrada: backdoor
+Proporcionaste shell de root
+
+--------------------
+
+Prueba con script Python:
+
+lionel@lionel-ubuntu:~$ nano app.py
+
+print("Hola")
+
+lionel@lionel-ubuntu:~$ ls -l app.py 
+-rw-rw-r-- 1 lionel lionel 63 mar  3 03:12 app.py
+lionel@lionel-ubuntu:~$ chmod 777 app.py 
+lionel@lionel-ubuntu:~$ ls -l app.py 
+-rwxrwxrwx 1 lionel lionel 63 mar  3 03:12 app.py
+
+lionel@lionel-ubuntu:~$ ./app.py 
+./app.py: line 1: syntax error near unexpected token `"Hola"'
+./app.py: line 1: `print("Hola")'
+
+*** No funcionó correctamente 
+
+--------------------
+
+VIDEO 39 - I/O Redirection 
