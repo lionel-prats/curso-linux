@@ -1229,3 +1229,112 @@ ls -l dir1/ &>> ls-salida.txt;\
 ls -l dir19/ &>> ls-salida.txt;\
 ls -l dir2/ &>> ls-salida.txt;\
 ls -l dir29/ &>> ls-salida.txt
+
+--------------------
+
+VIDEO 42 - /dev/null
+
+lionel@lionel-ubuntu:~$ \ 
+ls -lah /dev/null;\
+ls -lah /dev/pts/0;
+ : command not found
+crw-rw-rw- 1 root root 1, 3 mar  3 12:15 /dev/null
+crw--w---- 1 lionel tty 136, 0 mar  3 21:22 /dev/pts/0
+*** lo primero que vemos es que antes de los permisos viene referenciado con una "c", que indica que se trata de un CARACTER DEVICE FILE, o sea, un fichero similar al que apuntaban los soft link stdin, ...out y ...err, es decir, el fichero especial /dev/pts/0
+*** entonces /dev/null es un CARACTER DEVICE FILE
+
+- /dev/null se diferencia de /dev/pts/0 en que toda la informacion que redirijamos a /dev/null se va a eliminar
+- /dev/null es como si fuese una papelera donde todo lo que nosostros mandemos se borra por completo (no se almacena en ninguna parte) y por supuesto, no se va a poder recuperar 
+
+lionel@lionel-ubuntu:~$ find /var/log/ -name auth.log
+/var/log/auth.log
+find: ‘/var/log/private’: Permission denied
+find: ‘/var/log/gdm3’: Permission denied
+find: ‘/var/log/speech-dispatcher’: Permission denied
+*** busco dentro de /var/log ficheros que se llamen auth.log
+*** como se ve, se muestra tanto el stdoutput como el stderr 
+
+lionel@lionel-ubuntu:~$ find /var/log/ -name auth.log 2> stderr.txt
+/var/log/auth.log
+*** forma de redirigir el stderr al fichero stderr.txt y mostrar solo el stdoutput
+
+ionel@lionel-ubuntu:~$ find /var/log/ -name auth.log 2> /dev/null 
+/var/log/auth.log
+*** de esta forma redirigimos el stderr a /dev/null para no estar creando archivos que ocupen espacio ya que en este caso es informacion que no nos interesa
+*** recordar que lo que mandamos a este fichero especial (CARACTER DEVICE FILE) no se puede recuperar
+
+--------------------
+
+43. Standard Input (stdin) Redirection
+
+- para empezar a hablar del stdin es importante volver a la utilidad cat 
+
+lionel@lionel-ubuntu:~$ \
+echo "fichero1" > fichero1;\
+echo "fichero2" > fichero2;\
+echo "fichero3" > fichero3
+
+lionel@lionel-ubuntu:~$ cat fichero1 fichero2 fichero3 > fichero_total
+lionel@lionel-ubuntu:~$ cat fichero_total 
+fichero1
+fichero2
+fichero3
+
+lionel@lionel-ubuntu:~$ cat fichero* > fichero_total2
+lionel@lionel-ubuntu:~$ cat fichero_total2
+fichero1
+contenido de fichero1.txt
+fichero2
+contenido fichero2.txt
+fichero3
+contenido fichero4.txt
+fichero1
+fichero2
+fichero3
+
+lionel@lionel-ubuntu:~$ cat
+*** si ejecutamos la utilidad cat sin pasarle ningun argumento, esta se queda esperando recibir informacion del stdin, y el stdin esta asociado a nuestro teclado vvv
+
+lionel@lionel-ubuntu:~$ cat
+esto es un texto de pruebas
+esto es un texto de pruebas
+esto es otro texto de pruebas
+esto es otro texto de pruebas
+*** observar que ingrasamos cualquier string, y cuando damos ENTER, cat redirige el stdin al stdoutput (comportamiento por default de la utilidad)
+*** Ctrl + d para indicarle a cat que hemos llegado al final del fichero, entonces cat se cierra
+*** entonces cat esta recibiendo en este caso el texto del standard input (que esta asociado por defecto a nuestro teclado) y luego lo redirige al standard output
+
+- podemos aprovechar este comportamiento para por ejemplo, escribir un archivo en linea vvv
+
+lionel@lionel-ubuntu:~$ > video43
+lionel@lionel-ubuntu:~$ code video43 
+lionel@lionel-ubuntu:~$ cat > video43 
+linea 1 texto introducido por stdin
+linea 2 texto introducido por stdin
+
+linea 3 texto introducido por stdin luego de un salto de linea
+lionel@lionel-ubuntu:~$ cat video43 
+linea 1 texto introducido por stdin
+linea 2 texto introducido por stdin
+
+linea 3 texto introducido por stdin luego de un salto de linea
+lionel@lionel-ubuntu:~$ 
+
+operador de redireccion de stdin == < 
+-------------------------------------
+
+lionel@lionel-ubuntu:~$ cat < video43 
+linea 1 texto introducido por stdin
+linea 2 texto introducido por stdin
+
+linea 3 texto introducido por stdin luego de un salto de linea
+lionel@lionel-ubuntu:~$ 
+*** con esto le estoy mandando a cat como entrada el contenido de video43 (sustituyendo lo que viene por defecto en stdin que es el teclado) y cat lo reenvia automaticamente al stdout y por eso nos sale por pantalla
+
+*** este es el concepto de redireccion de stdin 
+*** con cat no tiene demasiado sentido, pero es para entender como cambiariamos el comportamiento de recibir esa entrada por stdin o por teclado 
+*** como veremos mas adelante, esto tiene bastante utilidad, para ciertos comandos, ciertas herramientas, que reciben cierta informacion y que a mano por teclado tardariamos muchisimo con lo cual metiendola automaticamente desde un fichero, va a ser muchisimo mas optimo
+
+--------------------
+
+44. Pipelines43. Standard Input (stdin) Redirection
