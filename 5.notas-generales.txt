@@ -110,16 +110,19 @@ file Desktop -> nos indica si se trata de un directorio o fichero (y si es fiche
 
 cat auth.log -> imprime por consola el contenido de un fichero o archivo
 
-more auth.log -> nos sirve para contenidos extensos de ficheros -> nos muestra ddesde el inicio del contenido y solo lo que cabe en la pantalla de la shell, luego podemos seguir bajando con Enter 
+lionel@lionel-ubuntu:/var/log$ more auth.log
+-> nos sirve para contenidos extensos de ficheros -> nos muestra desde el inicio del contenido y solo lo que cabe en la pantalla de la shell, luego podemos seguir bajando con Enter 
 
-less auth.log -> es la mejora de more (pagina el contenido del fichero)
-    h -> nos muestra el listado de acciones que podemos utilizar dentro de less 
-    space -> para avanzar una pagina 
-    b -> para volver una pagina 
-    / + string + Enter -> para buscar coincidencias en todo el contenido
-    g -> para ir al inicio del fichero 
-    Shift + g -> para ir al final del fichero
-    q -> para salir de la utilidad
+lionel@lionel-ubuntu:/var/log$ less auth.log
+*** es la mejora de more (pagina el contenido del fichero)
+*** tab "h" -> nos muestra el listado de acciones que podemos utilizar dentro de less (tab "q" para salir de este menu y volver atras) 
+*** tab "space" -> nos muestra la pagina siguiente 
+*** tab "b" -> pnos muestra la pagina anterior 
+*** tab "/" + string + Enter -> para buscar el substring pasado como argumento en la pagina actual del contenido del texto (tab "n" para ver mas coincidencias en paginas siguientes)
+*** tab "g" -> para ir al inicio del fichero 
+*** tab "shift" + "g" -> para ir al final del fichero
+*** ↓↑ -> para movernos para arriba o para abajo de a un renglon
+*** tab "q" -> para salir de la utilidad
 
 ----------------------------------------
 
@@ -284,11 +287,37 @@ lionel@lionel-ubuntu:~$ tree / -L 1 -> primer nuivel de la jerarquia
     opt es la abreviacion de "optional"
     se usaba antiguamente cuando te servian el SO, para alojar programas o modulos opcionales
     hoy por default esta vacio y rara vez lo vamos a utilizar para meter algo 
+
 15) /proc
-    este directorio esta administrado por el sistema, no debemos tocar nada de lo que hay dentro
-    si tiramos un ls vamos a encontrar una interfaz con el Kernel
-    vamos a obtener un monton de informacion sobre como esta funcionando el Kernel y los dispositivos hardware que tenemos en nuestra maquina
-    el contenido de /proc no es propiamente un sistema de ficheros sino que se lo conoce como sistema de ficheros virtual porque esta como creado sobre la marcha, en tiempo de ejecucion 
+    *** este directorio esta administrado por el sistema, no debemos tocar nada de lo que hay dentro
+    *** si tiramos un ls en /proc vamos a obtener una interfaz con el Kernel
+    *** aqui vamos a obtener un monton de informacion sobre como esta funcionando el Kernel y los dispositivos hardware que tenemos en nuestra maquina
+    *** tenemos por ejemplo ficheros como filesystems que nos da informacion sobre los sistemas de ficheros que tenemos cargados 
+    *** meminfo de informacion sobre la memoria
+    *** tenemos varios ficheros que nos van a dar informacion sobre el hardware y el funcionamiento del kernel
+    *** tenemos tambien cpuinfo sobre la cpu 
+    *** tenemos tambien directorios con diferentes numeros 
+    *** estos numeros son PIDs, pero basicamente son identificadores de procesos 
+    *** cada uno de los procesos que tenemos tiene un directorio asociado dentro de /proc que contiene informacion sobre el estado en el que se encuentra en este momento, como se ha ejecutado, etc.
+    *** lo que vemos dentro de /proc no es un sistema de ficheros propiamente dicho sino que se suele llamar sistema de ficheros virtual porque esta como creado sobre la marcha, en tiempo de ejecucion 
+
+    *** si hacemos un ls -la /proc comprobamos que la mayoria de los los archivos y directorios continenen 0 bits
+
+    lionel@lionel-ubuntu:/proc$ echo $$
+    2360
+    *** esto me da el PID del proceso actual, que seria la propia shell, que es un proceso dentro de nuestro SO
+
+    lionel@lionel-ubuntu:/proc$ cd 2360
+    *** entro al directorio del proceso
+
+    lionel@lionel-ubuntu:/proc/2360$ ls -la .
+    *** comprobamos que todos los archivos que figuran dentro tienen 0 bits 
+
+    *** por eso es que se llama a lo que hay dentro de /proc un sistema de ficheros virtual, no es propiamente un sistema de ficheros
+
+    lionel@lionel-ubuntu:/proc/2360$ less status
+    *** con este comando podemos ver el estado de nuestro proceso (del 2360, status es un fichero dentro de /proc/2360) 
+
 16) /root
     es la carpeta de trabajo del usuario root
 17) /run
@@ -798,6 +827,11 @@ Ejercicio:
 - Uno de estos programas es vulnerable: tiene un fallo de seguridad cualquiera que se puede explotar para ganar por ejemplo una elevacion de privilegios, para poder convertirte en un usuario con mas privilegios. 
 - el programa implementa una backdoor, el administrador en un momento se da cuenta que alguien externo esta explotando la falla, elimina con rm el script original pero no soluciona el problema porque el atacante al acceder al script creó un hard link.
 
+- Definicion de backdoor (chatGTP):
+Una puerta trasera, conocida en inglés como "backdoor", es una funcionalidad oculta o una vulnerabilidad en un software que permite el acceso no autorizado al sistema o a los datos por parte de personas no autorizadas. Las puertas traseras pueden ser insertadas intencionalmente por el creador del software con fines legítimos, como para facilitar el acceso de mantenimiento o para propósitos de pruebas, pero también pueden ser introducidas de manera maliciosa por personas que desean acceder de forma no autorizada.
+Las puertas traseras pueden ser difíciles de detectar, ya que a menudo están diseñadas para pasar desapercibidas. Sin embargo, una vez que se descubren, pueden representar un riesgo significativo para la seguridad de un sistema, ya que pueden ser explotadas por hackers o personas malintencionadas para acceder a información confidencial, causar daños o comprometer la integridad del sistema.
+En resumen, una puerta trasera en un programa es una forma de acceso no autorizado que puede ser explotada para comprometer la seguridad de un sistema o acceder a datos sensibles.
+
 *** planteo original del ejercicio vvv 
 https://www.hackinglinuxexposed.com/articles/20031214.html 
 
@@ -923,3 +957,275 @@ lionel@lionel-ubuntu:~$ ./app.py
 --------------------
 
 VIDEO 39 - I/O Redirection 
+
+- Input 
+- Output 
+- Redirection
+
+- cuando ejecutamos el comando ls, este nos proporciona una salida
+
+- normalmente, las utilidades que tenemos de la shell de linux, y en general, dentro de linux, van a sacarnos 2 tipos de informacion:
+a) la propia informacion, es decir, los resultados del programa 
+b) mensajes de estado y de error que nos van a indicar si el comportamiento del programa ha sido adecuado
+
+lionel@lionel-ubuntu:~$ ls fichero_fantasma.txt
+ls: cannot access 'fichero_fantasma.txt': No such file or directory
+*** aqui ls nos muestra por pantalla informacion (en este caso, un mensaje de estado) que nos dice "no puedo acceder al fichero fichero_fantasma.txt porque este no existe en tu directorio actual"
+
+Lo que ocurre por detras con todas estas utilidades para que generen las salidas 
+-------------------------------------------------------
+que nos proporcionan por pantalla vvv
+-------------------------------------
+
+- todos estos programitas, como por ejemplo ls, lo que estan haciendo para sacar la salida por pantalla, es escribir dicha salida en un fichero especial llamado stdout (/dev/stdout), que en realidad veremos que es un enlace simbolico a /proc/self/fd/1, y en ultima instancia a /dev/pts/0 vvv
+
+lionel@lionel-ubuntu:~$ ls -lai /dev/stdout /dev/stdin /dev/stderr
+391 lrwxrwxrwx 1 root root 15 mar  3 12:15 /dev/stderr -> /proc/self/fd/2
+389 lrwxrwxrwx 1 root root 15 mar  3 12:15 /dev/stdin -> /proc/self/fd/0
+390 lrwxrwxrwx 1 root root 15 mar  3 12:15 /dev/stdout -> /proc/self/fd/1
+*** como se ve en los 3 casos, la "l" antes de los permisos nos indica que en realidad son enlaces simbolicos 
+
+- siguiendo el caminito de stdout vvv 
+
+lionel@lionel-ubuntu:~$ ls -lai /dev/stdout
+390 lrwxrwxrwx 1 root root 15 mar  3 12:15 /dev/stdout -> /proc/self/fd/1
+*** enlace simbolico a /proc/self/fd/1
+
+lionel@lionel-ubuntu:~$ ls -lai /proc/self/fd/1
+109962 lrwx------ 1 lionel lionel 64 mar  3 13:15 /proc/self/fd/1 -> /dev/pts/0
+*** enlace simbolico a /dev/pts/0
+
+lionel@lionel-ubuntu:~$ ls -lai /dev/pts/0
+3 crw--w---- 1 lionel tty 136, 0 mar  3 13:15 /dev/pts/0
+
+- /dev/pts/0 es un tipo de fichero especial detro de linux
+- observar que antes de los permisos viene referenciado con una "c", que indica que se trata de un CARACTER DEVICE FILE
+- /dev/pts/0 es un tipo de fichero especial que va a servir de interfaz, en este caso con la terminal, y mas concretamente, con la pantalla
+- es decir, va a recibir ciertos caracteres (por ejemplo el texto de salida que escribe y le envia la funcionalidad ls) y /dev/pts/0 va a mostrarlo por pantalla
+- entonces /dev/pts/0 es un fichero especial al que nosotros le proporcionamos un texto, y que nos servira de interfaz, estara conectado con la pantalla de nuestro equipo, de nuestra terminal concretamente, y nos imprimira ese texto en la terminal
+
+Flujo de salida:
+a) ls ... -> escribe y envia texto a /dev/stdout
+b) /dev/stdout, que es soft link a /proc/self/fd/1, redirecciona este texto 
+c) /proc/self/fd/1, que es soft link a /dev/pts/0, redirecciona este texto
+d) /dev/pts/0, que es un fichero especial, concretamente un CARACTER DEVICE FILE, que esta conectado a la pantalla de la terminal, imprimira el texto que originalmente genero la utilidad ls
+
+- Por otro lado, los mensajes de estado y de error que pueda generar una utilidad se envian a /dev/stderr
+*** uso el operador ";" para encadenar comandos y el caracter especial "\" para que sea mas legible (S2-TL-V12 curso Docker de holamundo) vvv
+
+lionel@lionel-ubuntu:~$ \
+> ls -lai /dev/stdout;\
+> ls -lai /dev/stderr;\
+> ls -lai /proc/self/fd/1;\
+> ls -lai /proc/self/fd/2;\
+> ls -lai /dev/pts/0
+390 lrwxrwxrwx 1 root root 15 mar  3 12:15 /dev/stdout -> /proc/self/fd/1
+391 lrwxrwxrwx 1 root root 15 mar  3 12:15 /dev/stderr -> /proc/self/fd/2
+239888 lrwx------ 1 lionel lionel 64 mar  3 14:25 /proc/self/fd/1 -> /dev/pts/0
+239895 lrwx------ 1 lionel lionel 64 mar  3 14:25 /proc/self/fd/2 -> /dev/pts/0
+3 crw--w---- 1 lionel tty 136, 0 mar  3  2024 /dev/pts/0
+*** observar que tanto el enlace simbolico /dev/stdout como el enlace simbolico /dev/stderr, en ultima instancia apuntan al mismo fichero especial /dev/pts/0, y por lo tanto la interfaz va a ser exactamente la misma
+*** por motivos de retrocompatibilidad, por motivos de diferenciar bien a donde vamos a mandar los mensajes de salida correctos y los mensajes de error, tenemos 2 enlaces simbolicos que son distintos (stderr para los mensajes de error y stdout para las salidas standard del propio comando) (con esto vemos cual es una de las funciones que tienen los enlaces simbolicos)
+
+lionel@lionel-ubuntu:~$ tree -L 100 /dev/pts
+/dev/pts
+├── 0
+├── 1
+├── 2
+├── 3
+└── ptmx
+
+0 directories, 5 files
+*** observar que busque en 100 subniveles, entonces compruebo que /dev/pts/ solo contiene 5 ficheros
+
+- Ademas de la salida standard y la salida de error, tenemos tambien entradas que son utiles para los comandos
+- hay veces que ciertos comandos nos van a solicitar que nosotros metamos texto utilizando el teclado
+- este tipo de entrada se denomina standard input que van a tener el fichero especial asociado /dev/stdin (que en verdad es un soft link que tambien apunta en ultima instancia a /dev/pts/0)
+
+lionel@lionel-ubuntu:~$ \
+> ls -lai /dev/stdin;\
+> ls -lai /proc/self/fd/0;\
+> ls -lai /dev/pts/0
+389 lrwxrwxrwx 1 root root 15 mar  3 12:15 /dev/stdin -> /proc/self/fd/0
+242736 lrwx------ 1 lionel lionel 64 mar  3 14:38 /proc/self/fd/0 -> /dev/pts/0
+3 crw--w---- 1 lionel tty 136, 0 mar  3 14:38 /dev/pts/0
+
+- curiosamente (como veremos en siguientes clases) este fichero especial /dev/pts/0 se encuentra tambien asociado con nuestro teclado y nos va a hacer de interfaz para que nosotros podamos presionar teclas (introducir texto por teclado) y el lo proporcione a ciertos comandos que reciben este standard input por parte del usuario
+
+- una vez entendido que los programas van a redirigir el texto a stdout, stderr e incluso van a pedir los de stdin para que los introduzca el usuario veremos como modificar la salida standard (stdout), los estados errores (stderr) o los inputs (stdin), es decir redireccionar esas entradas y salidas hacia donde queramos
+
+--------------------
+
+VIDEO 40 - Standard Output (stdout) Redirection
+
+Ahora que sabemos lo que pasa por detras cuando ejecutamos un comando en linux y su salida se muestra por pantalla, ahora veremos como podemos redirigir esa salida a donde a nosotros nos interese
+
+Como controlar el standard output de un comando, es decir, la salida standard standard de un 
+--------------------------------------------------------------------------------------------
+comando vvv
+-----------
+
+\
+ls fichero1.txt;\
+ls -l fichero1.txt;\
+ls -la fichero1.txt;\
+ls -lah fichero1.txt;\
+ls -lai fichero1.txt;
+
+Operador redireccion (>)
+------------------------
+
+- el operador redireccion (>) nos permite redireccionar el standard output de un comando (no sirve para redirigir el stderr) vvv
+
+lionel@lionel-ubuntu:~$ ls -lah > salida_ls.txt
+lionel@lionel-ubuntu:~$ code salida_ls.txt 
+*** en vez de mostrarse el stdout por pantalla, se creó el fichero salida_ls.txt con el stdout de ls -lah (luego, a modo de prueba, lo abrí con VSCode)
+*** con esto hemos redireccionado la salida standard output del comando ls
+*** esto mismo se puede aplicar a practicamente cualquier comando dentro de linux
+
+lionel@lionel-ubuntu:~$ ls -l directorio_falso > salida_ls.txt 
+ls: cannot access 'directorio_falso': No such file or directory
+lionel@lionel-ubuntu:~$ cat salida_ls.txt 
+lionel@lionel-ubuntu:~$ 
+*** aca vemos que se mostro normalmente el stderr, ya que el operador > aplica solo para el stdout
+*** tambien vemos que cuando redirigimos con >, el archivo de destino (si existe) siempre se va a reescribir dese el principio (o se va a crear y empezar a escribir desde el principio si no existe), entonces como ls en este caso no ha generado ningun resultado exitoso (ejecuto el stderr), la operacion de redireccion ha intentado empezar a reescribir el fichero salida_ls.txt, pero como no habia nada que escribir, se ha detenido, y ha provocado que el fichero se truncase (se pierdan los datos anteriores)
+
+lionel@lionel-ubuntu:~$ > nuevofichero.txt
+lionel@lionel-ubuntu:~$ cat nuevofichero.txt 
+lionel@lionel-ubuntu:~$ ls -l nuevofichero.txt 
+-rw-rw-r-- 1 lionel lionel 0 mar  3 17:08 nuevofichero.txt
+*** otro ejemplo, con el que vemos que es una forma de crear un ficher vacio (observar que pesa 0 bits)
+
+*** conclusion: el operador > siempre va a truncar el contenido previo del fichero de destino
+
+>>: este operador evita que se trunque el contenido original del archivo de destino vvv
+
+lionel@lionel-ubuntu:~$ ls -lah > salida_ls.txt 
+lionel@lionel-ubuntu:~$ tail -n 2 salida_ls.txt 
+drwxrwxr-x  4 lionel lionel 4,0K feb 17 17:02 .vscode
+-rwxr-xr-x  1 root   root    191 mar  3 02:41 vulnprog.hardlink
+lionel@lionel-ubuntu:~$ echo "linea nueva" >> salida_ls.txt 
+lionel@lionel-ubuntu:~$ tail -n 2 salida_ls.txt 
+-rwxr-xr-x  1 root   root    191 mar  3 02:41 vulnprog.hardlink
+linea nueva
+*** como vemos, con >> la linea nueva se agrego al final del contenido previo del fichero de destino, sin truncarlo
+
+--------------------
+
+VIDEO 41 - Standard Error (stderr) Redirection
+
+- los operadores > y >> solo sirven para stdoutput 
+
+- entonces, como no existen operadores especiales para redireccionar el stderr, vamos a hacerlo utilizando una estructura dentro del sistema de ficheros que es muy importante, y que utiliza el kernel de linux para poder gestionar adecuadamente los ficheros abiertos, que se denomina FILE DESCRIPTOR
+
+File Descriptor (descriptor de ficheros):  
+
+- file descriptor es algo que tiene sentido cuando se abre un fichero
+- cuando un proceso cualquiera abre un fichero, es decir, realiza una peticion al kernel para que se abra un fichero (para empezar a leerlo, para empezar a escribirlo, etc) el kernel lo que va a hacer es retornarle (al proceso) un descriptor de fichero, que es un numerito que va a identificar a ese fichero que se esta abriendo.
+- el descriptor de fichero, al mismo tiempo, va a apuntar a una tabla que se llama GLOBAL FILE TABLE, es decir, una tabla de ficheros global que maneja el kernel,y que va a tener ciertas cosas importantes, como por ejemplo:
+* informacion sobre el inodo del fichero que se ha abierto 
+* las restricciones de acceso a ese fichero 
+- con lo cual, cuando tu quieras consumirlo, dependiendo del descriptor que tengas y dependiendo de lo que aparezca en esa tabla global de ficheros, el kernel te va a dejar realizar unas acciones sobre ese fichero que esta abierto u otras acciones diferentes.
+
+- entonces, como vimos, el stdout, el stderr y el stdinput (soft links) apuntan en ultima instancia al mismo fichero especial /dev/pts/0, pero lo que cambia entre ellos es el file descriptor 
+* el stdoutput tiene un file descriptor asociado
+* el stderr tiene un file descriptor asociado
+* el stdinput tiene un file descriptor asociado
+- que apuntan a esta entrada en la global file table donde tendran una serie de restricciones de acceso y donde se indica que uno sirve para redireccionar salida, otro sirve para redireccionar error y otro sirve para redireccionar entrada
+
+- lo interesante es que sepamos cual es el file descriptor de un fichero vvv
+
+lionel@lionel-ubuntu:~$ ls -l /dev/stdout 
+lrwxrwxrwx 1 root root 15 mar  3 12:15 /dev/stdout -> /proc/self/fd/1
+*** podemos ver en este ficherito (/proc/self/fd) al que esta apuntando el enlace simbolico /dev/stdout que el file descriptor es el 1
+
+lionel@lionel-ubuntu:~$ \
+ls -l /dev/stdout;\
+ls -l /dev/stderr;\
+ls -l /dev/stdin;
+lrwxrwxrwx 1 root root 15 mar  3 12:15 /dev/stdout -> /proc/self/fd/1
+lrwxrwxrwx 1 root root 15 mar  3 12:15 /dev/stderr -> /proc/self/fd/2
+lrwxrwxrwx 1 root root 15 mar  3 12:15 /dev/stdin -> /proc/self/fd/0
+*** file descriptor stdin = 0
+*** file descriptor stdout = 1
+*** file descriptor stderr = 2
+
+*** como vemos, la informacion del file descriptor de cada uno de estos ficheros se encuentra en el directorio /proc, que como vimos consiste en un sistema de ficheros virtual que se va a creando con todos los procesos que tenemos arrancados en ese momento
+
+*** entonces probablemente, si queremos saber el file descriptor de cualquier otro archivo que esta abierto en un momento determinado tendremos que ir a buscarlo dentro de "/proc/" + el PID de ese proceso (veremos mas adelante el tema de los PID)  + "/" , y dentro de ese proceso que esta en ejecucion tendra abierto un fichero, y como lo tiene abierto tendra un file descriptor asociado
+
+REPASO DEL DIRECTORIO /proc vvv
+
+*** este directorio esta administrado por el sistema, no debemos tocar nada de lo que hay dentro
+*** si tiramos un ls en /proc vamos a obtener una interfaz con el Kernel
+*** aqui vamos a obtener un monton de informacion sobre como esta funcionando el Kernel y los dispositivos hardware que tenemos en nuestra maquina
+*** tenemos por ejemplo ficheros como filesystems que nos da informacion sobre los sistemas de ficheros que tenemos cargados 
+*** meminfo de informacion sobre la memoria
+*** tenemos varios ficheros que nos van a dar informacion sobre el hardware y el funcionamiento del kernel
+*** tenemos tambien cpuinfo sobre la cpu 
+*** tenemos tambien directorios con diferentes numeros 
+*** estos numeros son PIDs, pero basicamente son identificadores de procesos 
+*** cada uno de los procesos que tenemos tiene un directorio asociado dentro de /proc que contiene informacion sobre el estado en el que se encuentra en este momento, como se ha ejecutado, etc.
+*** lo que vemos dentro de /proc no es un sistema de ficheros propiamente dicho sino que se suele llamar sistema de ficheros virtual porque esta como creado sobre la marcha, en tiempo de ejecucion 
+
+*** si hacemos un ls -la /proc comprobamos que la mayoria de los los archivos y directorios continenen 0 bits
+
+lionel@lionel-ubuntu:/proc$ echo $$
+2360
+*** esto me da el PID del proceso actual, que seria la propia shell, que es un proceso dentro de nuestro SO
+
+lionel@lionel-ubuntu:/proc$ cd 2360
+*** entro al directorio del proceso
+
+lionel@lionel-ubuntu:/proc/2360$ ls -la .
+*** comprobamos que todos los archivos que figuran dentro tienen 0 bits 
+
+*** por eso es que se llama a lo que hay dentro de /proc un sistema de ficheros virtual, no es propiamente un sistema de ficheros
+
+lionel@lionel-ubuntu:/proc/2360$ less status
+*** con este comando podemos ver el estado de nuestro proceso (del 2360, status es un fichero dentro de /proc/2360)
+
+Ahora veremos como redirigir el stderr haciendo uso de este file descriptor vvv 
+
+lionel@lionel-ubuntu:~$ ls -la /dev/stderr 
+lrwxrwxrwx 1 root root 15 mar  3 12:15 /dev/stderr -> /proc/self/fd/2
+*** file descriptor stderr = 2
+
+lionel@lionel-ubuntu:~$ ls -l directorio_inexistente 2> error_ls.txt
+*** redirijo el psible error
+*** le estoy indicando que en caso de error, lo que deberia ir al standard error (file descriptor 2), lo redirija a error_ls.txt
+
+lionel@lionel-ubuntu:~$ cat error_ls.txt 
+ls: cannot access 'directorio_inexistente': No such file or directory
+lionel@lionel-ubuntu:~$ code error_ls.txt 
+*** compruebo que el error se redirecciono correctamente a donde queria (luego lo abro en VSCode)
+
+- Forma de redirigir el stdout o el stderr indistintamente al mismo fichero destino vvv
+---------------------------------------------------------------------------------------
+
+lionel@lionel-ubuntu:~$ \
+ls -l dir1/ >> ls-salida.txt 2>&1;\
+ls -l dir19/ >> ls-salida.txt 2>&1;\
+ls -l dir2/ >> ls-salida.txt 2>&1;\
+ls -l dir29/ >> ls-salida.txt 2>&1;\
+cat ls-salida.txt 
+total 0
+-rw-rw-r-- 1 lionel lionel 0 mar  3 20:38 ficheroA.txt
+-rw-rw-r-- 1 lionel lionel 0 mar  3 20:39 ficheroB.txt
+ls: cannot access 'dir19/': No such file or directory
+total 0
+-rw-rw-r-- 1 lionel lionel 0 mar  3 20:41 ficheroQ.txt
+-rw-rw-r-- 1 lionel lionel 0 mar  3 20:41 ficheroR.txt
+ls: cannot access 'dir29/': No such file or directory
+
+*** con e operador "2>&1" estoy indicando que, en caso de error, este se redirija al mismo fichero destino previo a dicho operador
+*** lo que estamos indicando con este operador es que queremos que redirija el descriptor 2 (el stderr) al file descriptor 1 (stdoutput)
+*** entonces lo que realmente esta pasando es que el stderr se redirije al stdoutput, y el stdoutput lo redirijimos a ls-salida.txt, con lo que el stdoutput como el stderr se redirigen al mismo fichero destino
+
+*** en versiones modernas de la shell contamos con el operador &> (o &>>) que de manera mas sencilla nos permite redirigir tanto el stdoutput como el stderr al mismo fichero de destino vvv 
+
+lionel@lionel-ubuntu:~$ \
+ls -l dir1/ &>> ls-salida.txt;\
+ls -l dir19/ &>> ls-salida.txt;\
+ls -l dir2/ &>> ls-salida.txt;\
+ls -l dir29/ &>> ls-salida.txt
