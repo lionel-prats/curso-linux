@@ -1337,4 +1337,175 @@ lionel@lionel-ubuntu:~$
 
 --------------------
 
-44. Pipelines43. Standard Input (stdin) Redirection
+44. Pipelines
+
+| == operador tuberia (pipeline)
+* nos va a permitir concatenar comandos dentro de la shell de manera que el stdoutput de un comando sirva de stdin del siguente comando vvv
+
+lionel@lionel-ubuntu:~$ ls -l /usr/bin | less
+*** el stdtoutput de ls -l  se esta redirigiendo al stdin de less
+*** tab "q" para cerrar
+
+--------------------
+
+45. Filtros y búsquedas: sort, uniq, wc
+
+45.1) comando sort
+* va a servir para ordenar las lineas de un fichero
+
+lionel@lionel-ubuntu:~$ man sort
+*** para acceder al manual de sort 
+
+- por default, ordenara las lineas del fichero por orden alfabetico 
+
+- podemos combinar este comando con los pipelines (tuberias) de la seccion anterior
+
+lionel@lionel-ubuntu:~$ ls /bin /usr/bin | sort | less
+
+45.2) comando uniq
+lionel@lionel-ubuntu:~$ man uniq
+*** manual uniq 
+
+lionel@lionel-ubuntu:~$ ls /bin /usr/bin | sort | uniq | less
+
+lionel@lionel-ubuntu:~$ ls /bin /usr/bin | sort | uniq -d | less
+*** obtengo los directorios o ficheros duplicados y irdenados alfabeticamente
+
+45.3) comando wc
+lionel@lionel-ubuntu:~$ man wc
+*** manual wc 
+
+- wc nos va a permitir contar lineas, palabras y bits de un fichero
+
+lionel@lionel-ubuntu:~$ wc /var/log/auth.log 
+  241  3062 27303 /var/log/auth.log
+*** 241 = numero de lineas del fichero
+*** 3062 = numero de palabras
+*** 27303 = numero de bytes
+
+lionel@lionel-ubuntu:~$ wc /var/log/auth.log -l
+241 /var/log/auth.log
+lionel@lionel-ubuntu:~$ wc /var/log/auth.log -w
+3062 /var/log/auth.log
+lionel@lionel-ubuntu:~$ wc /var/log/auth.log -c
+27303 /var/log/auth.log
+lionel@lionel-ubuntu:~$ 
+*** se pueden obtener estos valores por separado
+
+--------------------
+
+46. Filtros y búsquedas (Parte II): grep, head, tail, tee
+
+46.1) grep 
+
+lionel@lionel-ubuntu:~$ man grep 
+
+lionel@lionel-ubuntu:~$ grep lionel /var/log/auth.log
+*** retorna todas las lineas del fichero especificado, que contengan el patron pasado como argunmento 
+
+lionel@lionel-ubuntu:~$ grep -i lionel /var/log/auth.log
+*** realiza la busqueda ignorando mayusculas y minusculas
+
+lionel@lionel-ubuntu:~$ grep -v lionel /var/log/auth.log
+*** retorna todas las lineas del fichero especificado, que NO contengan el patron pasado como argunmento
+
+lionel@lionel-ubuntu:~$ ls /usr/bin/ | sort | grep zip
+*** busco ficheros en /usr/bin, que contengan el patron "zip", y quiero verlos ordenados alfabeticamente
+
+46.2) head 
+
+lionel@lionel-ubuntu:~$ head /var/log/auth.log
+*** head saca por default por el stdoutput las primeras 10 lineas del fichero 
+
+lionel@lionel-ubuntu:~$ head /var/log/auth.log -n 5
+*** podemos indicar la cantidad de lineas que queremos ver 
+
+46.3) tail
+
+lionel@lionel-ubuntu:~$ tail /var/log/auth.log
+*** tail saca por default por el stdoutput las ultimas 10 lineas del fichero 
+
+lionel@lionel-ubuntu:~$ tail /var/log/auth.log -n 5
+*** podemos indicar la cantidad de lineas que queremos ver 
+
+lionel@lionel-ubuntu:~$ ls /usr/bin/ | head -n 5
+*** saco los primeros 5 ficheros o directorios que contiene /usr/bin
+
+46.4) cuando estamos monitorizando ficheros de log (muchas veces nos va a tocar hacer esto cuando algun programa este dando un error o por lo que sea), podemos usar el comando tail con -f para abrir por ejemplo un fichero de log y ver en tiempo real lo que se va escribiendo en el vvv
+
+lionel@lionel-ubuntu:~$ tail -f /var/log/auth.log
+*** Ctrl + c para detener la ejecucion y volver a la terminal 
+
+46.5) tee 
+
+lionel@lionel-ubuntu:~$ ls /usr/bin/ | sort | tee fichero_sort.txt | uniq | grep cat
+*** te me sirve para hacer debbuging
+*** en este ejemplo, captura el stdout del comando sort, crea el fichero fichero_sort.txt guardando en él el stdout de sort, sin interrumpir la ejecucion del comando uniq, ni luego, del comando grep 
+*** entonces sirve para, si me doy cuenta que esta secuencia de comandos esta fallando en alguna parte, capturando los stdoutputs intermedios puedo ir debugueando e identificar donde esta el error
+
+--------------------
+
+46. Tarea 
+
+Completa las siguientes actividades utilizando las herramientas de filtrado y búsqueda de información que se han presentado en los temas anteriores.
+
+Preguntas de esta tarea
+
+1. Muestra por pantalla todos los archivos y directorios que tienes en tu directorio de trabajo ordenados por tamaño.
+lionel@lionel-ubuntu:~$ ls -lS 
+*** ordenados por peso de mayor a menor
+
+lionel@lionel-ubuntu:~$ ls -lSr
+*** ordenados por peso de nmenor a mayor
+
+2. Crea un nuevo fichero en tu sistema Linux ejecutando el siguiente comando:
+
+echo -e "rojo,1,coche,madrid\nazul,4,moto,mexico\namarillo,2,bicicleta,paris\nverde,6,avion,roma" > fichero.csv
+
+Ordena el fichero que acabas de crear (fichero.csv) por el segundo campo teniendo en cuenta que los campos están separados por el delimitador ,
+
+lionel@lionel-ubuntu:~$ sort -t "," -k2 -n fichero.csv
+*** -t"," indica que quiero separar las lineas por ","
+*** -k2 que la clasificacion debe hacerse segun el 2do campo 
+*** -n indica que se debe realizar una ordenacion numerica (por el segundo campo)
+
+3. Muestra por pantalla la línea 55 del fichero auth.log que se encuentra en /var/log
+lionel@lionel-ubuntu:~$ sed -n 55p /var/log/auth.log
+Mar  3 02:46:53 lionel-ubuntu sudo:   lionel : TTY=pts/0 ; PWD=/home/lionel ; USER=root ; COMMAND=/usr/bin/ln /usr/bin/vulnprog vulnprog.hardlink
+*** sed es un editor de flujo utilizado comúnmente para manipular y transformar textos.
+*** -n: esta opción indica a sed que solo debe imprimir las líneas que se le indiquen explícitamente.
+*** 55p: este comando le dice a sed que imprima la línea 55.
+
+SOLUCION PROFESOR:
+
+1. Muestra por pantalla todos los archivos y directorios que tienes en tu directorio de trabajo ordenados por tamaño.
+lionel@lionel-ubuntu:~$ ls -l ~ | sort -h -k5
+*** La opción -h de sort compara números legibles para el ser humano (por ejemplo, 2K 1G)
+*** La opción -k5 indica a sort que utilice el quinto campo de la salida del comando ls para ordenar, en este caso, el campo tamaño:
+*** drwxr-xr-x 2 santi santi <<<4096>>> oct  5 11:36 Desktop
+
+2. Ordena el fichero que acabas de crear (fichero.csv) por el segundo campo teniendo en cuenta que los campos están separados por el delimitador ,
+lionel@lionel-ubuntu:~$ sort -t ',' -nk2 fichero.csv
+*** La opción -t permite indicar un separador que sort interpretará para cada una de las líneas del fichero.
+*** La opción -nk2 indica a sort que trate los valores como numéricos (-n) y que los ordene por el segundo campo (-k2).
+
+3. Muestra por pantalla la línea 55 del fichero auth.log que se encuentra en /var/log
+lionel@lionel-ubuntu:~$ head -n 55 /var/log/auth.log | tail -n 1 
+
+--------------------
+
+47. Extra: Comando sed
+
+sed es otro comando interesante que es posible que os resulte de utilidad en algunas ocasiones. 
+Su función principal es reemplazar texto de un fichero. 
+Sin embargo, puede combinarse con los comandos que hemos visto en este tema utilizando pipelines para realizar otras muchas tareas.
+Os animo a que le echéis un ojo a esta herramienta antes de pasar a la siguiente sección y os planteeis algunos casos de uso como los siguientes.
+Reemplazar o sustituir una cadena de texto en un fichero
+Reemplazar una cadena de texto en una línea determinada de un fichero
+Añadir un carácter al comienzo de cada línea de un fichero
+Para el que quiera profundizar sobre el uso de sed, le recomiendo que revise la siguiente referencia: https://www.geeksforgeeks.org/sed-command-in-linux-unix-with-examples/
+¡Un saludo y nos vemos en la siguiente sección!
+
+--------------------
+
+49. Permisos y usuarios: passwd, shadow, group
