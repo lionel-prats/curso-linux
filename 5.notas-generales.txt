@@ -117,7 +117,7 @@ lionel@lionel-ubuntu:/var/log$ less auth.log
 *** es la mejora de more (pagina el contenido del fichero)
 *** tab "h" -> nos muestra el listado de acciones que podemos utilizar dentro de less (tab "q" para salir de este menu y volver atras) 
 *** tab "space" -> nos muestra la pagina siguiente 
-*** tab "b" -> pnos muestra la pagina anterior 
+*** tab "b" -> nos muestra la pagina anterior 
 *** tab "/" + string + Enter -> para buscar el substring pasado como argumento en la pagina actual del contenido del texto (tab "n" para ver mas coincidencias en paginas siguientes)
 *** tab "g" -> para ir al inicio del fichero 
 *** tab "shift" + "g" -> para ir al final del fichero
@@ -1398,7 +1398,8 @@ lionel@lionel-ubuntu:~$
 
 46.1) grep 
 
-lionel@lionel-ubuntu:~$ man grep 
+lionel@lionel-ubuntu:~$ man grep
+*** manual comando grep
 
 lionel@lionel-ubuntu:~$ grep lionel /var/log/auth.log
 *** retorna todas las lineas del fichero especificado, que contengan el patron pasado como argunmento 
@@ -1439,7 +1440,7 @@ lionel@lionel-ubuntu:~$ tail -f /var/log/auth.log
 46.5) tee 
 
 lionel@lionel-ubuntu:~$ ls /usr/bin/ | sort | tee fichero_sort.txt | uniq | grep cat
-*** te me sirve para hacer debbuging
+*** tee me sirve para hacer debbuging
 *** en este ejemplo, captura el stdout del comando sort, crea el fichero fichero_sort.txt guardando en él el stdout de sort, sin interrumpir la ejecucion del comando uniq, ni luego, del comando grep 
 *** entonces sirve para, si me doy cuenta que esta secuencia de comandos esta fallando en alguna parte, capturando los stdoutputs intermedios puedo ir debugueando e identificar donde esta el error
 
@@ -1509,3 +1510,90 @@ Para el que quiera profundizar sobre el uso de sed, le recomiendo que revise la 
 --------------------
 
 49. Permisos y usuarios: passwd, shadow, group
+
+- linux viene de una tradicion similar a unix
+- a diferencia de otros sistemas operativos tradicionales como MC2 (del que deriva Windows), linux es un SO multitarea que quiere decir que tenemos varios procesos simultaneos (podemos realizar varias tareas de manera simultanea), pero tambien es un SO multiusuario
+- esto quiere decir que dentro del propio SO pueden convivir varios usuarios
+- esto significa que mas de una persona pueden utilizar el ordenador al mismo tiempo (por ejemplo, si un usuario se conecta al ordenador a traves de la red, desde una sesion remota, vamos a tener varios usuarios trabajando simultaneamente con permisos distintos)
+- esta capacidad multiusuario que tiene linux es una caracteristica que esta profundamente integrada dentro del propio SO 
+
+- en el modelo de seguridad que implementa linux, un usuario va a ser propietario tanto de ficheros como de directorios, y cuando un usuario es dueño de un archivo o directorio el usuario va a tener el control completo sobre su acceso
+
+- los usuarios a su vez van a poder pertenecer a grupos, que van a estar formados por uno o mas usuarios y que van a tener una serie de propietarios (de los grupos) que van a ser los que van a permitir el acceso de otros nuevos usuarios a ese mismo grupo, y cuando un usuario se añade a un grupo va a heredar una serie de permisos y privilegios sobre algunos ficheros y directorios del sistema de ficheros
+
+lionel@lionel-ubuntu:~$ id
+uid=1000(lionel) gid=1000(lionel) groups=1000(lionel),4(adm),24(cdrom),27(sudo),30(dip),46(plugdev),122(lpadmin),135(lxd),136(sambashare)
+*** el comando id nos va a dar nuestra identidad, es decir, el usuario con que estamos ejecutando ahora mismo esta shell
+*** uid=1000(lionel) -> user identifier (identificador de usuario), es el que realmente va a utilizar por detras linux para realizar tareas con nuestro usuario (a los humanos nos proporciona un nombre de usuario, en este caso "lionel", porque yo asi lo configure cuando cree la VM, para que sea mas facil de gestionar)
+*** gid=1000(lionel) -> group identifier -> grupo "lionel" (identificador == 1000)
+*** el resto son otros grupos en el que el usuario "lionel" esta incluido por defecto
+
+- la informacion sobre usuarios se encuentra en el fichero /etc/passwd
+- cada entrada (linea) del fichero corresponde auno de los usuarios creados dentro del SO
+
+lionel@lionel-ubuntu:~$ grep lionel /etc/passwd
+lionel:x:1000:1000:lionel,,,:/home/lionel:/bin/bash
+*** repaso: grep retorna todas las lineas del fichero especificado, que contengan el patron pasado como argunmento (en este caso, todas las lineas de /etc/passwg que contengan "lionel")
+
+- entrada en /etc/passwd asociada al usuario "lionel" vvv 
+
+lionel:x:1000:1000:lionel,,,:/home/lionel:/bin/bash
+* lionel -> nombre del usuario 
+* x -> referencia a la contraseña (la contraseña se va almacenar hasheada en el fichero /etc/shadow)
+* 1000 -> uid
+* 1000 -> gidqa
+* lionel -> nombre real de la cuenta (porque en algunos casos podriamos tener un alias)
+* /home/lionel -> directorio raiz de trabajo
+* /bin/bash -> la shell que esta asignada por defecto cuando se loguee este usuario (/bin es soft link a /usr/bin, entonces /bin/bash == /user/bin/bash)
+
+lionel@lionel-ubuntu:~$ less < ls -l /bin
+There is no -l option ("less --help" for help)
+/bin is a directory
+*** quise redirigir la salida standard de ls a less para leer dinamicamente el contenido de /bin (soft link a /usr/bin) y me tiro error ya que less solo lee el contenido de ficheros
+
+lionel@lionel-ubuntu:~$ ls /bin | less
+*** la forma correcta de pasar el stdoutput de ls como stdin de less es con un pipeline 
+*** /bin es soft link a /usr/bin 
+
+lionel@lionel-ubuntu:~$ cat /etc/shadow
+cat: /etc/shadow: Permission denied
+*** en este fichero estan las contraseñas de los usuarios
+*** un usuario normal y corriente no tiene privilegios para acceder al contenido de este fichero 
+
+lionel@lionel-ubuntu:~$ sudo cat /etc/shadow
+*** con sudo elevamos privilegios para el usuario conectado (en este caso lionel) y asi acceder al contenido del fichero
+
+lionel@lionel-ubuntu:~$ sudo grep lionel /etc/shadow
+lionel:$y$j9T$LuYWGnrACKizsYbT73ops0$sCk3V3L0E99QGi5SgSw9iDq36ho7T9VbRprLGWEpKl.:19604:0:99999:7:::
+*** contraseña hasheada de lionel 
+*** este hash se genera con diferentes algoritmos, y se puede llegar a romper con algunas herramientas de cracking y obtener la contraseña real 
+
+lionel@lionel-ubuntu:~$ sort /etc/group | grep lionel
+adm:x:4:syslog,lionel
+cdrom:x:24:lionel
+dip:x:30:lionel
+lionel:x:1000:
+lpadmin:x:122:lionel
+lxd:x:135:lionel
+plugdev:x:46:lionel
+sambashare:x:136:lionel
+sudo:x:27:lionel
+*** el usuario lionel esta en todos estos grupos (parte de la info que nos muestra el comando id)
+
+- desglose de una entrada del fichero /etc/group vvv
+lionel:x:1000:
+lionel: nombre del grupo
+x: referencia a la contraseña del grupo (tambien se encuentran el el fichero /etc/shadow)
+*** los grupos pueden tener una contraseña
+*** generalmente no se implementan 
+*** una contraseña serviria para, por ejemplo, que un usuario que no pertenece a un grupo, pueda asumirlos privilegios de este grupo en un momento determinado, si conoce e ingresa esta contraseña 
+gid: group identifier
+
+CONCLUSIONES:
+/etc/passwd -> informacion de usuarios
+/etc/shadow -> informacion contraseñas de estos usuarios
+/etc/group  -> informacion de grupos dentro de nuestro SO
+
+- linux es un sistema multitarea y multiusuario 
+- los usuarios normalmente van a tener una serie de privilegios para acceder a ficheros y directorios dentro del sistema de ficheros 
+- los usuarios pueden pertenecer a grupos, y en el momento que pertenecen a un grupo heredan tambien una serie de privilegios sobre ficheros y directorios de nuestro sistema de ficheros
