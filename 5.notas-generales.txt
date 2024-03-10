@@ -1512,7 +1512,7 @@ Para el que quiera profundizar sobre el uso de sed, le recomiendo que revise la 
 49. Permisos y usuarios: passwd, shadow, group
 
 - linux viene de una tradicion similar a unix
-- a diferencia de otros sistemas operativos tradicionales como MC2 (del que deriva Windows), linux es un SO multitarea que quiere decir que tenemos varios procesos simultaneos (podemos realizar varias tareas de manera simultanea), pero tambien es un SO multiusuario
+- a diferencia de otros sistemas operativos tradicionales como MS-DOS (del que deriva Windows), linux es un SO multitarea que quiere decir que tenemos varios procesos simultaneos (podemos realizar varias tareas de manera simultanea), pero tambien es un SO multiusuario
 - esto quiere decir que dentro del propio SO pueden convivir varios usuarios
 - esto significa que mas de una persona pueden utilizar el ordenador al mismo tiempo (por ejemplo, si un usuario se conecta al ordenador a traves de la red, desde una sesion remota, vamos a tener varios usuarios trabajando simultaneamente con permisos distintos)
 - esta capacidad multiusuario que tiene linux es una caracteristica que esta profundamente integrada dentro del propio SO 
@@ -1526,6 +1526,7 @@ uid=1000(lionel) gid=1000(lionel) groups=1000(lionel),4(adm),24(cdrom),27(sudo),
 *** el comando id nos va a dar nuestra identidad, es decir, el usuario con que estamos ejecutando ahora mismo esta shell
 *** uid=1000(lionel) -> user identifier (identificador de usuario), es el que realmente va a utilizar por detras linux para realizar tareas con nuestro usuario (a los humanos nos proporciona un nombre de usuario, en este caso "lionel", porque yo asi lo configure cuando cree la VM, para que sea mas facil de gestionar)
 *** gid=1000(lionel) -> group identifier -> grupo "lionel" (identificador == 1000)
+*** grupo lionel -> en linux se crea un grupo unico de un solo miembro para cada usuario
 *** el resto son otros grupos en el que el usuario "lionel" esta incluido por defecto
 
 - la informacion sobre usuarios se encuentra en el fichero /etc/passwd
@@ -1533,6 +1534,7 @@ uid=1000(lionel) gid=1000(lionel) groups=1000(lionel),4(adm),24(cdrom),27(sudo),
 
 lionel@lionel-ubuntu:~$ grep lionel /etc/passwd
 lionel:x:1000:1000:lionel,,,:/home/lionel:/bin/bash
+*** id == user_name:pass:uid:gid:account_name,,,:working_directory:default_shell
 *** repaso: grep retorna todas las lineas del fichero especificado, que contengan el patron pasado como argunmento (en este caso, todas las lineas de /etc/passwg que contengan "lionel")
 
 - entrada en /etc/passwd asociada al usuario "lionel" vvv 
@@ -1541,10 +1543,11 @@ lionel:x:1000:1000:lionel,,,:/home/lionel:/bin/bash
 * lionel -> nombre del usuario 
 * x -> referencia a la contraseña (la contraseña se va almacenar hasheada en el fichero /etc/shadow)
 * 1000 -> uid
-* 1000 -> gidqa
+* 1000 -> gid
 * lionel -> nombre real de la cuenta (porque en algunos casos podriamos tener un alias)
 * /home/lionel -> directorio raiz de trabajo
 * /bin/bash -> la shell que esta asignada por defecto cuando se loguee este usuario (/bin es soft link a /usr/bin, entonces /bin/bash == /user/bin/bash)
+*** id == user_name:pass:uid:gid:account_name,,,:working_directory:default_shell
 
 lionel@lionel-ubuntu:~$ less < ls -l /bin
 There is no -l option ("less --help" for help)
@@ -1579,6 +1582,7 @@ plugdev:x:46:lionel
 sambashare:x:136:lionel
 sudo:x:27:lionel
 *** el usuario lionel esta en todos estos grupos (parte de la info que nos muestra el comando id)
+*** group_name:pass:gid:is_user_included
 
 - desglose de una entrada del fichero /etc/group vvv
 lionel:x:1000:
@@ -1588,12 +1592,452 @@ x: referencia a la contraseña del grupo (tambien se encuentran el el fichero /e
 *** generalmente no se implementan 
 *** una contraseña serviria para, por ejemplo, que un usuario que no pertenece a un grupo, pueda asumirlos privilegios de este grupo en un momento determinado, si conoce e ingresa esta contraseña 
 gid: group identifier
+*** group_name:pass:gid:is_user_included
 
 CONCLUSIONES:
-/etc/passwd -> informacion de usuarios
-/etc/shadow -> informacion contraseñas de estos usuarios
-/etc/group  -> informacion de grupos dentro de nuestro SO
+file /etc/passwd -> informacion de usuarios
+file /etc/shadow -> informacion contraseñas de estos usuarios
+file /etc/group  -> informacion de grupos dentro de nuestro SO
 
 - linux es un sistema multitarea y multiusuario 
 - los usuarios normalmente van a tener una serie de privilegios para acceder a ficheros y directorios dentro del sistema de ficheros 
 - los usuarios pueden pertenecer a grupos, y en el momento que pertenecen a un grupo heredan tambien una serie de privilegios sobre ficheros y directorios de nuestro sistema de ficheros
+
+--------------------
+
+50. Lectura (r), Escritura (w) y Ejecución (x)
+
+- dentro de linux vamos a tener usuarios 
+- vamos a tener grupos a los que van a pertenecer estos usuarios 
+- y dependiendo del usuario que sea, y del grupo al que pertencezca, el usuario va a tener una serie de permisos de lectura, escritura y ejecucion sobre los ficheros y directorios de nuestro sistema de ficheros
+
+lionel@lionel-ubuntu:~$ ls -ldh Desktop | grep Desktop 
+drwxr-xr-x 5 lionel lionel 4,0K feb 24 18:21 Desktop
+
+- desglose con lo que sabemos hasta ahora vvv
+drwxr-xr-x cantHardLinks lionel lionel fileSize updatedAt fileOrDirectoryName
+
+- añado desglose de usuario y grupo vvv
+
+drwxr-xr-x cantHardLinks fileOwnerUser fileOwnerGroup fileSize updatedAt fileOrDirectoryName
+*** fileOwnerUser -> usuario dueño del fichero, normalmente se va a corresponder con el usuario que lo creo
+*** fileOwnerGroup -> grupo dueño del fichero (en este caso el grupo es "lionel", grupo primario del usuario "lionel" - recordar que en linux se crea un grupo unico de un solo miembro para cada usuario del SO -)
+
+- añado desglose de la parte de permisos vvv 
+d        rwx             r-x              r-x                5               lionel          lionel          4,0K        feb 24 18:21    Desktop
+typeFile userPermissions groupPermissions worldPermissions   cantHardLinks   fileOwnerUser   fileOwnerGroup  fileSize    updatedAt       fileOrDirectoryName
+drwxr-xr-x 5 lionel lionel 4,0K feb 24 18:21 Desktop
+
+r = read
+w = writ
+x = execution
+
+lionel@lionel-ubuntu:~$ find /var/log -maxdepth 1 -name auth.log
+/var/log/auth.log
+lionel@lionel-ubuntu:~$ file /var/log/auth.log
+/var/log/auth.log: ASCII text
+*** find busca archivos y directorios en el directorio recibido como primer argumento (en esta caso /var/log) el patron pasado al final (-name auth.log) y retorna su ruta absoluta de lo que encuentre (caso contrario, no retorna nada)
+*** en este caso, le pasamos el flag -maxdepth 1 para que busque seolo en el primer nivel del directorio /var/log
+*** en este caso, retorna el full path de lo que encontro con el patron recibido, y con file comprobamos que se trata de un fichero de texto
+
+lionel@lionel-ubuntu:~$ find /var/log -name auth.log
+/var/log/auth.log
+find: ‘/var/log/private’: Permission denied
+find: ‘/var/log/gdm3’: Permission denied
+find: ‘/var/log/speech-dispatcher’: Permission denied
+*** volvemos a realizar la busqueda del mismo patron, pero al quitar el flag -maxdepth 1, estamos indicando que busque en todo el contenido del directorio /var/log 
+*** 
+
+lionel@lionel-ubuntu:~$ history | grep "grep" | grep "lionel" | grep "group" | grep "sort"
+ 1988  grep lionel /etc/group | sort
+ 1990  sort /etc/group | grep lionel
+ 1992  sort /etc/group | grep lionel
+ 1999  sort /etc/group | grep lionel
+ 2192  history | grep "grep" | grep "lionel" | grep "group" | grep "sort"
+*** busco en history el comando que me mostraba en que grupos esta incluido el usuario "lionel", ordenados alfabeticamente
+
+sort /etc/group | grep lionel
+ls -ldh /var/log/ /var/log/private/ /var/log/gdm3/ /var/log/speech-dispatcher/
+find /var/log -name auth.log
+
+lionel@lionel-ubuntu:~$ sort /etc/group | grep lionel
+adm:x:4:syslog,lionel
+cdrom:x:24:lionel
+dip:x:30:lionel
+lionel:x:1000:
+lpadmin:x:122:lionel
+lxd:x:135:lionel
+plugdev:x:46:lionel
+sambashare:x:136:lionel
+sudo:x:27:lionel
+lionel@lionel-ubuntu:~$ ls -ldh /var/log/ /var/log/private/ /var/log/gdm3/ /var/log/speech-dispatcher/
+drwxrwxr-x 13 root              syslog 4,0K mar  9 14:00 /var/log/
+drwx--x--x  2 root              gdm    4,0K sep  3  2023 /var/log/gdm3/
+drwx------  2 root              root   4,0K ago  7  2023 /var/log/private/
+drwx------  2 speech-dispatcher root   4,0K may 23  2023 /var/log/speech-dispatcher/
+lionel@lionel-ubuntu:~$ find /var/log -name auth.log
+/var/log/auth.log
+find: ‘/var/log/private’: Permission denied
+find: ‘/var/log/gdm3’: Permission denied
+find: ‘/var/log/speech-dispatcher’: Permission denied
+lionel@lionel-ubuntu:~$ 
+
+--------------------
+
+51. Permisos en directorios
+
+Permisos en directorios
+En muchas ocasiones puede resultar confusa la asignación de permisos a directorios. A continuación os dejo un pequeño resumen que podréis recordar fácilmente.
+
+Permisos en directorios:
+
+El permiso de ejecución en los directorios permite acceder a los archivos dentro del directorio.
+
+El permiso de lectura permite enumerar las entradas del directorio.
+
+El permiso de escritura permite crear y eliminar entradas en el directorio.
+
+Tener permiso de lectura o escritura en un directorio sin permiso de ejecución no es útil. 
+Tener permiso de ejecución pero no de lectura es ocasionalmente útil: permite acceder a los archivos sólo si se conoce su nombre exacto, un mecanismo muy rudimentario de protección.
+
+En la práctica los permisos útiles sobre un directorio son:
+
+---: sin acceso
+
+--x: puede acceder a los archivos cuyo nombre se conoce
+
+r-x: acceso normal de sólo lectura
+
+rwx: acceso normal de lectura y escritura
+
+--------------------
+
+52. El usuario root
+
+sort /etc/group | grep lionel
+*** comando para saber a que grupos pertenecie "lionel"
+
+- el usuario root se denomina superusuario dentro de linux 
+- se denomina superusuario porque va a tener privilegios para realizar practicamente cualquier accion dentro de nuestro sistema linux
+
+- cuando utilizemos este usuario vamos a tener capacidad de leer, escribir, ejecutar y modificar todos los ficheros y directorios que hay en el sistema
+
+- practicamente todos los ficheros importantes dentro de linux, todos aquellos que el sistema busca proteger para que no los modifique de forma accidental un usuario 
+- es una forma de añadir cierto grado de seguridad a ficheros y directorios que no deben modificarse porque pueden afectar al funcionamiento del SO
+
+*** investigue porque puedo ejecutar como root comandos, y chatGTP me dijo que es porque en el archivo /etc/sudoers la entrada "%sudo	ALL=(ALL:ALL) ALL" hanilita a los usuarios del grupo sudo (entre los que esta lionel) a gozar de privoliegios de root (superadministrador) vvv
+
+lionel@lionel-ubuntu:~$ head -n 4 /etc/shadow
+head: cannot open '/etc/shadow' for reading: Permission denied
+
+lionel@lionel-ubuntu:~$ sudo head -n 4 /etc/shadow
+root:!:19604:0:99999:7:::
+daemon:*:19576:0:99999:7:::
+bin:*:19576:0:99999:7:::
+sys:*:19576:0:99999:7:::
+
+lionel@lionel-ubuntu:~$ ls -l /etc/shadow
+-rw-r----- 1 root shadow 1465 sep  3  2023 /etc/shadow
+
+lionel@lionel-ubuntu:~$ sort /etc/group | grep lionel
+adm:x:4:syslog,lionel
+cdrom:x:24:lionel
+dip:x:30:lionel
+lionel:x:1000:
+lpadmin:x:122:lionel
+lxd:x:135:lionel
+plugdev:x:46:lionel
+sambashare:x:136:lionel
+sudo:x:27:lionel
+
+lionel@lionel-ubuntu:~$ cat /etc/sudoers | grep "%sudo  ALL=(ALL:ALL) ALL"
+cat: /etc/sudoers: Permission denied
+
+lionel@lionel-ubuntu:~$ sudo cat /etc/sudoers | grep "%sudo     ALL=(ALL:ALL) ALL"
+%sudo	ALL=(ALL:ALL) ALL
+
+--------------------
+
+53. Modificación de permisos en octal
+
+- para poder modificar los permisos de un fichero o directorio dentro de linux vamos a necesitar ser los propietarios de ese fichero o directorio, o ser el usuario root
+
+Base 10 vvv
+
+ 00  01  02  03  04  05  06  07  08  09 
+ 10  11  12  13  14  15  16  17  18  19 
+ 20  21  22  23  24  25  26  27  28  29 
+ ...
+ 90  91  92  93  94  95  96  97  98  99 
+100 101 102 103 104 105 106 107 108 109
+110 111 112 113 114 115 116 117 118 119 
+
+Base 8 (octal) vvv 
+ 
+  00  01  02  03  04  05  06  07
+  10  11  12  13  14  15  16  17
+  20  21  22  23  24  25  26  27
+  ...
+  70  71  72  73  74  75  76  77
+ 100 101 102 103 104 105 106 107
+ 110 111 112 113 114 115 116 117
+
+lionel@lionel-ubuntu:~$ ls -la fichero.csv 
+-rw-rw-r-- 1 lionel lionel 85 mar  5 03:07 fichero.csv
+*** nuestro va a entender binario, y va a representar estos permisos (rw-rw-r--)
+*** representacion en binario de fichero.csv vvv
+r w - r w - r - -
+1 1 0 1 1 0 1 0 0
+
+permisos owner = 110 o 6  
+permisos group = 110 o 6
+permisos world = 100 o 4 
+permisos fichero.csv en octal -> 664
+
+lionel@lionel-ubuntu:~$ echo "contenido de ficheroVideo53.txt" > ficheroVideo53.txt
+
+lionel@lionel-ubuntu:~$ file ficheroVideo53.txt 
+ficheroVideo53.txt: ASCII text
+
+lionel@lionel-ubuntu:~$ ls -l ficheroVideo53.txt 
+-rw-rw-r-- 1 lionel lionel 32 mar  9 23:30 ficheroVideo53.txt
+*** permisos por default = 664 
+
+lionel@lionel-ubuntu:~$ cat ficheroVideo53.txt 
+contenido de ficheroVideo53.txt
+
+lionel@lionel-ubuntu:~$ chmod 237 ficheroVideo53.txt 
+*** 2 == 010 == -w-
+*** 3 == 011 == -wx
+*** 7 == 111 == rwx
+
+lionel@lionel-ubuntu:~$ ls -l ficheroVideo53.txt 
+--w--wxrwx 1 lionel lionel 32 mar  9 23:30 ficheroVideo53.txt
+
+-----------------------------------------------------------------------------------------
+
+*** modificando los permisos de /etc/shadow como root (superadministrador) vvv 
+
+lionel@lionel-ubuntu:~$ ls -l /etc/shadow 
+-rw-r----- 1 root shadow 1465 sep  3  2023 /etc/shadow
+*** 640
+
+lionel@lionel-ubuntu:~$ chmod 777 /etc/shadow
+chmod: changing permissions of '/etc/shadow': Operation not permitted
+
+lionel@lionel-ubuntu:~$ sudo chmod 777 /etc/shadow
+[sudo] password for lionel: [password]
+
+lionel@lionel-ubuntu:~$ ls -l /etc/shadow 
+-rwxrwxrwx 1 root shadow 1465 sep  3  2023 /etc/shadow
+*** 777
+
+lionel@lionel-ubuntu:~$ sudo chmod 640 /etc/shadow
+*** 640
+
+lionel@lionel-ubuntu:~$ ls -l /etc/shadow 
+-rw-r----- 1 root shadow 1465 sep  3  2023 /etc/shadow
+
+--------------------
+
+54. Modificación de permisos simbólica
+
+u (owner)
+g (group)
+o (others -> world)
+a (all)
+
+lionel@lionel-ubuntu:~$ ls -l ficheroVideo53.txt 
+--w--wxrwx 1 lionel lionel 32 mar  9 23:30 ficheroVideo53.txt
+*** 237
+
+- le restauro los permisos por default (rw-rw-r-- == 664) vvv
+
+lionel@lionel-ubuntu:~$ chmod a=r ficheroVideo53.txt 
+*** a todos (all) solo permisos de lectura
+
+lionel@lionel-ubuntu:~$ ls -l ficheroVideo53.txt 
+-r--r--r-- 1 lionel lionel 32 mar  9 23:30 ficheroVideo53.txt
+
+lionel@lionel-ubuntu:~$ chmod u+w,g+w ficheroVideo53.txt 
+
+lionel@lionel-ubuntu:~$ ls -l ficheroVideo53.txt 
+-rw-rw-r-- 1 lionel lionel 32 mar  9 23:30 ficheroVideo53.txt
+
+lionel@lionel-ubuntu:~$ chmod o-r,o+x ficheroVideo53.txt 
+*** a world le quito permisos de lectura y le agrego permisos de ejecucion
+
+lionel@lionel-ubuntu:~$ ls -l ficheroVideo53.txt 
+-rw-rw---x 1 lionel lionel 32 mar  9 23:30 ficheroVideo53.txt
+
+lionel@lionel-ubuntu:~$ chmod a-rwx ficheroVideo53.txt 
+*** le quito todos los permisos 
+
+lionel@lionel-ubuntu:~$ ls -l ficheroVideo53.txt 
+---------- 1 lionel lionel 32 mar  9 23:30 ficheroVideo53.txt
+
+lionel@lionel-ubuntu:~$ chmod u=rw,g=rw,o=r ficheroVideo53.txt 
+*** restauro los permisos por default
+
+lionel@lionel-ubuntu:~$ ls -l ficheroVideo53.txt 
+-rw-rw-r-- 1 lionel lionel 32 mar  9 23:30 ficheroVideo53.txt
+
+--------------------
+
+55. Permisos por defecto: umask
+
+- los sistemas linux (como por ejemplo la dsitro ubuntu) crean los ficheros con los siguientes permisos por default vvv 
+rw-rw-rw-
+- los sistemas linux (como por ejemplo la dsitro ubuntu) crean los directorios con los siguientes permisos por default vvv 
+rwxrwxrwx
+
+lionel@lionel-ubuntu:~$ ls -ld directorioVideo55/; ls -l ficheroVideo55.txt 
+drwxrwxr-x 2 lionel lionel 4096 mar 10 01:13 directorioVideo55/
+-rw-rw-r-- 1 lionel lionel 29 mar 10 01:11 ficheroVideo55.txt
+*** cree un directorio y un fichero de prueba 
+*** como se ve, los permisos del fichero no coincide con lo que esperamos de ubuntu (falta el permiso w para wl world)
+*** esto sucede por como esta seteada nuestra mascara vvv
+
+lionel@lionel-ubuntu:~$ umask
+0002
+*** observamos la mascara que tenemos activa en este momento, que va a servir para establecer y modificar los permisos por default cuando creamos nuevos ficheros y/o directorios
+*** la mascara es una representacion en octal de los permisos
+
+- representacion binaria del seteo actual de la mascara vvv 
+
+000 000 000 010
+- por ahora, desestimamos el grupo de la izuqierda 
+- el segundo grupo hace referencia a los permisos de usuario sobre un fichero o directorio que se crea
+- el tercer grupo hace referencia a los permisos de grupo sobre un fichero o directorio que se crea
+- el cuarto grupo hace referencia a los permisos de world sobre un fichero o directorio que se crea
+
+- Funciona asi:
+- donde aparezca un 1 en la mascara, ubuntu va a modificar el permiso que se espera por defecto (rw-rw-rw-)
+- por eso, en el caso de ficheroVideo55.txt vemos que sus permisos por default son rw-rw-r-- (en vez de rw-rw-rw-)
+- por eso, en el caso de directorioVideo55/ vemos que sus permisos por default son drwxrwxr-x (en vez de rwxrwxrwx)
+
+lionel@lionel-ubuntu:~$ umask 
+*** modifico la mascara para que no modifique los permisos por defecto cuando se crea un nuevo fichero o directorio
+
+lionel@lionel-ubuntu:~$ ls -ld directorioVideo55/; ls -l ficheroVideo55.txt 
+drwxrwxrwx 2 lionel lionel 4096 mar 10 01:26 directorioVideo55/
+-rw-rw-rw- 1 lionel lionel 29 mar 10 01:26 ficheroVideo55.txt
+*** eliminé y volví a crear el directorio y fichero de pruebas, y ahora vemos como si se crearon con los permisos por defecto de linux
+
+-----------------------------------
+
+- Ejercicio: quitarle por defecto permisos absolutos a world para la creacion de archivos y directorios vvv 
+
+lionel@lionel-ubuntu:~$ umask 0006
+*** 000 000 000 110
+
+lionel@lionel-ubuntu:~$ umask
+0006
+
+lionel@lionel-ubuntu:~$ > ficheroVideo55_2
+lionel@lionel-ubuntu:~$ ls -l ficheroVideo55_2
+-rw-rw---- 1 lionel lionel 0 mar 10 01:34 ficheroVideo55_2
+
+lionel@lionel-ubuntu:~$ mkdir directorioVideo55_2
+lionel@lionel-ubuntu:~$ ls -ld directorioVideo55_2
+drwxrwx--x 2 lionel lionel 4096 mar 10 01:36 directorioVideo55_2
+*** vemos que la nueva mascara afecto a los permisos por defecto de un nuevo directorio
+
+--------------------
+
+56. Setuid, Setgid, Sticky bit
+
+lionel@lionel-ubuntu:~$ sudo chmod 777 ficheroVideo56.txt 
+*** hasta aca hemos visto que esta es una de las formas de setear los permisos de un fichero 
+*** la realidad, es que podemos añadir delante de estos 3 digitos un digito extra que va a permitirnos establecer una serie de permisos especiales que vamos a llamar setuid, setgid y sticky bit vvv
+
+56.1) permiso especial setuid
+
+- este bit, este permiso especial que podemos ponerle a un fichero (concretamente se van a poner en ejecutables) lo que nos va a permitir es cambiar el uid del usuario efectivo (y consideramos usuario efectivo el que este ejecutando ese binario, el que este ejecutando ese fichero) por el uid del usuario propietario
+
+- el valor binario del setuid es 100, es decir, 4 en octal
+
+- establezco el setuid para ficheroVideo56.txt vvv
+
+*** primero que nada, tiene sentido establecer el setuid en un fichero que sea un ejecutable, es decir, en un fichero que tenga codigo a ejecutar, por que es para lo que sirve el setuid, para ejecutar algo en nombre de otro.
+
+lionel@lionel-ubuntu:~$ chmod 4770 ficheroVideo56.txt 
+*** establecemos en 4 el setuid de ficheroVideo56.txt, luego damos plenos permisos a usuario y grupo, y ningun permiso para el resto 
+
+lionel@lionel-ubuntu:~$ ls -la ficheroVideo56.txt 
+-rwsrwx--- 1 lionel lionel 0 mar 10 01:45 ficheroVideo56.txt // (no se ve, pero el nombre del fichero tiene un background rojo)
+*** lo primero que vemos es que la shell le aplico un background rojo al nombre del fichero indicando que este tiene el bit setuid (esto por que este permiso es muy delicado en cuanto a temas de seguridad)
+*** tambien vemos que el permiso de ejecucion del usuario esta representado por una s en lugar de una x 
+*** esta s quiere decir que el fichero tiene permiso especial setuid, esto quiere decir que cada vez que algun usuario ejecute este fichero ejecutable va a adquirir el identificador del owner (en este caso, el uid de lionel, o sea 1000)
+
+----------------------------------- 
+
+56.2) permiso especial setgid
+
+- si setuid nos permitia ejecutar un binario en nombre del usuario propietario, lo que nos va a permitir hacer setgid es ejecutar un binario esta vez como si perteneciesemos al grupo propietario 
+
+- el valor binario del setgid es 010, es decir, 2 en octal
+
+- establezco el setgid para ficheroVideo56.txt vvv
+
+lionel@lionel-ubuntu:~$ chmod 2770 ficheroVideo56.txt 
+
+lionel@lionel-ubuntu:~$ ls -la ficheroVideo56.txt // (no se ve, pero el nombre del fichero tiene un background amarillo)
+-rwxrws--- 1 lionel lionel 0 mar 10 01:45 ficheroVideo56.txt
+*** lo primero que vemos es que la shell le aplico un background amarillo al nombre del fichero indicando que este tiene el bit setgid (esto por que este permiso es muy delicado en cuanto a temas de seguridad)
+*** tambien vemos que el permiso de ejecucion del grupo esta representado por una s en lugar de una x 
+*** esta s quiere decir que el fichero tiene permiso especial setgid
+*** si yo ejecuto con cualquier otro usuario este fichero lo que va a ocurrir es que esa ejecucion se va a hacer como si ese usuario perteneciera al grupo propietario del fichero, con lo cual va a tener permisos para realizar ciertas acciones
+
+----------------------------------- 
+
+56.3) permiso especial sticky bit 
+
+- sticky bit proviene de versiones antiguas de linux y de la tradicion de unix donde nosotros podiamos establecer este bit a un fichero o este permiso a un fichero para que no hiciese tanto swaping, para que no fuese tan swapeable
+- hoy ya no tiene tanto sentido, de hecho, en versiones modernas de linux (como por ejemplo ubuntu), cuando nosotros establecemos este permiso en ficheros, lo que va a hacer el SO es ignorar el permiso en el fichero y donde si tiene sentido es en directorios
+- hoy en dia donde se establece este permiso es unicamente en directorios y es lo que tiene en cuenta pues por ejemplo ubuntu 
+
+- cuando establecemos este permiso en un directorio, lo que va a ocurrir es que los ficheros que se encuentran dentro de ese directorio (los subdirectorios) se van a tratar de una forma especial, de modo que solo los propietarios de esos archivos, el propietario del directorio o el usuario root van a poder renombrar o eliminar los archivos vvv 
+
+- el valor binario del sticky bit es 001, es decir, 1 en octal
+
+lionel@lionel-ubuntu:~$ mkdir directorioVideo5
+lionel@lionel-ubuntu:~$ > directorioVideo56/ficheroNuevo.txt
+lionel@lionel-ubuntu:~$ ls -l directorioVideo56/
+total 0
+-rw-rw-r-- 1 lionel lionel 0 mar 10 02:27 ficheroNuevo.txt
+
+lionel@lionel-ubuntu:~$ ls -lad directorioVideo56/
+drwxrwxr-x 2 lionel lionel 4096 mar 10 02:27 directorioVideo56/
+
+lionel@lionel-ubuntu:~$ chmod 1770 directorioVideo56/
+
+lionel@lionel-ubuntu:~$ ls -lad directorioVideo56/
+drwxrwx--T 2 lionel lionel 4096 mar 10 02:27 directorioVideo56/ // (no se ve, pero el nombre del directorio tiene un background azul)
+*** lo primero que vemos es que la shell le aplico un background azul al nombre del directorio indicando que este tiene el bit sticky bit
+*** tambien vemos que el permiso de ejecucion del world esta representado por una T en lugar de - 
+*** esta T quiere decir que el directorio tiene permiso especial sticky bit
+
+lionel@lionel-ubuntu:~$ cd directorioVideo56/ 
+lionel@lionel-ubuntu:~/directorioVideo56$ ls -la ficheroNuevo.txt 
+-rw-rw-r-- 1 lionel lionel 0 mar 10 02:27 ficheroNuevo.txt
+*** ficheroNuevo.txt ahora va a tener ciertas caracteristicas especiales, aunque no aparezcan aqui reflejadas, a saber vvv 
+*** unicamente el usuario propietario de este fichero, el usuario propietario del directorio directorioVideo56/ o el superusuario (root) van a poder eliminar o renombrar el archivo
+
+lionel@lionel-ubuntu:~$ chmod u+s ficheroVideo56.txt
+*** notacion simbolica para agregarle el permiso especial setuid a un fichero
+*** con "-" removemos el permiso
+
+lionel@lionel-ubuntu:~$ chmod g+s ficheroVideo56.txt
+*** notacion simbolica para agregarle el permiso especial setgid a un fichero
+*** con "-" removemos el permiso
+
+lionel@lionel-ubuntu:~$ chmod +t directorioVideo56/
+*** notacion simbolica para agregarle el permiso especial setuid a un fichero
+*** con "-" removemos el permiso
+
+--------------------
+
+57. Cambio de identidad: su
+
+...
