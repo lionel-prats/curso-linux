@@ -1715,7 +1715,7 @@ rwx: acceso normal de lectura y escritura
 52. El usuario root
 
 sort /etc/group | grep lionel
-*** comando para saber a que grupos pertenecie "lionel"
+*** comando para saber a que grupos pertenece "lionel" o cualquier otro usuario
 
 - el usuario root se denomina superusuario dentro de linux 
 - se denomina superusuario porque va a tener privilegios para realizar practicamente cualquier accion dentro de nuestro sistema linux
@@ -1725,7 +1725,7 @@ sort /etc/group | grep lionel
 - practicamente todos los ficheros importantes dentro de linux, todos aquellos que el sistema busca proteger para que no los modifique de forma accidental un usuario 
 - es una forma de añadir cierto grado de seguridad a ficheros y directorios que no deben modificarse porque pueden afectar al funcionamiento del SO
 
-*** investigue porque puedo ejecutar como root comandos, y chatGTP me dijo que es porque en el archivo /etc/sudoers la entrada "%sudo	ALL=(ALL:ALL) ALL" hanilita a los usuarios del grupo sudo (entre los que esta lionel) a gozar de privoliegios de root (superadministrador) vvv
+*** investigue porque puedo ejecutar como root comandos, y chatGTP me dijo que es porque en el archivo /etc/sudoers la entrada "%sudo	ALL=(ALL:ALL) ALL" habilita a los usuarios del grupo sudo (entre los que esta lionel) a gozar de privilegios de root (superadministrador) vvv
 
 lionel@lionel-ubuntu:~$ head -n 4 /etc/shadow
 head: cannot open '/etc/shadow' for reading: Permission denied
@@ -2039,5 +2039,266 @@ lionel@lionel-ubuntu:~$ chmod +t directorioVideo56/
 --------------------
 
 57. Cambio de identidad: su
+
+- Añado un nuevo usuario a nustro sistema Ubuntu vvv 
+
+lionel@lionel-ubuntu:~$ adduser testuser
+adduser: Only root may add a user or group to the system.
+
+lionel@lionel-ubuntu:~$ adduser testuser
+adduser: Only root may add a user or group to the system.
+lionel@lionel-ubuntu:~$ sudo adduser testuser
+Adding user `testuser' ...
+Adding new group `testuser' (1001) ...
+Adding new user `testuser' (1001) with group `testuser' ...
+Creating home directory `/home/testuser' ...
+Copying files from `/etc/skel' ...
+New password: [4321]
+BAD PASSWORD: The password is shorter than 8 characters
+Retype new password: [4321] 
+passwd: password updated successfully
+Changing the user information for testuser
+Enter the new value, or press ENTER for the default
+	Full Name []: testuser
+	Room Number []: 
+	Work Phone []: 
+	Home Phone []: 
+	Other []: 
+Is the information correct? [Y/n] y
+lionel@lionel-ubuntu:~$ 
+*** creé el usuario testuser asumiendo la identidad de root vvv
+
+lionel@lionel-ubuntu:~$ tail -n 2 /etc/passwd
+lionel:x:1000:1000:lionel,,,:/home/lionel:/bin/bash
+testuser:x:1001:1001:testuser,,,:/home/testuser:/bin/bash
+
+lionel@lionel-ubuntu:/home$ sudo tail -n 2 /etc/shadow
+lionel:$y$j9T$LuYWGnrACKizsYbT73ops0$sCk3V3L0E99QGi5SgSw9iDq36ho7T9VbRprLGWEpKl.:19604:0:99999:7:::
+testuser:$y$j9T$1pAcTyuGFiriT3kExKrTx/$geiILwVz48uDwKyGBdDXjjw4CQ.SNSKgufy8OdSvwq1:19792:0:99999:7:::
+
+lionel@lionel-ubuntu:/home$ sort /etc/group | grep lionel; sort /etc/group | grep testuser 
+adm:x:4:syslog,lionel
+cdrom:x:24:lionel
+dip:x:30:lionel
+lionel:x:1000:
+lpadmin:x:122:lionel
+lxd:x:135:lionel
+plugdev:x:46:lionel
+sambashare:x:136:lionel
+sudo:x:27:lionel
+testuser:x:1001:
+
+-------------------------
+
+Existen 3 formas de cambiar de identidad dentro de nuestro SO linux (activar la sesion de un 2do usuario, es decir, estando con la sesion de lionel, activar la sesion de testuser, de root - en caso de que este activo como vamos a hablar despues -, etc)
+
+57.1) podemos cambiar de identidad desde la interfaz grafica de la VM, cerrando sesion de lionel e iniciando sesion con testuser
+
+*** Luego, existen 2 formas de cambiar de identidad utilizando la propia shell vvv
+
+57.2) podemos cambiar de identidad utilizando el comando su
+
+lionel@lionel-ubuntu:~$ man su | head -n 4
+SU(1)   User Commands   SU(1)
+
+NAME
+       su - run a command with substitute user and group ID
+*** segun el manual, con su vamos a poder ejecutar un comando cambiando ul uid y el gid del usuario que lo ejecuta
+
+- el comando su lo vamos a utilizar para iniciar una nueva shell como si fuesemos otro usuario, es decir, obteniendo el uid de otro usuario vvv
+
+lionel@lionel-ubuntu:~$ su testuser
+Password: [4321]
+testuser@lionel-ubuntu:/home/lionel$ pwd
+/home/lionel
+testuser@lionel-ubuntu:/home/lionel$ id
+uid=1001(testuser) gid=1001(testuser) groups=1001(testuser)
+*** seguimos en la misma ventana de la terminal, pero ahora iniciamos una nueva shell con la sesion activa de testuser
+*** vemos que se da algo raro: por default la sesion la inicia dentro de /home/lionel (el working directory de lionel) siendo que testuser no tiene permisos de usuario ni de grupo para acceder. Igual comprobé que testuser no puede hacer nada aqui dentro vvv
+
+testuser@lionel-ubuntu:/home/lionel$ ls
+ls: cannot open directory '.': Permission denied
+testuser@lionel-ubuntu:/home/lionel$ cat fichero.txt
+cat: fichero.txt: Permission denied
+testuser@lionel-ubuntu:/home/lionel$ 
+*** de todas formas, a continuacion veremos como corregir esto vvv
+
+testuser@lionel-ubuntu:/home/lionel$ exit
+exit
+lionel@lionel-ubuntu:~$ 
+*** salimos de la shell con testuser activo y se nos devuelve a la shell anterior con la sesion activa de lionel
+
+- ahora veremos como corregir el problema anterior, y que al cambiar de identidad la nueva shell se inicie en el working directory del nuevo usuario vvv
+
+lionel@lionel-ubuntu:~$ su testuser
+Password: 
+testuser@lionel-ubuntu:/home/lionel$ pwd
+/home/lionel
+testuser@lionel-ubuntu:/home/lionel$ exit
+exit
+lionel@lionel-ubuntu:~$ 
+*** problema a resolver (observar que al ejecutar exit y cerrar la sesion de testuser se imprime "exit")
+
+lionel@lionel-ubuntu:~$ su -l testuser
+Password: 
+testuser@lionel-ubuntu:~$ pwd
+/home/testuser
+testuser@lionel-ubuntu:~$ exit
+logout
+lionel@lionel-ubuntu:~$ 
+*** problema resuelto (observar que al ejecutar exit y cerrar la sesion de testuser se imprime "logout")
+*** este comportamiento lo corregimos agregando el flag -l al comando su 
+
+lionel@lionel-ubuntu:~$ su - testuser
+Password: 
+testuser@lionel-ubuntu:~$ pwd
+/home/testuser
+testuser@lionel-ubuntu:~$ exit
+logout
+lionel@lionel-ubuntu:~$ 
+*** problema resuelto (observar que al ejecutar exit y cerrar la sesion de testuser se imprime "logout")
+*** en esta otra version del flag quye agregamos al comando su, en realidad se esta ejecutando -l, pero por alguna razon es posible omitir la l y funciona de la misma manera
+
+-------------------------
+
+- con su tambien podemos ejecutar comandos en nombre de otro usuario (por ejemplo, desde la sesion de testuser ejecutar comandos solo disponibles para lionel) vvv  
+
+testuser@lionel-ubuntu:/home$ ls -l
+total 8
+drwxr-x--- 30 lionel   lionel   4096 mar 10 13:47 lionel
+drwxr-x--- 16 testuser testuser 4096 mar 10 13:03 testuser
+*** estamos con la sesion activa de testuser, y observamos que el working directory lionel no tiene permiso alguno para el mundo (world)
+
+testuser@lionel-ubuntu:/home$ ls -l lionel
+ls: cannot open directory 'lionel': Permission denied
+*** efectivamente, el comando ls nos saca un error de acceso denegado
+
+testuser@lionel-ubuntu:/home$ chmod o+r lionel
+chmod: changing permissions of 'lionel': Operation not permitted
+*** intentamos cambiar los permisos de lectura para el mundo de lionel, para poder leer el directorio con testuser, y el comando chmod nos indica que es una operacion no permitida (porque esta operacion sobre lionel esta restringda a lionel o root)
+
+testuser@lionel-ubuntu:/home$ su -c "chmod o+r lionel" lionel
+Password: [1234]
+*** de esta forma, ejecutamos en nombre de lionel el comando chmod sobre el wd lionel (propied de lionel) para darle permisos de lectura al mundo, y no vemos ningun error
+*** su -c + "comando a ejecutar en nombre del usuario del cual queremos tomar su identidad (todo entre comillas)" nombre_usuario_del_cual_queremos_tomar_su_identidad
+
+testuser@lionel-ubuntu:/home$ ls -l 
+total 8
+drwxr-xr-- 30 lionel   lionel   4096 mar 10 13:47 lionel
+drwxr-x--- 16 testuser testuser 4096 mar 10 13:03 testuser
+*** comprobamos que el permiso de lectura para wd lionel se ha aplicado correctamente
+
+testuser@lionel-ubuntu:/home$ ls -l lionel
+-????????? ? ? ? ?            ? app.py
+d????????? ? ? ? ?            ? Desktop
+d????????? ? ? ? ?            ? dir1
+d????????? ? ? ? ?            ? dir2
+d????????? ? ? ? ?            ? dir3
+d????????? ? ? ? ?            ? dir4
+d????????? ? ? ? ?            ? dir5
+d????????? ? ? ? ?            ? directorioVideo56
+... 
+*** comprobamos que ahora, al tener permisos de lectura para el mundo el wd lionel, con testuser podemos leer el contenido de este directorio
+
+-------------------------
+
+- intentamos con su tomar la identidad de root vvv
+
+lionel@lionel-ubuntu:~$ su root
+Password: [Ctrl + c]
+
+*** lo primero que nos va a pedir la shell es la contraseña de root y nosostros no la sabemos
+*** en ubuntu y en practicamente todas las distribuciones de linux nuevas (excepto aquellas que estan orientadas a cosas muy concretas, por ejemplo la seguridad) la contraseña de la cuenta root va a estar bloqueada por defecto
+*** esto significa que no vamos a poder iniciar sesion como root directamente o utilizar el comando su para convertirnos en usuario root 
+
+lionel@lionel-ubuntu:~$ sort /etc/passwd | grep root:x
+root:x:0:0:root:/root:/bin/bash
+
+*** sin embargo, dado que existe esta cuenta de root es posible que nosotros ejecutemos comandos haciendonos pasar por el usuario root, no con el comando su (como vimos anteriormente ejecutando con testdir un comando de lionel) sino con el comando sudo como vamos a ver a continuacion
+
+CONCLUSION:
+- nosotros no vamos a poder convertirnos en root "por defecto" (root@lionel-ubuntu:/) porque la contraseña esta bloqueada 
+- podemos llegar a cambiar la contraseña de root, como vamos a ver despues
+- pero lo ideal es que no usemos la cuenta de root 
+
+--------------------
+
+58. sudo
+
+- podemos cambiar de identidad utilizando el comando sudo
+
+- el comando sudo tiene algunas diferencias muy importantes en comparacion a su, sobre todo en terminaos de seguridad que pueden hacer que el comando sudo sea mucho mas aconsejable para determinadas circunstancias
+
+testuser@lionel-ubuntu:~$ sudo cat /etc/shadow
+[sudo] password for testuser: [4321]
+testuser is not in the sudoers file.  This incident will be reported.
+
+lionel@lionel-ubuntu:~$ sudo cat /etc/shadow
+*** poner la palabra sudo del comando lo que va a hacer es que el comando se ejecute en nombre de otro usuario 
+*** de que usuario? vamos a ver que toda la definicion del funcionamiento de sudo (que privilegios podemos elevar, que comandos podemos ejecutar, en nombre de que usuario podemos hacerlo, etc) viene definido en el fichero /etc/sudoers y hablaremos sobre el en la siguiente clase
+
+lionel@lionel-ubuntu:~$ head -n 5 /etc/shadow
+head: cannot open '/etc/shadow' for reading: Permission denied
+*** con lionel no tengo accesos a leet el fichero /etc/shadow 
+
+lionel@lionel-ubuntu:~$ ls -l /etc/shadow
+-rw-r----- 1 root shadow 1567 mar 10 12:47 /etc/shadow
+*** compruebo que el propietario de /etc/shadow es root y el grupo propietario es shadow, a quier lionel no pertenece, y que world (en donde se ubica lionel) no tiene ningun tipo de permiso respecto a este fichero
+
+lionel@lionel-ubuntu:~$ sudo head -n 5 /etc/shadow
+[sudo] password for lionel: [1234]
+root:!:19604:0:99999:7:::
+daemon:*:19576:0:99999:7:::
+bin:*:19576:0:99999:7:::
+sys:*:19576:0:99999:7:::
+sync:*:19576:0:99999:7:::
+*** entonces ejecuto el comando en nombre del usuairo root anteponiendo la palabra sudo, y ahora si puedo leer el fichero
+*** entonces por defecto sudoers viene configurado en ubuntu de manera que yo con el usuario lionel cuando ejecuto sudo, como podemos ver aca, me va a pedir mi propia contraseña y cuando la introduzco me permite ejecutar este comando concreto (head -n 5 /etc/shadow) en nombre del usuario root
+
+lionel@lionel-ubuntu:~$ su -c "cat /etc/shadow" root
+Password: 
+*** como vemos, con la logica de su no hubiera podido hacer esto mismo 
+
+- la primera diferencia entre su y sudo, es que sudo es un comando con el que vamos a ejecutar otros camandos ejecutandolos en nombre de otro usuario
+
+- la segunda diferencia, y muchisimo mas importante sobre todo en terminos de seguridad, es que sudo, para ejecutar un comando en nombre de otro usuario (como vimos en los ejemplos de cat y head para /etc/shadow en nombre de root), pide la contraseña del usuario que esta queriendo ejecutar el comando en nombre de otro (en estos ejemplos tengo que ingresar mi password, el de lionel), en vez de tener que ingresar la contraseña del usuario por quien lionel se esta queriendo hacer pasar, lo que sí pasa con su (como vimos en los ejemplos en los que ejecutamos comandos en nombre de lionel con el usuario testuser)
+- esto en terminos de seguridad es muchisimo mas conveniente que tener que meter la contraseña del usuario root o de cualquier otro usuario que no sea la de quien esta queriendo ejecutar un comando para el que no tiene acceso, porque implica que el usuario lionel conozca las contraseñas de otros usuarios
+
+- para que lionel pueda ejecutar comandos en nombre de root con el comando sudo, se logra configurando mediante el usuario root el fichero /etc/sudoers donde voy a indicar que el usuario lionel pueda elevar privilegios introduciendo su propia contraseña para realizar determinadas acciones
+
+- sudo lo vamos a utilizar casi siempre que necesitemos asumir los provilegios del usuario root, aunque como vamos a ver mas adelante podriamos utilizarlo para asumir los privilegios de cualquier otro usuario
+
+- tambien podemos utilizar una opcion que tiene sudo (que no es muy utilizada, para esto suele utilzarse su) para obtener una sesion interactiva, en este caso con el usuario que tengamos configurado en el fichero /etc/sudoers
+
+lionel@lionel-ubuntu:~$ ls -l /etc/sudoers
+-r--r----- 1 root root 1671 feb  8  2022 /etc/sudoers
+
+lionel@lionel-ubuntu:~$ sudo -i
+root@lionel-ubuntu:~# 
+*** como podemos ver, estoy obteniendo una sesion interactiva siendo lionel, del usuario root 
+*** observar como cambia el prompt == ~# 
+*** cuando aparace # quiere decir que estamos con privilegios de superusuario
+*** como vemos, esta vez no me ha pedido la contraseña de lionel porque la habia introducido antes para visualizar el fichero shadow, es como que se quedan cacheadas y la introduce automaticamente sin que tenga que ingresarla otra vez
+*** como vemos, aunque la cuenta de root no tiene contraseña, utilizando sudo podemos obtener una shell interactiva en nombre de root
+
+root@lionel-ubuntu:~# id
+uid=0(root) gid=0(root) groups=0(root)
+root@lionel-ubuntu:~# head -n 2 /etc/sudoers
+#
+# This file MUST be edited with the 'visudo' command as root.
+*** como vemos, en la sesion interactiva de root gozamos de plenos privilegios
+
+root@lionel-ubuntu:~# exit
+logout
+lionel@lionel-ubuntu:~$ 
+*** exit para salir de la shell interactiva de root
+
+CONCLUSION:
+- no es recomendable que usemos la cuenta de root para absolutamente nada usando este metodo de sesion interactiva (sudo -i)
+- de hecho y por seguridad, lo ideal es configurar el fichero sudoers para que no se pueda acceder a la shell interactiva de root
+
+--------------------
+
+59. sudoers
 
 ...
