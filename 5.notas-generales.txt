@@ -2301,4 +2301,450 @@ CONCLUSION:
 
 59. sudoers
 
+lionel@lionel-ubuntu:~$ ls -la /etc/sudoers
+-r--r----- 1 root root 1671 feb  8  2022 /etc/sudoers
+
+- a priori, sudoers nunca deberia ser modificado con editores como pico o nano
+- de hecho, este fichero tiene permisos solo de lectura tanto para el user root como para el group root (usuario y grupo propietarios del fichero respectivamente), por lo que no sería posible modificarlo con los editores pico o nano (hize la prueba y efectivamente) vvv
+
+- para editar este fichero tenemos que utilizar un comando especifico que se denomina visudo vvv
+
+- abrimos el fichero con el comando visudo (lo que nos permite modificarlo en caso de ser necesario) y explicamos detalladamente cada una de las lineas NO comentadas y que por lo tanto van a realizar algun tipo de accion vvv
+
+lionel@lionel-ubuntu:~$ sudo visudo
+... # comentarios
+
+Defaults        env_reset
+*** esta linea indica que cuando usemos el comando sudo va a resetear las variables de entorno, es decir, resetea el entorno
+*** las variables de entorno son una serie de variables que se pueden definir en la shell, en lo que se llama el entorno de la shell, y que tienen ciertas implicaciones de seguridad y por eso conviene resetearlas antes de ejecutar nada con privilegios elevados
+Defaults        mail_badpass
+*** esta linea indica que cuando se introduzca una contraseña erronea al utilizar el comando sudo se va a enviar un email a la cuenta que tengamos configurada en el sistema (en este caso no tenemos configurada ninguna) con lo cual esta linea para nuestro caso no es muy relevante
+Defaults        secure_path="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/snap/bin"
+*** esta linea va a indicar las rutas donde se van a encontrar los ficheros ejecutables o lo que nosotros estemos tratando de ejecutar con sudo
+*** aqui tenemos normalmente casi todas las rutas donde se encuentran los binarios del sistema (por ejemplo los comandos cat, ls o cualquiera de ellos)
+Defaults        use_pty
+*** esta linea indica que va a usar una pseudo tty que no tiene mucha relevancia para el funcionamiento del comando sudo o al menos para lo que nos interesa a nosotros
+*** estas 4 lineas hasta aca no nos interesan demasiado, ya que no estan dictando ningun permiso de los que tiene sudo 
+
+... # comentarios
+
+*** aca vienen las lineas importantes del fichero sudoers vvv
+
+# User privilege specification
+root    ALL=(ALL:ALL) ALL
+*** esta linea establece los privilegios de usuario
+*** como vemos, a priori, root es el unico usuario establecido por defecto en el fichero sudoers
+*** el primer campo de esta entrada (root) es al usuario al que se le van a aplicar las reglas del segundo campo ("ALL=(ALL:ALL) ALL")
+*** desglose de ALL=(ALL:ALL) ALL vvv 
+*** ALL #1 indica los hosts a los que se van a aplicar estos permisos (nostros tenemos un solo host, ya que estamos ejecutando ubuntu en una maquina local)
+*** ALL #2 indica los usuarios para los que este usuario root va a poder ejecutar comandos en su nombre (en este caso root va a poder ejecutar comandos en nombre de todos los usuarios del sistema)
+*** ALL #3 indica los grupos para los que este usuario root va a poder ejecutar comandos en su nombre (en este caso root va a poder ejecutar comandos en nombre de todos los grupos del sistema)
+*** ALL #4 hace referencia a los comandos que va a poder ejecutar el usuario root (con ALL indicamos que va a poder ejecutar todos los comandos)
+*** entonces esta regla (que es la menos restrictiva posible) esta indicando que el usuario root, utilizando el comando sudo e introduciendo su propia contraseña va a poder ejecutar todos los comandos que quiera (que se encuentren en las rutas de secure_path - unas lineas mas arriba en este mismo archivo -) en nombre de todos los usuarios, grupos y hosts del sistema (o sea, que va a poder comportarse como cualquier otro usuario)
+
+# Members of the admin group may gain root privileges
+%admin ALL=(ALL) ALL
+*** toda entrada que empieze con % dentro de sudoers quiere decir que es un grupo
+*** esta linea tiene que ver con el comportamiento que tienen los usuarios que pertenecen al grupo admin cuando utilizan sudo
+*** esta configuracion de permisos se va a aplicar al grupo admin
+*** indica que todos los usuarios del grupo admin y que utilizen el comando sudo, cuando introduzcan su contraseña, va aplicarse la siguiente regla vvv 
+*** van a poder ejecutar todos los comandos (ALL #3) en nombre de cualquier usuario (ALL #2) para cualquier host (ALL #1)
+
+# Allow members of group sudo to execute any command
+%sudo   ALL=(ALL:ALL) ALL
+*** cualquier usuario que pertenezca al grupo sudo va a poder ejecutar cualquier comando (ALL #4) en nombre de cualquier usuario (ALL #2), en nombre de cualquier grupo (ALL #3) y para cualquier host (ALL #1)
+
+# See sudoers(5) for more information on "@include" directives:
+
+@includedir /etc/sudoers.d
+*** esta linea nos dice que si nosotros queremos añadir permisos adicionales, en lugar de modificar este fichero propiamente (que es el que viene por defecto), lo que podemos hacer es crear un directorio nuevo "sudoers.d" para agregar los nuevos permisos ahí, y esta entrada @includedir va a incluir automaticamente al final de sudoers el contenido de lo que haya dentro de sudoers.d, de manera que tengamos los ficheros personalizados bien ordenados y gestioados en este directorio sudores.d y no modifiquemos constantemente el fichero sudoers que deberia mantenerse por defecto (en mi SO, el directorio /etc/sudores.d ya existe)
+
+-----------------------------
+
+lionel@lionel-ubuntu:~$ id
+uid=1000(lionel) gid=1000(lionel) groups=1000(lionel),4(adm),24(cdrom),27(sudo),30(dip),46(plugdev),122(lpadmin),135(lxd),136(sambashare)
+*** lionel puede ejecutar comandos en nombre de root, porque como vemos, en ubuntu esta agregado por defecto al grupo sudo 
+
+%sudo   ALL=(ALL:ALL) ALL
+*** como vimos en sudoers, los usuarios incluidos en el grupo sudo pueden ejectutar cualquier comando, en nombre de culquier usuario o grupo, en cualquier host
+*** por eso lionel puede ejecutar comandos en nombre de root
+
+-----------------------------
+
+- agregamos a testuser a sudoers creando un fichero nuevo (lo llamamos config) dentro de /etc/sudoers.d vvv
+
+lionel@lionel-ubuntu:~$ ls -ld /etc/sudoers.d/
+drwxr-xr-x 2 root root 4096 mar 12 23:31 /etc/sudoers.d/
+
+lionel@lionel-ubuntu:~$ ls -l /etc/sudoers.d/
+total 8
+-r--r----- 1 root root 1096 feb  8  2022 README
+
+lionel@lionel-ubuntu:~$ sudo visudo /etc/sudoers.d/config
+testuser ALL=(ALL:ALL) /usr/bin/cat
+
+lionel@lionel-ubuntu:~$ sudo cat /etc/sudoers.d/config 
+testuser ALL=(ALL:ALL) /usr/bin/cat
+*** le damos privilegios a testuser para que pueda ejecutar el comando /usr/bin/cat en nombre de cualquier usuario y cualquier grupo del sistema, desde (?) cualquier host 
+
+lionel@lionel-ubuntu:~$ type cat
+cat is hashed (/usr/bin/cat)
+*** aca vemos que el binario cat se encuentra efectivamente en /usr/bin/cat
+
+testuser@lionel-ubuntu:~$ sudo head -n 5 /etc/shadow
+Sorry, user testuser is not allowed to execute '/usr/bin/head -n 5 /etc/shadow' as root on lionel-ubuntu.
+testuser@lionel-ubuntu:~$ sudo cat /etc/shadow
+root:!:19604:0:99999:7:::
+daemon:*:19576:0:99999:7:::
+bin:*:19576:0:99999:7:::
+sys:*:19576:0:99999:7:::
+...
+*** aca verificamos que testuser ahora tiene privilegios para ejecutar el comando cat en nombre de root, pero no asi, por ejemplo el comando head
+
+COMENTARIO FINAL vvv 
+- lo normal no es añadir nuevos usuarios al fichero sudoers
+- lo normal es añadir nuevos grupos y despues añadir esos usuarios a los grupos porque es muchisimo mas facil de gestionar vvv 
+
+lionel@lionel-ubuntu:/etc/sudoers.d$ sudo usermod -aG sudo testuser
+*** agrego con lionel en nombre de root, a testuser al grupo sudo 
+
+lionel@lionel-ubuntu:/etc/sudoers.d$ su - testuser
+Password: 
+To run a command as administrator (user "root"), use "sudo <command>".
+See "man sudo_root" for details.
+
+testuser@lionel-ubuntu:~$ id
+uid=1001(testuser) gid=1001(testuser) groups=1001(testuser),27(sudo)
+testuser@lionel-ubuntu:~$ 
+
+testuser@lionel-ubuntu:~$ head -n 3 /etc/shadow
+head: cannot open '/etc/shadow' for reading: Permission denied
+testuser@lionel-ubuntu:~$ sudo head -n 3 /etc/shadow
+root:!:19604:0:99999:7:::
+daemon:*:19576:0:99999:7:::
+bin:*:19576:0:99999:7:::
+
+--------------------
+
+60. Gestión usuarios y grupos: useradd, groupadd, usermod, deluser...
+
+- vamos a ver algunas de las operaciones basicas que podemos realizar tanto sobre usuarios como sobre grupos dentro de linux vvv 
+
+60.1) Como añadir un nuevo usuario (useradd) vvv 
+
+- en el video 57 vimos que podiamos agregar un nuevo usuario con el comando adduser vvv 
+
+lionel@lionel-ubuntu:~$ sudo adduser testuser
+...
+
+- el comando adduser no va a estar disponible en todas las distribuciones de linux porque es un wraper (un envoltorio, una especie de interfaz) sobre un comando de un poquito mas bajo nivel que se denomina useradd 
+
+- creo el usuario newuser con adduser vvv 
+
+lionel@lionel-ubuntu:~$ sudo adduser newuser
+Adding user `newuser' ...
+Adding new group `newuser' (1002) ...
+Adding new user `newuser' (1002) with group `newuser' ...
+Creating home directory `/home/newuser' ...
+Copying files from `/etc/skel' ...
+New password: [9999]
+BAD PASSWORD: The password is a palindrome
+Retype new password: [9999] 
+passwd: password updated successfully
+Changing the user information for newuser
+Enter the new value, or press ENTER for the default
+	Full Name []: newuser
+	Room Number []: 
+	Work Phone []: 
+	Home Phone []: 
+	Other []: 
+Is the information correct? [Y/n] y
+lionel@lionel-ubuntu:~$ 
+
+*** a modo de prueba cree al usuario felipe con useradd vvv
+
+lionel@lionel-ubuntu:~$ sudo useradd -m felipe
+lionel@lionel-ubuntu:~$ tail -n 4 /etc/passwd
+lionel:x:1000:1000:lionel,,,:/home/lionel:/bin/bash
+testuser:x:1001:1001:testuser,,,:/home/testuser:/bin/bash
+newuser:x:1002:1002:newuser,,,:/home/newuser:/bin/bash
+felipe:x:1003:1003::/home/felipe:/bin/sh
+lionel@lionel-ubuntu:~$ ls -ld /home/felipe/
+drwxr-x--- 2 felipe felipe 4096 mar 13 00:14 /home/felipe/
+*** como vemos, lo agregue correctamente con directorio de trabajo (-m) (pero no me dio opcion a ingresar una contraseña)
+*** luego lo borre con "userdel felipe", y a su vez tuve que borrar manualmente en nombre de root su directorio de trabajo (primero borrar a mano archivos ocultos dentro de este directorio)
+
+-----------------------------
+
+60.2) Como añadir nuevos grupos (groupadd)
+
+- vamos a tener 2 comandos principales:
+    - groupadd -> el comando de bajo nivel por decirlo asi 
+    - addgroup -> funcionalidad de alto nivel 
+
+----------
+
+- creo el grupo newgroup vvv 
+
+lionel@lionel-ubuntu:~$ sudo addgroup newgroup
+Adding group `newgroup' (GID 1003) ...
+Done.
+lionel@lionel-ubuntu:~$ 
+
+lionel@lionel-ubuntu:~$ tail -n 10 /etc/group
+geoclue:x:131:
+pulse:x:132:
+pulse-access:x:133:
+gdm:x:134:
+lxd:x:135:lionel
+lionel:x:1000:
+sambashare:x:136:lionel
+testuser:x:1001:
+newuser:x:1002:
+newgroup:x:1003:
+
+lionel@lionel-ubuntu:~$ groups
+lionel adm cdrom sudo dip plugdev lpadmin lxd sambashare
+*** groups nos saca los grupos del usuario actual
+
+lionel@lionel-ubuntu:~$ groups testuser
+testuser : testuser sudo
+*** tambien nos permite ver los grupos a los que pertenece cualquier otro usario
+
+----------
+
+60.3) usermod 
+
+- agrego a newuser a newgroup vvv 
+
+ionel@lionel-ubuntu:~$ groups newuser
+newuser : newuser
+lionel@lionel-ubuntu:~$ id newuser
+uid=1002(newuser) gid=1002(newuser) groups=1002(newuser)
+lionel@lionel-ubuntu:~$ sudo usermod -a -G newgroup newuser
+lionel@lionel-ubuntu:~$ groups newuser
+newuser : newuser newgroup
+lionel@lionel-ubuntu:~$ id newuser
+uid=1002(newuser) gid=1002(newuser) groups=1002(newuser),1003(newgroup)
+*** ahora vemos que newuser pertenece al grupo primario newuser y al grupo secundario newgroup
+
+- la diferencia principal entre un grupo primario y un grupo secundario es que el grupo primario es el que se va a especificar cuando un usuario cree archivos (el grupo propietario del archivo sera el grupo primario del usuario) 
+
+----------
+
+- cambiamos el grupo primario de newuser vvv 
+
+lionel@lionel-ubuntu:~$ sudo usermod -g newgroup newuser
+lionel@lionel-ubuntu:~$ id newuser
+uid=1002(newuser) gid=1003(newgroup) groups=1003(newgroup)
+*** se cambio correctamente el grupo primario pero se perdio el grupo primario anterior (el profesor no explica como evitarlo, hice un par de pruebas pero no funcionaron)
+
+----------
+
+- cambiamos el nombre de un usuario vvv
+
+lionel@lionel-ubuntu:~$ sudo usermod -l newuser2 newuser
+lionel@lionel-ubuntu:~$ tail -n 3 /etc/passwd
+lionel:x:1000:1000:lionel,,,:/home/lionel:/bin/bash
+testuser:x:1001:1001:testuser,,,:/home/testuser:/bin/bash
+newuser2:x:1002:1003:newuser,,,:/home/newuser:/bin/bash
+
+----------
+
+- cambiamos el working directory de un usuario vvv
+
+lionel@lionel-ubuntu:~$ sudo usermod -d /home/lionel newuser2
+lionel@lionel-ubuntu:~$ tail -n 3 /etc/passwd
+lionel:x:1000:1000:lionel,,,:/home/lionel:/bin/bash
+testuser:x:1001:1001:testuser,,,:/home/testuser:/bin/bash
+newuser2:x:1002:1003:newuser,,,:/home/lionel:/bin/bash
+
+----------
+
+- cambiamos el uid de un usuario vvv
+
+lionel@lionel-ubuntu:~$ sudo usermod -u 250 newuser2
+lionel@lionel-ubuntu:~$ tail -n 3 /etc/passwd
+lionel:x:1000:1000:lionel,,,:/home/lionel:/bin/bash
+testuser:x:1001:1001:testuser,,,:/home/testuser:/bin/bash
+newuser2:x:250:1003:newuser,,,:/home/newuser:/bin/bash
+lionel@lionel-ubuntu:~$ id newuser2
+uid=250(newuser2) gid=1003(newgroup) groups=1003(newgroup)
+
+----------
+
+- bloqueamos un usuario vvv
+
+lionel@lionel-ubuntu:~$ sudo usermod -L nombre_usuario 
+*** con este comando bloqueamos un usuario
+*** L -> Lock
+
+lionel@lionel-ubuntu:~$ sudo usermod -U nombre_usuario 
+*** con este comando desbloqueamos un usuario
+*** U -> Unlock
+
+----------
+
+- cambio cambiar la contraseña el passwordd de un usuario vvv
+
+lionel@lionel-ubuntu:~$ sudo passwd newuser2
+New password: 
+BAD PASSWORD: The password is a palindrome
+Retype new password: 
+passwd: password updated successfully
+lionel@lionel-ubuntu:~$ su - newuser2 
+Password: 
+newuser2@lionel-ubuntu:~$ 
+
+----------
+
+60.4) deluser y delgroup 
+
+*** proceso de borrado correcto de un grupo y de un ususario (minuto 13')
+
+lionel@lionel-ubuntu:~$ sudo delgroup newgroup
+/usr/sbin/delgroup: `newuser2' still has `newgroup' as their primary group!
+lionel@lionel-ubuntu:~$ tail -n 5 /etc/group
+lionel:x:1000:
+sambashare:x:136:lionel
+testuser:x:1001:
+newuser:x:1002:
+newgroup:x:1003:newuser2
+lionel@lionel-ubuntu:~$ id newuser2 
+uid=250(newuser2) gid=1003(newgroup) groups=1003(newgroup)
+lionel@lionel-ubuntu:~$ sudo deluser newuser2
+Removing user `newuser2' ...
+Done.
+lionel@lionel-ubuntu:~$ tail -n 5 /etc/passwd
+gnome-initial-setup:x:126:65534::/run/gnome-initial-setup/:/bin/false
+hplip:x:127:7:HPLIP system user,,,:/run/hplip:/bin/false
+gdm:x:128:134:Gnome Display Manager:/var/lib/gdm3:/bin/false
+lionel:x:1000:1000:lionel,,,:/home/lionel:/bin/bash
+testuser:x:1001:1001:testuser,,,:/home/testuser:/bin/bash
+lionel@lionel-ubuntu:~$ tail -n 5 /etc/group
+lionel:x:1000:
+sambashare:x:136:lionel
+testuser:x:1001:
+newuser:x:1002:
+newgroup:x:1003:
+lionel@lionel-ubuntu:~$ sudo delgroup newgroup
+Removing group `newgroup' ...
+Done.
+lionel@lionel-ubuntu:~$ tail -n 5 /etc/group
+lxd:x:135:lionel
+lionel:x:1000:
+sambashare:x:136:lionel
+testuser:x:1001:
+newuser:x:1002:
+lionel@lionel-ubuntu:~$ sudo delgroup newuser
+Removing group `newuser' ...
+Done.
+lionel@lionel-ubuntu:~$ tail -n 5 /etc/group
+gdm:x:134:
+lxd:x:135:lionel
+lionel:x:1000:
+sambashare:x:136:lionel
+testuser:x:1001:
+
+---------- 
+
+lionel@lionel-ubuntu:~$ sudo deluser --remove-home newuser2
+*** con --remove-home podria haber borrado ademas el WD de newuser2
+
+lionel@lionel-ubuntu:~$ sudo deluser --remove-all-files newuser2
+*** con --remove-all-files podria haber borrado todos los ficheros y directorios creados por el usuario newuser2
+
+---------- 
+
+lionel@lionel-ubuntu:~$ ls /home/
+lionel  newuser  testuser
+lionel@lionel-ubuntu:~$ ls -la /home/newuser/
+ls: cannot open directory '/home/newuser/': Permission denied
+lionel@lionel-ubuntu:~$ sudo ls -la /home/newuser/
+total 28
+drwxr-x--- 2  250 1003 4096 mar 13 01:01 .
+drwxr-xr-x 5 root root 4096 mar 13 00:18 ..
+-rw------- 1  250 1003  109 mar 13 01:02 .bash_history
+-rw-r--r-- 1  250 1003  220 mar 13 00:02 .bash_logout
+-rw-r--r-- 1  250 1003 3771 mar 13 00:02 .bashrc
+-rw------- 1  250 1003   20 mar 13 01:01 .lesshst
+-rw-r--r-- 1  250 1003  807 mar 13 00:02 .profile
+lionel@lionel-ubuntu:~$ sudo rm /home/newuser/
+rm: cannot remove '/home/newuser/': Is a directory
+lionel@lionel-ubuntu:~$ sudo rm -rf /home/newuser/
+lionel@lionel-ubuntu:~$ ls /home/
+lionel  testuser
+*** borro el WD de newuser2 manualmente
+
+--------------------
+
+61. Cambio de propietario: chown y chgrp
+
+- con chown podemos cambiar tanto el usuario como el grupo propietario de cualquier fichero o directorio vvv
+
+- pruebas sobre ficheros vvv 
+
+lionel@lionel-ubuntu:~$ echo "fichero de prueba" > ficheroVideo61.txt
+lionel@lionel-ubuntu:~$ ls -la ficheroVideo61.txt 
+-rw-rw-r-- 1 lionel lionel 18 mar 13 01:17 ficheroVideo61.txt
+lionel@lionel-ubuntu:~$ chmod 770 ficheroVideo61.txt 
+lionel@lionel-ubuntu:~$ ls -la ficheroVideo61.txt 
+-rwxrwx--- 1 lionel lionel 18 mar 13 01:17 ficheroVideo61.txt
+lionel@lionel-ubuntu:~$ cat ficheroVideo61.txt 
+fichero de prueba
+
+lionel@lionel-ubuntu:~$ chown testuser ficheroVideo61.txt 
+chown: changing ownership of 'ficheroVideo61.txt': Operation not permitted
+lionel@lionel-ubuntu:~$ sudo chown testuser ficheroVideo61.txt 
+*** cambio al propietario del fichero
+
+lionel@lionel-ubuntu:~$ ls -la ficheroVideo61.txt 
+-rwxrwx--- 1 testuser lionel 18 mar 13 01:17 ficheroVideo61.txt
+
+lionel@lionel-ubuntu:~$ cat ficheroVideo61.txt 
+fichero de prueba
+*** puedo seguir leyendo el fichero con lionel porque pertenece al grupo propietario
+
+lionel@lionel-ubuntu:~$ sudo chown :testuser ficheroVideo61.txt 
+lionel@lionel-ubuntu:~$ ls -la ficheroVideo61.txt 
+-rwxrwx--- 1 testuser testuser 18 mar 13 01:17 ficheroVideo61.txt
+*** cambio el grupo propietario del fichero
+
+lionel@lionel-ubuntu:~$ cat ficheroVideo61.txt 
+cat: ficheroVideo61.txt: Permission denied
+*** ahora lionel pertenece al mundo, y por lo tanto no tiene permisos de lectura sobre el fichero
+
+lionel@lionel-ubuntu:~$ sudo chown lionel:lionel ficheroVideo61.txt 
+lionel@lionel-ubuntu:~$ ls -la ficheroVideo61.txt 
+-rwxrwx--- 1 lionel lionel 18 mar 13 01:17 ficheroVideo61.txt
+lionel@lionel-ubuntu:~$ cat ficheroVideo61.txt 
+fichero de prueba
+*** cambio usuario y grupo propietario del fichero con un solo comando
+
+---------- 
+
+- pruebas sobre directorios vvv 
+
+lionel@lionel-ubuntu:~$ mkdir dirVideo61
+lionel@lionel-ubuntu:~$ ls -lad dirVideo61/
+drwxrwxr-x 2 lionel lionel 4096 mar 13 01:28 dirVideo61/
+
+lionel@lionel-ubuntu:~$ sudo chown testuser: dirVideo61/
+*** cambio usuario y grupo propietario del directorio con un solo comando (con esta notacion, por defecto se adjudica la propiedad al grupo primario del nuevo user owner)
+
+lionel@lionel-ubuntu:~$ ls -lad dirVideo61/
+drwxrwxr-x 2 testuser testuser 4096 mar 13 01:28 dirVideo61/
+
+COMENTARIO FINAL vvv 
+- antiguamente, para cambiar el grupo propietario de un fichero o directorio se utilizaba el comando chgrp 
+- sigue funcionando por temas de retrocompatibilidad vvv
+
+lionel@lionel-ubuntu:~$ sudo chgrp root dirVideo61/
+lionel@lionel-ubuntu:~$ ls -lad dirVideo61/
+drwxrwxr-x 2 testuser root 4096 mar 13 01:28 dirVideo61/
+
+--------------------
+
+62. Caso Práctico: Explotando el bit setuid
+
 ...
