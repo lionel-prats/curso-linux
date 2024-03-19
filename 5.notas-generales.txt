@@ -3065,7 +3065,7 @@ lionel@lionel-ubuntu:~$ ps x
 lionel@lionel-ubuntu:~$ emacs
 *** en una segunda terminal ejecuto el proceso emacs 
 
-- en la terminal anterior no vamos a ver en el listao la entrada asociada al proceso emacs ya que se trata de una imagen en el momento en que yo ejecuté ps x 
+- en la terminal anterior no vamos a ver en el listado la entrada asociada al proceso emacs ya que se trata de una imagen en el momento en que yo ejecuté ps x 
 - vuelvo a ejecutar ps x en la consola anterior vvv
 
 lionel@lionel-ubuntu:~$ ps x
@@ -3103,12 +3103,13 @@ PROCESS STATE CODES
                l    is multi-threaded (using CLONE_THREAD, like NPTL pthreads do)
                +    is in the foreground process group
 *** aqui tenemos todos los codigos de todas las letras que pueden aparecer en el estado (STAT)
-*** el profesor explica verbalmente en detalle alguno de estoso significados (min 5'50" aprox)
+*** el profesor explica verbalmente en detalle alguno de estoso significados (min 5'30" aprox)
 
 lionel@lionel-ubuntu:~$ ps aux
 USER         PID %CPU %MEM    VSZ   RSS TTY      STAT START   TIME COMMAND
 root           1  0.0  0.3 166764 11900 ?        Ss   mar16   0:03 /sbin/init auto noprompt splash
 ... 
+*** ps aux suele ser la combinacion de comandos mas utilizada para visualizar los estados de los procesos en un momento determinado (una imagen)
 *** USER = usuario que ha ejecutado el proceso
 *** %CPU = consumo de CPU del proceso en ese momento 
 *** %MEM = consumo de memoria RAM del proceso en ese momento
@@ -3130,5 +3131,126 @@ lionel      9293  0.0  0.0  10940  2304 pts/0    S+   15:35   0:00 tail -n 1
 --------------------
 
 66. Visualización dinámica de procesos
+
+- visualizacion dinamica quiere decir que vamos a poder estar viendo en tiempo real el consumo de recursos que esta haciendo cada proceso (consumo de CPU, de memoria, el tiempo que lleva en ejecucion, etc)
+
+lionel@lionel-ubuntu:~$ man top
+...
+top - display Linux processes 
+The  top  program  provides  a  dynamic real-time view of a running system.
+...
+
+lionel@lionel-ubuntu:~$ top
+top - 22:45:43 up 14 min,  1 user,  load average: 0,04, 0,07, 0,10
+Tasks: 299 total,   1 running, 298 sleeping,   0 stopped,   0 zombie
+%Cpu(s):  0,3 us,  0,2 sy,  0,0 ni, 99,3 id,  0,0 wa,  0,0 hi,  0,2 si,  0,0 st
+MiB Mem :   3870,6 total,   1882,7 free,   1020,6 used,    967,3 buff/cache
+MiB Swap:   2140,0 total,   2140,0 free,      0,0 used.   2563,7 avail Mem 
+
+    PID USER      PR  NI    VIRT    RES    SHR S  %CPU  %MEM     TIME+ COMMAND                                                                                                                              
+   1741 lionel    20   0 4445528 273068 138056 S   0,3   6,9   0:11.22 gnome-shell                                                                                                                          
+      1 root      20   0  166788  11776   8192 S   0,0   0,3   0:02.40 systemd    
+...
+*** la salida de top nos ofrece una cabecera arriba con informacion general sobre nuestro sistema 
+*** tabla con diversos valores de cada uno de los procesos que tenemos en ejecucion
+*** esta informacion se actualiza cada 3 segundos por default (mas adelante veremos como setear este valor)
+
+--------------------
+
+- analisis de la cabecera vvv 
+
+top - 22:50:05 up 18 min,  1 user,  load average: 0,00, 0,04, 0,08
+Tasks: 290 total,   1 running, 289 sleeping,   0 stopped,   0 zombie
+%Cpu(s):  0,2 us,  0,0 sy,  0,0 ni, 99,8 id,  0,0 wa,  0,0 hi,  0,0 si,  0,0 st
+MiB Mem :   3870,6 total,   1907,2 free,    995,4 used,    968,0 buff/cache
+MiB Swap:   2140,0 total,   2140,0 free,      0,0 used.   2588,8 avail Mem 
+
+top - 22:50:05 up 18 min,  1 user,  load average: 0,00, 0,04, 0,08
+*** 22:50:05                       -> hora actual de nuestro sistema 
+*** up 18 min                      -> tiempo que nuestro equipo lleva encendido 
+*** 1 user                         -> la cantidad de usuarios que estan logueados (lionel)
+*** load average: 0,00, 0,04, 0,08 -> por decirlo asi, es el numero de procesos que se encuentran en ejecucion y compartiendo CPU (CREO que representan porcentajes del total de procesos)
+*** 0,00, 0,04, 0,08               -> cada uno de estos 3 numeros es la media por decirlo asi del numero de procesos en diferentes intervalos de tiempo 
+*** 0,00                           -> en los ultimos 60 segundos 0.00 procesos compartiendo CPU
+*** 0,04                           -> en los ultimos 5 minutos 0.04 procesos compartiendo CPU 
+*** 0,08                           -> en los ultimos 15 minutos 0.08 procesos compartiendo CPU
+*** si estos numeros se encuentran por debajo de 1, en general quiere decir que la maquina tiene bastantes recursos y esta bastante libre
+
+Tasks: 290 total,   1 running, 289 sleeping,   0 stopped,   0 zombie
+*** Tasks: 290 total -> aca tenemos el total de procesos que tenemos en ejecucion en nuestra maquina
+*** 1 running        -> de los 290 procesos 1 esta corriendo
+*** 289 sleeping     -> 289 procesos se encuentran dormidos, en estado de sleep
+*** 0 stopped        -> 0 procesos parados 
+*** 0 zombie         -> 0 zombies (hablaremos de esto mas adelante)
+
+%Cpu(s):  0,2 us,  0,0 sy,  0,0 ni, 99,8 id,  0,0 wa,  0,0 hi,  0,0 si,  0,0 st
+*** aca tenemos el consumo de CPU. Se va a dividir en diferentes valores
+*** 0,2 us  -> el consumo de CPU que se realiza por procesos de usuarios (0.2%)
+*** 0,0 sy  -> el consumo de CPU que esta realizando el sistema (0.0%), concretamente el kernel del sistema
+*** 0,0 ni  -> el consumo de CPU de procesos nice, que por decirlo asi le ceden la CPU a otros procesos que tengan mas prioridad (0.0%)
+*** 99,8 id -> el consumo de CPU que tenemos libre, es decir, que no se esta utilizando, 99.8%, lo que significa que esta maquina en este momento se encuentra con una carga de trabajo muy baja
+
+MiB Mem :   3870,6 total,   1907,2 free,    995,4 used,    968,0 buff/cache
+*** consumo de memoria RAM 
+*** 3870,6 total      -> podemos ver los gigas que tiene esta maquina dedicados, casi 4GB (3870.6 megas)
+*** 1907,2 free       -> 1907.2 megas libres (casi 2 GB)
+*** 995,4 used        -> casi 1GB ocupado
+*** 968,0 buff/cache  -> casi 1GB en buffer/cache
+
+MiB Swap:   2140,0 total,   2140,0 free,      0,0 used.   2588,8 avail Mem 
+*** aca tenemos la memoria de SWAP, para hacer SWAPING
+2140,0 total     -> 2.1GB (ya hablamos de esto cuando hablamos del fichero de SWAPING, es decir, el fichero /swapfile)         
+2140,0 free      -> 2.1GB libres    
+0,0 used         -> 0GB usados  
+2588,8 avail Mem -> disponible esto que tenemos por aqui
+
+--------------------
+
+- analisis de la tabla vvv 
+
+  PID    USER      PR  NI    VIRT    RES    SHR S  %CPU  %MEM     TIME+ COMMAND                                                                                                                              
+    1    root      20   0  166788  11776   8192 S   0,3   0,3   0:02.45 systemd                                                                                                                              
+   35    root      20   0       0      0      0 S   0,3   0,0   0:00.13 kcompactd0                                                                                                                           
+  316    root      19  -1   64752  21296  19888 S   0,3   0,5   0:00.54 systemd-journal                                                                                                                      
+  588    root      20   0  319908   9472   7936 S   0,3   0,2   0:03.38 vmtoolsd       
+*** PID     -> process id del proceso, identificador del proceso
+*** USER    -> owner del proceso
+*** PR      -> prioridad con que asigna el kernel el consumo de CPU en funcion de lo importante que sea eese proceso | a mayor numero mayor prioridad, es decir, mas probabilidad de que el kernel le asigne CPU
+*** NI      -> viene de NICE | a valor mas bajo, ese proceso es mas nice, mas bueno con el resto de procesos y les va a ceder el consumo de CPU a ellos (a menor NI, menor PR)
+*** VIRT    -> consumo de memoria virtual
+*** RES     -> consumo de memoria RAM en valores absolutos (KB)
+*** SHR     -> shared memory | memoria compartida con otros procesos en valor absoluto (KB)
+*** S       -> estado
+*** %CPU    -> consumo en % de CPU 
+*** %MEM    -> consumo en % de memoria RAM   
+*** TIME+   -> el tiempo que lleva el proceso en ejecucion
+*** COMMAND ->        
+
+- el comando top siempre va a ordenar los procesos por consumo de CPU (%CPU)
+
+- presionando "h" nos sale la ayuda del comando top 
+- top nos permite ejecutar varias teclas, varias letras, que va n a realizar diferentes acciones de manera interactiva sobre la salida de top
+
+- la "s" nos permite actualizar el tiempo de refresco
+- la "u" nos permite filtrar los procesos por usuario
+- la "e" nos permite cambiar las unidades de valores absolutos de VIRT, RES, etc (KB, MB, GB, TB y PT - peta bytes -)
+- la "o" nos permite filtrar procesos por alguno de los campos de la tabla vvv
+add filter #1 (ignoring case) as: [!]FLD?VAL PID=59 // + ENTER
+    PID USER      PR  NI    VIRT    RES    SHR S  %CPU  %MEM     TIME+ COMMAND                       
+    159 root      20   0       0      0      0 S   0,0   0,0   0:00.00 scsi_eh_4                     
+   1595 lionel    20   0  238684   6400   5888 S   0,0   0,2   0:00.01 xdg-permission- 
+
+- una vez que aplicamos un filtro, si queremos volver atras y aplicar otro debemos salit con Ctrl + c y volver a ejecutar top
+
+- otro ejemplo de filtro con "o" vvv
+
+add filter #1 (ignoring case) as: [!]FLD?VAL %MEM>1
+    PID USER      PR  NI    VIRT    RES    SHR S  %CPU  %MEM     TIME+ COMMAND                       
+   1741 lionel    20   0 4454460 278132 134632 S   3,7   7,0   0:32.21 gnome-shell                   
+   2414 lionel    20   0  565368  62348  46792 S   1,3   1,6   0:13.90 gnome-terminal-      
+
+--------------------
+
+67. Interrupción de procesos
 
 ...
