@@ -3049,7 +3049,7 @@ lionel@lionel-ubuntu:~$ ps
    8912 pts/0    00:00:00 bash
    8918 pts/0    00:00:00 ps
 *** como vemos, se listan solo 2 procesos (el 8912 que es la terminal en la que estamos escribiendo (bash), y el 8918 que es el que se ha generado como consecuencia de la ejecucion del comando ps) 
-*** estos no son los dos unicos comandos en ejecucion, ya que si asi fuera, no estariamos viendo la interfaz grafica de ubunto, la barra de tareas, etc 
+*** estos no son los dos unicos comandos en ejecucion, ya que si asi fuera, no estariamos viendo la interfaz grafica de ubuntu, la barra de tareas, etc 
 *** lo que ocurre es que ps por defecto va a listar unicamente los procesos asociados a la terminal en la que estamos escribiendo 
 *** PID = identificador de cada proceso
 *** TTY = Tele Type Writer || esta relacionado con la terminal en la que se esta ejecutando ese proceso || pts/0 hace referencia a la terminal en la que estamos escribiendo
@@ -3060,7 +3060,7 @@ lionel@lionel-ubuntu:~$ ps x
     PID TTY      STAT   TIME COMMAND
    1529 ?        Ss     0:01 /lib/systemd/systemd --user
 ... 
-*** lista todos los procesos que tenemos ejecutandose en el sistema y ademas nos añade la columna estado (STAT)
+*** "ps x" lista todos los procesos que tenemos ejecutandose en el sistema y ademas nos añade la columna estado (STAT)
 
 lionel@lionel-ubuntu:~$ emacs
 *** en una segunda terminal ejecuto el proceso emacs 
@@ -3076,7 +3076,7 @@ lionel@lionel-ubuntu:~$ ps x
 lionel@lionel-ubuntu:~$ 
 *** en esta nueva imagen que nos devuelve ps x vemos que aparece emacs como uno de los procesos que se encuentra activo 
 *** observamos que el TTY del proceso emacs cambia porque emacs lo ejecutamos en una terminal distinta (pts/1) de la terminal donde ejecutamos ps x (pts/0)
-*** STAT = todas las letras que forman parte del STAT de un proceso tienen un significado especial para ps y estan relacionadas con el estado en el que se encuentra cada proceso vvv 
+*** STAT = todas las letras que forman parte del STAT (estado) de un proceso tienen un significado especial para ps y estan relacionadas con el estado en el que se encuentra cada proceso vvv 
 
 lionel@lionel-ubuntu:~$ man ps
 ...
@@ -3252,5 +3252,177 @@ add filter #1 (ignoring case) as: [!]FLD?VAL %MEM>1
 --------------------
 
 67. Interrupción de procesos
+
+lionel@lionel-ubuntu:~$ emacs 
+*** ejecutamos emacs (en primer plano, mas adelante la explicacion)
+
+lionel@lionel-ubuntu:~$ emacs
+^Clionel@lionel-ubuntu:~$ 
+*** con Ctrl + c interrumpimos el proceso que estaba ejecutando emacs (en primer plano)
+*** Ctrl + c es la forma mas basica para interrumpir la ejecucion de cualquier proceso aunque no va a funcionar para todos los procesos, por esto existen formulas mas avanzadas que las iremos viendo mas adelante 
+
+- esto fue un cierre abrupto del proceso y no es la unica manera de parar la ejecucion de un proceso
+- hay otras formas de hacerlo: nosotros podriamos llegar, por ejemplo, a suspender o a usar la ejecucion de un proceso vvv 
+
+- volvemos a ejecutar emacs (en primer plano) vvv
+lionel@lionel-ubuntu:~$ emacs 
+
+- en otra terminal corremos "ps x" y vemos que emacs se encuentra en un estado de Sleep 
+lionel@lionel-ubuntu:~$ ps x
+ PID TTY      STAT   TIME COMMAND
+...
+2835 pts/0    Sl+    0:00 emacs
+*** que se encuentre en estado de Sleep no signiffica que el proceso se encuentre pausado, significa que esta esperacndo a que se genere algun tipo de evento (oir ejemplo, que el usuario presione alguna tecla, etc) y esto haria que el proceso pase de estar Sleep a estar en ejecucion
+
+- de nuevo en la termian donde estamos ejecutando emacs, ejecutamos Ctrl + z
+lionel@lionel-ubuntu:~$ emacs
+^Z
+[1]+  Stopped                 emacs
+*** en la terminal donde se esta ejecutando emacs con Ctrl Z hemos parado el proceso emacs 
+*** la interfaz grafica sigue ahi pero no podemos hacer nada en ella, y nos sale un confirm que nos dice "Emacs no esta respondiendo" con dos botones: "Interrumpir de manera forzosa" o "Esperar"
+*** no puedo hacer nada en la interfaz grafica porque el proceso esta detenido, esta parado
+*** tambien esta enviando al proceso a segundo plano (hablaremos de esto en la siguiente clase)
+
+- dde nuevo en terminal2 tiramos un "ps x" para confirmar el estado de emacs
+lionel@lionel-ubuntu:~$ ps x
+ PID TTY      STAT   TIME COMMAND
+...
+3102 pts/0    Tl     0:00 emacs
+*** en la otra terminal ahora vemos qeu emacs tiene una "T"
+*** T quiere decir que el proceso esta parado y cuando esta parado no puede recibir ningun tipo de evento, no puede recibir nada
+
+- mientras un proceso este detenido no va a consumir ningun tipo de recurso
+- detener un proceso nos puede servir para, por ejemplo, detener un proceso que esta consumiendo muchos recursos en un momento dado, para liberar esos recursos y que los puedan consumir otros procesos ejecutandose en ese momento
+
+- ahora vemos como reannudar el proceso detenido de emacs vvv
+lionel@lionel-ubuntu:~$ bg %1
+[1]+ emacs &
+lionel@lionel-ubuntu:~$ 
+*** con bg %1 reanudamos el proceso de emacs
+*** ahora observamos que la terminal me deja seguir introduciendo comandos 
+*** esto ocurre porque con Ctrl Z ademas de detener el proceso, lo enviamos a segundo plano, entonces ahora emacs se esta ejecutando en segundo plano dentro de esta terminal y por eso nosotros podemos interactuar con ella a pesar de que este soportando ese proceso
+
+CONCLUSION:
+- "ps" para ver informacion de todos los procesos ejecutandose en la terminal
+- "ps x" para ver informacion de todos los procesos ejecutandose en el sistema
+- "ps aux" simil a "ps x" pero da mas informacion aun de cada proceso
+- "Ctrl + c" detiene  un proceso pero no va a servir para todos los procesos 
+- "Ctrl + z" detiene un proceso y lo envia a segundo plano
+- "bg %1" reanuda un proceso detenido (si el proceso fue detenido con "Ctrl + z", y por ende enviado a segundo plano, ahora cuando lo reanudamos, se estara ejecutando en segundo plano en la terminal en que se haya iniciado, entonces esto nos permitira seguir interactuando con esta terminal (por ejemplo, tirando mas comandos) mientras se sigue ejecutando en segundo plano el proceso de emacs)
+- verificacion de estado del proceso emacs en las distintas instancias vvv 
+
+lionel@lionel-ubuntu:~$ emacs       (STATE Sl+) * estado 1
+lionel@lionel-ubuntu:~$ emacs
+^Z
+[1]+  Stopped                 emacs (STATE Tl)  * estado 2
+lionel@lionel-ubuntu:~$ bg %1
+[1]+ emacs &                        (STATE Sl)  * estado 3
+lionel@lionel-ubuntu:~$ 
+
+--------------------
+
+68. Procesos en segundo plano
+
+- cada vez que ejecutamos un comando en la shell como hemos visto hasta ahora, lo estamos ejecutando en un primer plano vvv
+
+- ejecutamos emacs (proceso) en primer plano vvv
+lionel@lionel-ubuntu:~$ emacs
+| (cursor parpadeante)
+*** vemos que nuestra shell queda bloqueada esperando a que se introduzca una combinacion de teclas o cualquier otro tipo de entrada de teclado 
+
+- ademas de este primer plano (foreground) nosotros tenemos un segundo plano (background)
+- es decir, podemos ejecutar los procesos de manera oculta y de una manera que vana ser inmunes a la entrada de teclado y tambien a combinaciones de teclas como por ejemplo "Ctrl + c" (APARENTEMENTE solo detiene procesos en primer plano) 
+- esto evita que cada vez que ejecutemos un proceso como por ejemplo emacs, la shell quede bloqueada (que es lo que pasa cuando ejecutamos emacs en primer plano)
+
+- aca vemos como ejecutar un proceso como emacs en segundo plano vvv 
+
+lionel@lionel-ubuntu:~$ emacs &
+[1] 3203
+lionel@lionel-ubuntu:~$ ^C
+lionel@lionel-ubuntu:~$ ^C
+lionel@lionel-ubuntu:~$ 
+*** en este ejemplo, "&" le indica a la shell de linux que tiene que ejecutar el proceso (en este caso emacs) en segundo plano 
+*** comprobamos que la interfaz de emacs (la ventana del editor) se abre de la misma manera que ejecutandolo en primer plano 
+*** como podemos observar queda libre (podemos seguir interactuando con ella)
+*** [1] es el identificador dentro de los procesos, de los trabajos, de los jobs que se estan ejecutando en segundo plano (identificador del proceso, entre los procesos corriendo en segundo plano)
+*** 3203 es el PID del proceso
+*** como observamos, ahora "Ctrl + c" no nos sirve para detener este proceso en segundo plano ("Ctrl + c" afecta solamente a lo que esta en primer plano)
+
+lionel@lionel-ubuntu:~$ emacs &
+[1] 3203
+lionel@lionel-ubuntu:~$ jobs
+[1]+  Running                 emacs &
+*** "jobs" lista todos los procesos que se estan ejecutando en segundo plano 
+
+lionel@lionel-ubuntu:~$ ps
+    PID TTY          TIME CMD
+   2359 pts/0    00:00:00 bash
+   3203 pts/0    00:00:00 emacs
+   3451 pts/0    00:00:00 ps
+lionel@lionel-ubuntu:~$ 
+
+- ejecuto pico en segunddo plano para observar como se lista con "jobs" vvv
+lionel@lionel-ubuntu:~$ pico &
+[2] 3454
+lionel@lionel-ubuntu:~$ jobs
+[1]-  Running                 emacs &
+[2]+  Stopped                 pico
+lionel@lionel-ubuntu:~$ ps
+    PID TTY          TIME CMD
+   2359 pts/0    00:00:00 bash
+   3443 pts/0    00:00:00 emacs
+   3454 pts/0    00:00:00 pico
+   3472 pts/0    00:00:00 ps
+
+----------- 
+
+lionel@lionel-ubuntu:~$ emacs           | ejecuto emacs en primer plano
+^Z                                      | detengo el proceso y lo mando a segundo plano
+[1]+  Stopped                 emacs     
+lionel@lionel-ubuntu:~$ bg %1           | reanudo el proceso (ahora en segundo plano, ya que fue enviadoal segundo plano por "Ctrl + z")
+[1]+ emacs &                            
+
+*** como vemos, "bg %1" es para reanudar procesos en segundo plano, siendo %1 el identificador de ese proceso o job 
+*** [1]+ emacs & | observar que "bg %1" nos indica que ha puesto a ejecutar el job [1] en segundo plano (emacs &)
+
+----------
+
+- devolver a primer plano un proceso que esta en segundo plano vvv
+
+lionel@lionel-ubuntu:~$ jobs
+[2]+  Stopped                 pico
+*** compruebo que tengo a pico en segundo plano
+
+lionel@lionel-ubuntu:~$ fg %2
+pico
+*** con "fg" y pasandole el identificador del job que quiero llevar a primer plano (%2) envio al proceso a primer plano 
+*** en este ejemplo, apenas ejecute "fg %2" se abrio el editor pico en la shell (como hubiese pasado si lo hubiese ejecutado en primer plano) 
+*** fg hace referencia a foreground
+
+- otro ejemplo con emacs vvv 
+
+lionel@lionel-ubuntu:~$ emacs           | ejecuto emacs en primer plano
+^Z                                      | detengo el proceso y lo envio a segundo plano
+[1]+  Stopped                 emacs
+lionel@lionel-ubuntu:~$ jobs            | verifico que emacs se encuentra detenido en segundo plano
+[1]+  Stopped                 emacs
+lionel@lionel-ubuntu:~$ bg %1           | reanudo la ejecucion en segundo plano del proceso
+[1]+ emacs &
+lionel@lionel-ubuntu:~$ jobs            | verifico que el proceso en segundo plano ahora se encuentra corriendo
+[1]+  Running                 emacs &
+lionel@lionel-ubuntu:~$ fg %1           | mando al proceso a primer plano
+emacs
+*** vemos que al estar ejecutandose emacs en primer plano, la shell se encuentra bloqueada permitiendo recibir entradas de teclado, por ejemplo "Ctrl + c" vvv
+
+lionel@lionel-ubuntu:~$ fg %1
+emacs
+^Clionel@lionel-ubuntu:~$ 
+*** al estar ejecutandose el proceso en primer plano, puedo interrumpirlo con "Ctrl + c" (comando que no me sirve para interrumpir procesos en segundo plano)
+
+- en la proxima clase veremos como detener un proceso que se encuentra en segundo plano sin necesidad de tener que traerlo a primer plano para poder interrumpirlo con "Ctrl + c", tiene que ver con Señales (Signals)
+
+--------------------
+
+69. Señales (Signals)
 
 ...
