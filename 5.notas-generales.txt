@@ -245,8 +245,10 @@ lionel@lionel-ubuntu:~$ tree / -L 1 -> primer nuivel de la jerarquia
     A dia de hoy, todos esos binarios esenciales que almacenaba, estan dentro de la carpeta /user/bin
 2) /boot
     continene los archivos que se utilizan para arrancar el SO
-    concretamente va a contener archivos del Kernel de Linux (tambien denominados archivos del cargador de arranque) y dependiendo del software (distribucion (?)) que utilizemos para cargar el arranque seran los ficheros y directorios que contendra (del Kernel (?))
+    concretamente va a contener archivos del Kernel de Linux (tambien denominados archivos del cargador de arranque) y dependiendo del software (distribucion (?)) que utilizemos para cargar el arranque tendra un conjunto de ficheros y directorios u otros diferentes
     Linux utiliza un cargador de arranque que se llama grub (cd /boot/grub)
+    *** esto lo que hace es que cuando nosotros encendemos el ordenador el SO no esta cargado en memoria y necesitamos un progrma inicial que lo cargue (cargue los archivos del kernel, etc)
+    *** ese programa que se encarga de cargar el SO e inicializarlo es concretamente grub
 3) /cdrom
    esta ahi por razones historicas
    hoy practicamente no utilizamos cdrom, tenemos cosas en la nube, tenemos USBs 
@@ -3650,5 +3652,105 @@ CONCLUSION:
 --------------------
 
 70. Init, demonios y servicios
+
+- Proceso INIT 
+
+- en las distintas distribuciones linux, INIT va a ser el primer proceso que se inicie cuando arranque el sistema 
+- va a ser iniciado por el kernel durante el proceso de arranque cuando nosotros encendemos el ordenador, y en el caso de que no sea capaz de iniciarlo se va a producir un error que se denomina "KERNEL PANIC" 
+- este error no va a permitir que arranque el sistema y se va a detener por completo todo 
+- el proceso INIT, al ser el primer proceso que se arranca, casi siempre va a recibir el PID 1 (el identificador de primer proceso)
+- INIT es un proceso que ademas va a continuar ejecutandose en segundo plano siempre hasta que el sistema se apague y va a ser el ancestro directo o indirecto de todos los demas procesos que tengamos en nuestro sistema 
+
+lionel@lionel-ubuntu:~$ ps aux
+USER         PID %CPU %MEM    VSZ   RSS TTY      STAT START   TIME COMMAND
+root           1  0.8  0.2 166632 11720 ?        Ss   20:52   0:02 /sbin/INIT auto noprompt splash
+
+- este proceso INIT (PID 1) se inició cunado encendí la maquina y fue arrancando el resto de procesos del sistema, que van manteniendo todo lo que estamos viendo en este momento 
+- entoces el proceso INIT va a iniciar otros procesos que se requieren para el funcionamiento del SO y para realizar otras tareas en espacio de usuario, como por ejemplo soportar la terminal en la que estamos, ver de manera interactiva el escritorio y la barra de tareas, etc 
+
+- estos procesos que se van ejecutando a partir del proceso INIT normalmente se suelen ejecutar en segundo plano, es decir, en modo no interactivo (estos procesos, con los PID 7, 9, 10, etc, no van a recibir entrada de teclado, no van a recibir combinaciones de tecla)
+- estos procesos estan simplemente en segundo plano realizando las tareas que se tienen que hacer para mantener todo lo que nosotros vemos en este momento 
+
+- estos procesos que se estan ejecutando en segundo plano y que son transparentes para los usuarios, en sistemas operativos Linux, y tambien incluso en sistemas operativos anteriores como Unix, reciben el nombre de DEMONIOS 
+
+- se denominan DEMONIOS porque estan ejecutandose por detras sin que nosotros los podamos ver, pero estan realizando tareas que soportan el SO 
+
+----- 
+
+- SERVICIOS
+
+- ¿que diferencia hay entre un SERVICIO y un DEMONIO?
+
+- los SERVICIOS por norma general van a ser DEMONIOS 
+- al final un SERVICIO no va a ser mas que un programa que se va a ejecutar, un proceso que tambien vamos a tener ejecutandose en nuestro sistema pero que va a responder a las peticiones de otros programas, de otros procesos, a traves de algun mecanismo de comunicacion entre procesos como puede ser por ejemplo LA RED 
+
+- un servicio es al final lo que proporciona un servidor 
+- por ejemplo cuando nosotros tenemos un servidor de aplicacion que esta proporcionando, sirviendo, una aplicacion web, lo que va a tener corriendo son una serie de servicios de manera que cuando nosotros le hagamos una peticion a traves de LA RED (un paquetito de RED, por ejemplo, HTTP o HTTPS, utilizando algun protocolo), ese servicio recibe esa comunicacion a traves de LA RED y nos responde a traves de LA RED 
+- sin embargo, este servicio en el fondo va a ser tambien un programa, va a ser un proceso, que va a estar ejecutandose en segundo plano, que nosotros por norma general no vamos a interactuar de manera directa con el teclado, combinaciones de teclas y demas, pero si que va a permitir recibir ciertas comunicaciones, con lo cual es importante comprender la diferenciacion entre SERVICIO y DEMONIO 
+
+- DEMONIO se denomina a cualquier proceso, cualquier programa en general, que se esta ejecutando en segundo plano, que no recibe interaccion de los usuarios 
+- SERVICIO es practicamente lo mismo, pero que va a recibir cierta interaccion con otros procesos como por ejemplo a traves de LA RED
+
+- normalmente un SERVICIO va a ser un DEMONIO pero no tiene por que serlo 
+- por ejemplo, podriamos tener un programa que se esta ejecutando en primer plano y que de alguna manera actua como SERVICIO recibiendo peticiones pero que nosotros si que podriamos interactuar con él 
+
+- ahora sabemos que todos los DEMONIOS y SERVICIOS que estan corriendo ahora mismo en nuestra maquina van a ser iniciados por INIT y concretamente se van a corresponder, se van a basar en una serie de SCRIPTS que se van a encontrar en una ubicacion concreta de nuestro sistema de ficheros vvv
+
+lionel@lionel-ubuntu:~$ ls -lah /etc/init.d
+... 
+
+- aqui vamos a encontrar una serie de SCRIPTS que se van a corresponder con esos SERVICIOS, esos DEMONIOS que va a ir arrancando el proceso INIT y que en este momento se encuentran en ejecucion en segundo plano de nuestra maquina linux 
+
+- estos SCRIPTS de inicio (lo que serian SERVICIOS y DEMONIOS) los tenemos en /etc/init.d y normalmente se suelen diferenciar en dos tipos:
+- SCRIPTS K -> se denominan k porque son como kill scripts
+- SCRIPTS S -> viene de startup scripts
+
+- los SCRIPTS K siempre se van a ejecutar antes que los SCRIPTS de inicio (es decir, que los SCRIPTS S), los va a arrancar antes el proceso INIT
+
+----- 
+
+- si queremos saber cuales de los SCRIPTS que contiene /etc/init.d, son los SERVICIOS o DEMONIOS que se van a iniciar antes (los K), podemos hacerlo mirando en los archivos de configuracion dentro de /etc/init vvv 
+
+lionel@lionel-ubuntu:~$ ls /etc/init
+whoopsie.conf
+*** este es el programita que se inicia al comienzo de todo (whoopsie.conf)
+*** vemos que se correspondo con el script /etc/init.d/whoopsie
+
+lionel@lionel-ubuntu:~$ ls /etc/init.d
+acpid       apparmor      bluetooth         cups          gdm3         irqbalance         kmod           plymouth      pulseaudio-enable-autospawn  speech-dispatcher  ufw                  whoopsie
+alsa-utils  apport        console-setup.sh  cups-browsed  grub-common  kerneloops         open-vm-tools  plymouth-log  rsync                        spice-vdagent      unattended-upgrades  x11-common
+anacron     avahi-daemon  cron              dbus          hwclock.sh   keyboard-setup.sh  openvpn        procps        saned                        udev               uuidd
+
+lionel@lionel-ubuntu:~$ cat /etc/init.d/whoopsie 
+#!/lib/init/init-d-script
+### BEGIN INIT INFO
+# Provides:          whoopsie
+# Required-Start:    $network $syslog $remote_fs
+# Required-Stop:     $network $syslog $remote_fs
+# Default-Start:     2 3 4 5
+# Default-Stop:      1
+# Short-Description: crash report submission daemon
+# Description:       Debian init script to start the crash report
+#                    submission daemon
+### END INIT INFO
+DAEMON=/bin/sh -c 'export CRASH_DB_URL=https://daisy.ubuntu.com; exec whoopsie -f'
+
+*** observamos que este SCRIPT es un SCRIPT de inicializacion de INIT, que lo que hace es arrancar un reporte de crash, un reporte de error para el DEMONIO "submission daemon" en concreto 
+*** entonces esto parece ser un SCRIPT que lo que va a hacer es ir registrando errores de un DEMONIO que se va a arrancar tambien al principio de todo 
+
+- por otro lado tenemos los SCRIPTS S (de startup) que se van a ir arrancando despues y si quisiesemos ver cuales son esos SCRIPTS tenemos sus ficheros de configuracion en /etc/default vvv 
+
+lionel@lionel-ubuntu:~$ ls /etc/default/
+acpid         alsa             anacron  avahi-daemon   cron  google-chrome  grub.d     intel-microcode  kerneloops  locale               openvpn  saned  useradd
+acpi-support  amd64-microcode  apport   console-setup  dbus  grub           im-config  irqbalance       keyboard    networkd-dispatcher  rsync    ufw
+
+*** son pequeñas configuraciones que la maquina va arrancando junto con esos SCRIPTS (los S) para darles contexto y demas
+*** aqui tenemos algunos muy interesantes como por ejemplo grub que es el modulo de arranque del propio SO (hicimos alguna referencia en el VIDEO 25) 
+*** tenemos cron, que es otra utilidad muy interesante que lo que hace es que podamos ejecutar tareas de manera periodica
+*** son en resumen los archivos de configuracion de SERVICIOS y DEMONIOS S que se van a ir ejecutando despues de los SCRIPTS K 
+
+--------------------
+
+71. Gestión de servicios: init.d, systemctl, service
 
 ...
