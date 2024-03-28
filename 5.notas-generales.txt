@@ -3154,7 +3154,7 @@ MiB Swap:   2140,0 total,   2140,0 free,      0,0 used.   2563,7 avail Mem
       1 root      20   0  166788  11776   8192 S   0,0   0,3   0:02.40 systemd    
 ...
 *** la salida de top nos ofrece una cabecera arriba con informacion general sobre nuestro sistema 
-*** tabla con diversos valores de cada uno de los procesos que tenemos en ejecucion
+*** ademas, una tabla con diversos valores de cada uno de los procesos que tenemos en ejecucion
 *** esta informacion se actualiza cada 3 segundos por default (mas adelante veremos como setear este valor)
 
 --------------------
@@ -3167,6 +3167,7 @@ Tasks: 290 total,   1 running, 289 sleeping,   0 stopped,   0 zombie
 MiB Mem :   3870,6 total,   1907,2 free,    995,4 used,    968,0 buff/cache
 MiB Swap:   2140,0 total,   2140,0 free,      0,0 used.   2588,8 avail Mem 
 
+LINEA 1
 top - 22:50:05 up 18 min,  1 user,  load average: 0,00, 0,04, 0,08
 *** 22:50:05                       -> hora actual de nuestro sistema 
 *** up 18 min                      -> tiempo que nuestro equipo lleva encendido 
@@ -3178,6 +3179,7 @@ top - 22:50:05 up 18 min,  1 user,  load average: 0,00, 0,04, 0,08
 *** 0,08                           -> en los ultimos 15 minutos 0.08 procesos compartiendo CPU
 *** si estos numeros se encuentran por debajo de 1, en general quiere decir que la maquina tiene bastantes recursos y esta bastante libre
 
+LINEA 2
 Tasks: 290 total,   1 running, 289 sleeping,   0 stopped,   0 zombie
 *** Tasks: 290 total -> aca tenemos el total de procesos que tenemos en ejecucion en nuestra maquina
 *** 1 running        -> de los 290 procesos 1 esta corriendo
@@ -3185,6 +3187,7 @@ Tasks: 290 total,   1 running, 289 sleeping,   0 stopped,   0 zombie
 *** 0 stopped        -> 0 procesos parados 
 *** 0 zombie         -> 0 zombies (hablaremos de esto mas adelante)
 
+LINEA 3
 %Cpu(s):  0,2 us,  0,0 sy,  0,0 ni, 99,8 id,  0,0 wa,  0,0 hi,  0,0 si,  0,0 st
 *** aca tenemos el consumo de CPU. Se va a dividir en diferentes valores
 *** 0,2 us  -> el consumo de CPU que se realiza por procesos de usuarios (0.2%)
@@ -3192,6 +3195,7 @@ Tasks: 290 total,   1 running, 289 sleeping,   0 stopped,   0 zombie
 *** 0,0 ni  -> el consumo de CPU de procesos nice, que por decirlo asi le ceden la CPU a otros procesos que tengan mas prioridad (0.0%)
 *** 99,8 id -> el consumo de CPU que tenemos libre, es decir, que no se esta utilizando, 99.8%, lo que significa que esta maquina en este momento se encuentra con una carga de trabajo muy baja
 
+LINEA 4
 MiB Mem :   3870,6 total,   1907,2 free,    995,4 used,    968,0 buff/cache
 *** consumo de memoria RAM 
 *** 3870,6 total      -> podemos ver los gigas que tiene esta maquina dedicados, casi 4GB (3870.6 megas)
@@ -3199,6 +3203,7 @@ MiB Mem :   3870,6 total,   1907,2 free,    995,4 used,    968,0 buff/cache
 *** 995,4 used        -> casi 1GB ocupado
 *** 968,0 buff/cache  -> casi 1GB en buffer/cache
 
+LINEA 5
 MiB Swap:   2140,0 total,   2140,0 free,      0,0 used.   2588,8 avail Mem 
 *** aca tenemos la memoria de SWAP, para hacer SWAPING
 2140,0 total     -> 2.1GB (ya hablamos de esto cuando hablamos del fichero de SWAPING, es decir, el fichero /swapfile)         
@@ -3615,7 +3620,7 @@ lionel@lionel-ubuntu:~$ ps
 
 69.8 Las señales tienen permisos y privilegios 
 
-- Nosotros no podemos mandar una señal a un programa si no somos superusuario o si no somos el usuario propietario de ese proceso
+- Nosotros no podemos mandar una señal a un programa si no somos el superusuario o si no somos el usuario propietario de ese proceso
 
 lionel@lionel-ubuntu:~$ emacs &
 [1] 3972
@@ -3663,7 +3668,7 @@ CONCLUSION:
 
 lionel@lionel-ubuntu:~$ ps aux
 USER         PID %CPU %MEM    VSZ   RSS TTY      STAT START   TIME COMMAND
-root           1  0.8  0.2 166632 11720 ?        Ss   20:52   0:02 /sbin/INIT auto noprompt splash
+root           1  0.8  0.2 166632 11720 ?        Ss   20:52   0:02 /sbin/init auto noprompt splash
 
 - este proceso INIT (PID 1) se inició cunado encendí la maquina y fue arrancando el resto de procesos del sistema, que van manteniendo todo lo que estamos viendo en este momento 
 - entoces el proceso INIT va a iniciar otros procesos que se requieren para el funcionamiento del SO y para realizar otras tareas en espacio de usuario, como por ejemplo soportar la terminal en la que estamos, ver de manera interactiva el escritorio y la barra de tareas, etc 
@@ -3673,7 +3678,7 @@ root           1  0.8  0.2 166632 11720 ?        Ss   20:52   0:02 /sbin/INIT au
 
 - estos procesos que se estan ejecutando en segundo plano y que son transparentes para los usuarios, en sistemas operativos Linux, y tambien incluso en sistemas operativos anteriores como Unix, reciben el nombre de DEMONIOS 
 
-- se denominan DEMONIOS porque estan ejecutandose por detras sin que nosotros los podamos ver, pero estan realizando tareas que soportan el SO 
+- estos procesos se denominan DEMONIOS porque estan ejecutandose por detras sin que nosotros los podamos ver, pero estan realizando tareas que soportan el SO 
 
 ----- 
 
@@ -3749,8 +3754,487 @@ acpi-support  amd64-microcode  apport   console-setup  dbus  grub           im-c
 *** tenemos cron, que es otra utilidad muy interesante que lo que hace es que podamos ejecutar tareas de manera periodica
 *** son en resumen los archivos de configuracion de SERVICIOS y DEMONIOS S que se van a ir ejecutando despues de los SCRIPTS K 
 
+CONCLUSION:
+- los SCRIPTS de inicio, lo que serian los SERVICIOS y DEMONIOS que arranca el proceso INIT los tenemos en el directorio /etc/init.d 
+- estos SCRIPTS se agrupan en 2 tipos: los tipo K (de kill-scripts) y los tipo S (de startup-scripts)
+- los kill-scripts siempre se van a ejecutar antes que los startup-scripts (los va a arrancar antes el proceso INIT)
+- los ficheros de configuracion de los kill-scripts se encuentran en /etc/init
+- los ficheros de configuracion de los startup-scripts se encuentran en /etc/default
+- fichero de configuracion /etc/init/whoopsie.conf ----------> se corresponde con -----------> kill-scipt /etc/init.d/whoopsie 
+- fichero de configuracion /etc/default/cron       ----------> se corresponde con -----------> startup-scipt /etc/init.d/cron 
+
 --------------------
 
 71. Gestión de servicios: init.d, systemctl, service
+
+- hay diferentes formas de interactuar con SERVICIOS y DEMONIOS dentro de linux vvv
+
+-----
+
+- sacamos el contenido por pantalla del script apparmor y comprobamos que adminte una serie de argumentos vvv
+lionel@lionel-ubuntu:/etc/init.d$ cat apparmor
+...
+usage() {
+    echo "Usage: $0 {start|stop|restart|reload|force-reload|status}"
+}
+...
+*** estos argumentos nos van a permitir interactuar con este servicio
+
+-----
+
+- ejecutamos el script apparmor pasandole el argumento status para saber en que estado se encuentra actualmente este DEMONIO en nuestro sistema vvv
+- para ejecutar un script lo hacemos anteponiendo "./" vvv 
+
+lionel@lionel-ubuntu:/etc/init.d$ ./apparmor status
+...
+Active: active (exited) since Tue 2024-03-26 21:26:09 -03; 28min ago
+... 
+*** vemos que la shell nos indica que el servicio esta activo desde que encendimos la maquina, hace 28 minutos
+
+-----
+
+- intentamos parar el servicio y comprobamos que el sistema nos pide nuestras credenciales ya que no somos los propietarios del programa ni estamos logueados con root
+- lo que hace linux por detras cuando ingresamos nuestro pass es utilizar sudo para elevar privilegios y ejecutar esta accion en nombre de root 
+- en este ejemplo, vemos que al demorar mucho en ingresar el pass, ha fallado
+
+lionel@lionel-ubuntu:/etc/init.d$ ls -lah apparmor 
+-rwxr-xr-x 1 root root 3,7K feb 23  2022 apparmor
+lionel@lionel-ubuntu:/etc/init.d$ ./apparmor stop
+Stopping apparmor (via systemctl): apparmor.serviceFailed to stop apparmor.service: Access denied
+See system logs and 'systemctl status apparmor.service' for details.
+ failed!
+lionel@lionel-ubuntu:/etc/init.d$ 
+
+-----
+
+- ahora lo ejecutamos nuevamente, y al introducir el pass de lionel detenemos el servicio, ejecutando la accion en nombre de root (esto es posible porque lionel esta en el grupo sudo) vvv
+
+lionel@lionel-ubuntu:/etc/init.d$ ./apparmor stop *** ingresando correctamente nuestras credenciales
+Stopping apparmor (via systemctl): apparmor.service.
+
+lionel@lionel-ubuntu:/etc/init.d$ ./apparmor status
+...
+Active: inactive (dead) since Tue 2024-03-26 22:07:44 -03; 1min 36s ago
+...
+
+----- 
+
+- reanudamos el SERVICIO vvv 
+
+lionel@lionel-ubuntu:/etc/init.d$ ./apparmor start *** ingresando correctamente nuestras credenciales
+
+CONCLUSION:
+- esta opcion de ir invocando cada uno de estos scripts para realizar la accion que queramos sobre cada uno de los servicios que se este ejecutando en un momento dado, es quiza la forma mas rudimentaria de interactuar con SERVICIOS y DEMONIOS; quiza sea tambien la forma que nos proporciona mas flexibilidad 
+
+-----
+
+SYSTEMD 
+
+- si quiero utilizar una herramienta de mas alto nivel, que me abstraiga del nombre de los scripts, que me de una vision mas agregada de como se encuentran todos los servicios y demas en mi sistema, puedo utilizar systemd
+
+- systemd es un gestor de servicios para sistemas operativos linux que va a incluir soporte para iniciar, detener y gestionar servicios y demonios entre muchas otras cosas 
+
+- vamos a empezar con una de las herramientas mas importantes de esta suite, de este framework systemd, que es systemctl vvv
+
+lionel@lionel-ubuntu:~$ systemctl stop apparmor *** ingresando correctamente nuestras credenciales
+*** paramos el servicio apparmor
+
+lionel@lionel-ubuntu:~$ sudo systemctl stop apparmor *** ingresando correctamente nuestras credenciales
+*** otra forma de realizar mediante el comando sudo la misma accion
+
+lionel@lionel-ubuntu:~$ systemctl start apparmor
+*** reanudo el servicio
+
+-----
+
+SERVICE 
+
+- si yo quiero irme a otro framework de herramientas de mas alto nivel que va a envolver, por decirlo asi, el comando systemctl y otra serie de comandos de systemd, puedo utilizar la herramienta service 
+*** al profesor le parece la herramienta mas interesante y la mas sencilla, y es la que usa habitualmente para gestionar servicios
+
+- el comando service es un script que va a envolver el comportamiento de systemctl y en ultima instancia de init.d, de hecho lo que va a hacer es tratar de utilizar una herramienta que se usaba antes para gestionar servicios que sellama UPSDAT; al dia de hoy ya no la tenemos, por ejemplo, en ubuntu
+- el comando service lo que hace es que si no encuentra UPSDAT trata de buscar systemctl; si encuentra systemctl hace uso de systemctl por debajo, y si no lo encuentra lo que hace es que directamente ya se va a los scripts que estan en /etc/init.d y utiliza los comandos de esos scripts (CALCULO quee se refiere a ejecutarlos de la primer forma que vimos -> "./apparmor xxx") vvv 
+
+lionel@lionel-ubuntu:~$ service apparmor status
+lionel@lionel-ubuntu:~$ sudo service apparmor stop
+lionel@lionel-ubuntu:~$ service apparmor status
+lionel@lionel-ubuntu:~$ sudo service apparmor start
+lionel@lionel-ubuntu:~$ service apparmor status
+
+-----
+
+- si quisiesemos listar todos los servicios que tenemos en este momento en ejecucion en nuestro sistema, podemos hacerlo utilizando systemctl de la siguiente manera vvv 
+
+lionel@lionel-ubuntu:~$ systemctl list-units --type=service
+  UNIT                                                  LOAD   ACTIVE SUB     DESCRIPTION   
+_______________________________________________________________________________________________                                                  
+  accounts-daemon.service                               loaded active running Accounts Service
+  acpid.service                                         loaded active running ACPI event daemon
+  ***
+LOAD   = Reflects whether the unit definition was properly loaded.
+ACTIVE = The high-level unit activation state, i.e. generalization of SUB.
+SUB    = The low-level unit activation state, values depend on unit type.
+63 loaded units listed. Pass --all to see loaded but inactive units, too.
+To show all installed unit files use 'systemctl list-unit-files'.
+lionel@lionel-ubuntu:~$ 
+
+-----
+
+- normalmente no vamos a estar listando todos los servicios sino que lo que vamos a hacer son acciones especificas sobre un servicio concreto 
+- Por ejemplo, si yo quiero convertir mi maquina ubuntu en un servidor de aplicacion para servir una aplicacion web, tendriamos que instalar el servicio apache2 vvv
+
+lionel@lionel-ubuntu:~$ sudo apt install apache2
+*** es una simulacion, no lo instalé realmente en mi máquina (por ahora) 
+
+- cuando yo instalo apache2 (que es un servidor de aplicacion) para poder servir una aplicacion web, una pagina web, lo que estoy haciendo es instalar un nuevo servicio en mi maquina que yo tengo que ir gestionando: que tengo que ir arrancando, que tengo que ir deteniendo, etc, etc
+- son este tipo de acciones las que vamos a ir haciendo en nuestro dia a dia con todos estos comandos que el profesor nos ha ido enseñando
+
+CONCLUSION:
+
+- argumentos para interactuar con el SERVICIO apparmor = {start|stop|restart|reload|force-reload|status}
+
+- Forma 1 de interactuar con SERVICIOS y DEMONIOS (interactuando directamente con los servicios)
+lionel@lionel-ubuntu:/etc/init.d$ ./apparmor status (visualizamos el estado del SERVICIO)
+lionel@lionel-ubuntu:/etc/init.d$ ./apparmor stop (detenemos el SERVICIO)
+lionel@lionel-ubuntu:/etc/init.d$ ./apparmor start (reanudamos el SERVICIO)
+*** anteponemos "*/" para poder interactuar el SERVICIO
+
+- Forma 2 de interactuar con SERVICIOS y DEMONIOS (usando la suit systemd y su comando para gestionar servicios systemctl)
+lionel@lionel-ubuntu:~$ systemctl status apparmor.service  (visualizamos el estado del SERVICIO)
+lionel@lionel-ubuntu:~$ systemctl stop apparmor.service (detenemos el SERVICIO)
+lionel@lionel-ubuntu:~$ systemctl restart apparmor.service (reanudamos el SERVICIO)
+
+- Forma 3 de interactuar con SERVICIOS y DEMONIOS (usando el comando service)
+lionel@lionel-ubuntu:~$ sudo service apparmor status (visualizamos el estado del SERVICIO)
+lionel@lionel-ubuntu:~$ sudo service apparmor stop (detenemos el SERVICIO)
+lionel@lionel-ubuntu:~$ sudo service apparmor restart (reanudamos el SERVICIO)
+
+- comando para listar todos los servicios que tenemos en este momento en ejecucion en nuestro sistema
+lionel@lionel-ubuntu:~$ systemctl list-units --type=service
+
+--------------------
+
+72. Las 6 etapas del proceso de arranque de Linux
+
+- ¿Alguna vez te has preguntado que es lo ocurre desde que pulsas el botón de encendido de tu ordenador hasta que se carga el sistema operativo?
+
+- Las siguientes son las 6 etapas de alto nivel de un típico proceso de arranque de Linux:
+BIOS     | Basic Input/Output System executes MBR 
+MBR      | Master Boot Record executes GRUB      
+GRUB     | Grand Unified Bootloader executes Kernel
+Kernel   | Kernel execites /sbin/init (proceso INIT -PID 1-)
+Init     | Init (PID 1) executes runlevel programs 
+Runlevel | Runlevel Programs are executed from /etc/rc.d/rc*.d/ 
+
+1. BIOS (Basic Input/Output System)
+BIOS significa Sistema Básico de Entrada/Salida
+Realiza algunas comprobaciones de integridad del sistema
+Busca, carga y ejecuta el programa cargador de arranque.
+Busca el gestor de arranque en el disquete, cd-rom o disco duro. Puede pulsar una tecla (normalmente F12 o F2, pero depende de su sistema) durante el arranque de la BIOS para cambiar la secuencia de arranque.
+Una vez que el programa de arranque es detectado y cargado en la memoria, la BIOS le da el control.
+Así que, en términos simples, BIOS carga y ejecuta el cargador de arranque MBR.
+
+2. MBR
+MBR significa Master Boot Record.
+Se encuentra en el primer sector del disco de arranque. Normalmente es /dev/hda, o /dev/sda (fichero propiedad de root)
+El MBR tiene un tamaño inferior a 512 bytes. Tiene tres componentes: 
+    1) información del cargador de arranque primario en los primeros 446 bytes 
+    2) información de la tabla de particiones en los siguientes 64 bytes 
+    3) comprobación de validación del mbr en los últimos 2 bytes.
+Contiene información sobre GRUB (o LILO en sistemas antiguos).
+Así que, en términos simples, el MBR carga y ejecuta el cargador de arranque GRUB.
+
+3. GRUB
+GRUB significa Grand Unified Bootloader.
+Si tiene varias imágenes del kernel instaladas en su sistema, puede elegir cuál se ejecutará.
+GRUB muestra una pantalla de bienvenida, espera unos segundos, si no introduce nada, carga la imagen del kernel por defecto como se especifica en el archivo de configuración de grub.
+GRUB tiene el conocimiento del sistema de archivos (el antiguo cargador de Linux LILO no entendía el sistema de archivos).
+El archivo de configuración de grub es /boot/grub/grub.conf (/etc/grub.conf es un enlace a esto)
+Así que, en términos simples, GRUB sólo carga y ejecuta las imágenes del Kernel y del initrd.
+
+4. Kernel
+Monta el sistema de archivos raíz como se especifica en el "root=" en grub.conf
+El Kernel ejecuta el programa /sbin/init
+Como init fue el primer programa ejecutado por el Kernel de Linux, tiene el id de proceso (PID) de 1.
+initrd significa Disco RAM Inicial.
+El initrd es utilizado por el kernel como sistema de archivos raíz temporal hasta que el kernel es arrancado y el sistema de archivos raíz real es montado. También contiene los controladores necesarios compilados en su interior, que le ayudan a acceder a las particiones del disco duro y a otro hardware.
+
+5. Init
+Lee el archivo /etc/inittab para decidir el nivel de ejecución de Linux.
+Los niveles de ejecución disponibles son los siguientes
+0 - halt
+1 - Modo de usuario único
+2 - Multiusuario, sin NFS
+3 - Modo multiusuario completo
+4 - sin uso
+5 - X11
+6 - reinicio
+
+Init identifica el nivel por defecto sus ficheros de configuracion y lo utiliza para cargar el resto de programas.
+Ejecuta el comando runlevel en su sistema para identificar el nivel de ejecución por defecto
+Típicamente, el nivel de ejecución por defecto se establece en 3 o 5.
+
+6. Programas de nivel de ejecución
+Cuando el sistema Linux está arrancando, puede ver que se inician varios servicios. Estos son los programas de nivel de ejecución, ejecutados desde el directorio de nivel de ejecución definido por su nivel de ejecución.
+Dependiendo de su configuración de nivel de init por defecto, el sistema ejecutará los programas desde uno de los siguientes directorios.
+Nivel de ejecución 0 - /etc/rc.d/rc0.d/
+Nivel de ejecución 1 - /etc/rc.d/rc1.d/
+Ejecuta el nivel 2 - /etc/rc.d/rc2.d/
+Ejecutar el nivel 3 - /etc/rc.d/rc3.d/
+Ejecutar el nivel 4 - /etc/rc.d/rc4.d/
+Ejecutar el nivel 5 - /etc/rc.d/rc5.d/
+Ejecutar el nivel 6 - /etc/rc.d/rc6.d/
+
+Ten en cuenta que también hay enlaces simbólicos disponibles para estos directorios bajo /etc directamente. Así, /etc/rc0.d está vinculado a /etc/rc.d/rc0.d.
+Bajo los directorios /etc/rc.d/rc*.d/, verá programas que comienzan con S y K.
+Los programas que empiezan por S se utilizan durante el arranque. S para el arranque.
+Los programas que comienzan con K se utilizan durante el apagado. K para matar.
+Hay números justo al lado de S y K en los nombres de los programas. Estos son el número de secuencia en el que los programas deben ser iniciados o eliminados.
+Por ejemplo, S12syslog es para iniciar el deamon del syslog, que tiene el número de secuencia 12. S80sendmail es para iniciar el demonio sendmail, que tiene el número de secuencia 80. Así, el programa syslog se iniciará antes que sendmail.
+
+¡Bien! Pues ahora ya sabes lo que ocurre durante el arranque de un sistema operativo Linux.
+¡Espero que te haya resultado interesante y nos vemos en la siguiente sección!
+
+Referencia (fuente): https://www.thegeekstuff.com/2011/02/linux-boot-process/
+
+CONCLUSION:
+1) en términos simples, BIOS carga y ejecuta el cargador de arranque MBR.
+2) en términos simples, el MBR carga y ejecuta el cargador de arranque GRUB.
+3) en términos simples, GRUB sólo carga y ejecuta las imágenes del Kernel y del initrd (Disco RAM Inicial).
+4)
+ 4.1) El Kernel ejecuta el programa /sbin/init
+ 4.2) El initrd es utilizado por el kernel como sistema de archivos raíz temporal hasta que el kernel es arrancado y el sistema de archivos raíz real es montado. También contiene los controladores necesarios compilados en su interior, que le ayudan a acceder a las particiones del disco duro y a otro hardware.
+...
+
+--------------------
+
+73. Apagado del sistema: halt, poweroff, reboot, shutdown 
+
+- apagar el sistema linux implica la terminacion ordenada de todos los procesos que tenemos en ejecucion es este momento, ademas de realizar otras tareas vitales de mantenimiento como por ejemplo sincronizar los sitemas de ficheros que tenemos montados, almancenar cierta informacion que se encuentra de manera temporal almacenada, etc, todo esto antes de que el sistema se apague definitivamente 
+
+- hay varios comandos que podemos utilizar para detener el sistema desde la terminal vvv 
+
+HALT | PPOWEROFF | REBOOT
+
+- todos estos comandos los debemos utilizar con sudo, es decir, con privilegios de administracion (ya que estaremos deteniendo todos los procesos que esten en ejecucion)
+
+lionel@lionel-ubuntu:~$ sudo halt
+lionel@lionel-ubuntu:~$ sudo poweroff
+lionel@lionel-ubuntu:~$ sudo reboot
+*** los 3 comandos sirven para lo mismo 
+*** hice una prueba con halt y medio que se tildó todo, tuve que reiniciar la PC host (TENER CUIDADO)
+
+----- 
+
+SHUTDOWN 
+
+- me va a permitir realizar las mismas acciones que los 3 comandos anteriores, pero me permite modificar un poquito mas el comportamiento, meter por ejemplo cierto tipo de retardo, y realizar todas las acciones que queramos en el momento de mandar la orden de apagar todos los procesos (ver mas informacion con el comando man shutdown)
+
+lionel@lionel-ubuntu:~$ sudo shutdown -h now
+*** por norma general cuando ejecutamos sudo shutdown va a tener un retardo de unos segundos hasta que detiene por completo el sistema
+*** con "-h now" le estamos indicando que nos apague el sisema sin ningun tipo de retardo, es decir, que no se cumpla el retardo por default de la orden shutdown 
+
+lionel@lionel-ubuntu:~$ sudo shutdown -r now
+*** esto lo que va a hacer es reiniciar el sistema de inmediato
+*** este lo probé y funcionó bien, se reinició la maquina linux correctamente 
+
+CONCLUSION:
+- al final, todo lo que tiene que ver con apagar o reiniciar no es mas que tomar todos los procesos que tenemos en ejecucion en ese momento y detenerlos o detenerlos y volverlos a iniciar
+
+--------------------
+
+74. Cambio de prioridad: nice, renice
+
+- primero vamos a hablar del concepto de nice y prioridad vvv 
+
+- repaso video 66 (66. Visualización dinámica de procesos) vvv 
+
+- analisis de la tabla (comando top) vvv 
+
+lionel@lionel-ubuntu:~$ top
+...
+  PID    USER      PR  NI    VIRT    RES    SHR S  %CPU  %MEM     TIME+ COMMAND                                                                                                                              
+    1    root      20   0  166788  11776   8192 S   0,3   0,3   0:02.45 systemd      
+
+- dentro de las caracteristicas que tienen los procesos dentro de linux, teniamos 2 en concreto que son la prioridad (PR) y el nice (NI)
+
+- campo PR      
+* prioridad con que asigna el kernel el consumo de CPU en funcion de lo importante que sea eese proceso | a mayor numero mayor prioridad, es decir, mas probabilidad de que el kernel le asigne CPU
+* cuanto mayor sea el valor de prioridad (PR) de un proceso, el kernel priorizara menos ese proceso a la hora de asignarle recursos
+
+- NI 
+* viene de NICE 
+* a valor mas bajo, ese proceso es mas nice, mas bueno con el resto de procesos y les va a ceder el consumo de CPU a ellos (a menor NI, menor PR)
+* es una caracteristica de la cual se sirve el kernel para priorizar la asignacion de recursos a los diferentes procesos 
+* concretamente, a medida que el nice de un proceso se hace mas grande (mayor valor para el nice) quiere decir que ese proceso es mas bueno, es mejor, con el resto de procesos, y por lo tanto les cede recursos 
+* en terminos tecnicos, quiere decir que cuanto mayor sea el valor de nice de un proceso, el kernel va a priorizar menos la asignacion de recursos a ese proceso 
+
+- cuando hablamos del NI de un proceso, los valores que recibe un proceso van desde -20 (minimo valor y mayor prioridad) a 19 (maximo valor y punto en el que un proceso se comporta de manera mas buena con el resto y en consecuencia el kernel le asigna menos recursos)
+
+lionel@lionel-ubuntu:~$ emacs &
+[1] 2970
+lionel@lionel-ubuntu:~$ top
+...
+*** presionamos la tecla "o", que nos permite filtrar por PID y buscamos el proceso emacs que acabamos de abrir en segundo plano tipeando PID=2970 vvv 
+
+   PID USER      PR  NI    VIRT    RES    SHR S  %CPU  %MEM     TIME+ COMMAND                                                                                                                              
+   2970 lionel    20   0  768436  69164  44800 S   0,0   1,7   0:00.36 emacs  
+*** observamos que por default los procesos se inician con un nice (NI) de 0 y una prioridad (PR) de 20
+
+¿Por que los procesos se inician con un NI de 0 y un PR de 20?
+
+- esto esta relacionado con la manera en la que se calcula esa prioridad 
+- concretamente la prioridad de un proceso se calcula de la siguiente forma 
+- priority = nice + 20
+
+----- 
+
+¿Nosotros podemos iniciar un proceso con un NI determinado, y por ende, con un PR determinado? Sí, utilizando el comando NICE vvv
+
+----- 
+
+COMANDO NICE 
+
+lionel@lionel-ubuntu:~$ man nice
+nice - run a program with modified scheduling priority
+*** traduccion chatGTP = "nice: ejecutar un programa con prioridad de planificación modificada".
+*** traduccion profesor = "ejecutar un programa con el PR modificado", para que el kernel le asigne mas o menos recursos 
+
+- caso practico de utilizacion del comando nice para modificar prioridades a procesos vvv
+
+1) creamos un el fichero "programa.sh" y con emacs (tambien se puede hacer con VScode) escribimios el codigo, luego guardamos cambios (Ctrl.+x+s) y finalmente matamos el proceso de emacs desde el mismo emacs (Ctrl.+x+c)
+lionel@lionel-ubuntu:~$ emacs programa.sh &
+
+lionel@lionel-ubuntu:~$ cat programa.sh
+#!/bin/bash
+
+for (( ; ; ))
+do
+    continue
+done
+
+lionel@lionel-ubuntu:~$ ls -lah programa.sh
+-rw-rw-r-- 1 lionel lionel 48 mar 28 18:04 programa.sh
+
+lionel@lionel-ubuntu:~$ ./programa.sh
+bash: ./programa.sh: Permission denied
+*** como vemos, pese a ser los propietarios del programa, no tenemos permisos de ejecucion
+
+2) modificamos los permisos por default del programita (755 por 664) para poder ejecutarlo
+lionel@lionel-ubuntu:~$ chmod 755 programa.sh
+lionel@lionel-ubuntu:~$ ls -lah programa.sh
+-rwxr-xr-x 1 lionel lionel 48 mar 28 18:04 programa.sh
+
+3) ejecuto el programa en segundo plano
+lionel@lionel-ubuntu:~$ ./programa.sh &
+*** con top, compruebo que consume practicamente toda la CPU, ya que el codigo delprograma entra en un bucle infinito 
+
+4) mato el proceso para que no siga consumiendo recursos
+lionel@lionel-ubuntu:~$ kill -KILL 6035
+
+----- 
+
+- ahora voy a ejecutar este programa en un solo CORE de mi CPU para que podamos ver como el kernel reasigna los recursos en funcion de los programas que estamos ejecutando
+- para ello vamos a utilizar otra utilidad que tenemos dentro de linux que es taskset 
+
+----- 
+
+COMANDO TASKSET
+
+lionel@lionel-ubuntu:~$ man taskset
+    taskset - set or retrieve a process's CPU affinity
+*** taskset nos va a permitir ejecutar un programa determinado, un proceso determinado, en una CPU concreta de nuestro sistema
+
+lionel@lionel-ubuntu:~$ taskset --cpu-list 1 ./programa.sh &
+*** le estamos indicando que ejecute programa.sh, en segundo plano, en la CPU 1 de nuestro sistema 
+
+5) ejecuto 3 instancias de programa.sh
+lionel@lionel-ubuntu:~$ taskset --cpu-list 1 ./programa.sh &
+[1] 6067
+lionel@lionel-ubuntu:~$ 
+lionel@lionel-ubuntu:~$ taskset --cpu-list 1 ./programa.sh &
+[2] 6068
+lionel@lionel-ubuntu:~$ taskset --cpu-list 1 ./programa.sh &
+[3] 6069
+
+6) con top, filtrando por COMMAND=progrma.sh, vemos que al tener las 3 instancias el mismo NI y el mismo PR, el kernel asigna recursos de forma equitativa entre los 3 procesos
+lionel@lionel-ubuntu:~$ top
+ PID USER      PR  NI    VIRT    RES    SHR S  %CPU  %MEM     TIME+ COMMAND                       
+6067 lionel    20   0   12504   3584   3328 R  33,2   0,1   0:15.07 programa.sh                   
+6069 lionel    20   0   12504   3584   3328 R  33,2   0,1   0:11.62 programa.sh                   
+6068 lionel    20   0   12504   3584   3328 R  32,9   0,1   0:12.78 programa.sh  
+*** tambien vemos que estos procesos estan consumiendo CPU de manera infinita (el programa contiene un bucle infinito)
+
+7) eliminamos el ultimo proceso y creamos otro, pero a este le damos un nice de 10 
+lionel@lionel-ubuntu:~$ taskset --cpu-list 1 nice -n 10 ./programa.sh &
+[3] 6128
+
+8) verificamos que los 3 procesos estan corriendo
+lionel@lionel-ubuntu:~$ ps
+    PID TTY          TIME CMD
+   5321 pts/0    00:00:00 bash
+   6123 pts/0    00:00:36 programa.sh
+   6124 pts/0    00:00:35 programa.sh
+   6128 pts/0    00:00:01 programa.sh
+   6130 pts/0    00:00:00 ps
+
+9) ahora comprobamos que el kernel le asigna mucho menos recursos de CPU al ultimo proceso que ejecutamos, ya que le dimos un nice de 10, y por ende es mas bueno con los otros 2 procesos cediendo, en este caso, CPU, que es un recurso critico (observar que con el resto de recursos aoarentemente no hay conflicto y los 3 estan consumiendo la misma cantidad de recursos)
+    PID USER      PR  NI    VIRT    RES    SHR S  %CPU  %MEM     TIME+ COMMAND                                                                                                                              
+   6123 lionel    20   0   12504   3712   3456 R  47,5   0,1   0:51.11 programa.sh                                                                                                                          
+   6124 lionel    20   0   12504   3584   3328 R  47,5   0,1   0:50.03 programa.sh                                                                                                                          
+   6128 lionel    30  10   12504   3712   3456 R   5,0   0,1   0:02.77 programa.sh      
+
+----- 
+
+¿se puede de alguna manera, sin necesidad de tener que crear el proceso de nuevo, reasignar la prioridad de un proceso que ya esta en ejeccucion? Si, usando el comando RENICE
+
+----- 
+
+COMANDO RENICE
+
+lionel@lionel-ubuntu:~$ man renice
+renice - alter priority of running processes
+*** como vemos, el manual dice que renice nos permite alterar la prioridad de un proceso en ejecucion
+
+10) ahora vamos a tratar de darle mas prioridad al recurso 6124, dandole un NI de -10 vvv
+
+lionel@lionel-ubuntu:~$ renice -10 -p 6124
+renice: failed to set priority for 6124 (process ID): Permission denied
+*** como comprobamos aca, cuando nosotros intentamos darle mas prioridad a un proceso existente vamos a necesitar permisos de administracion 
+*** esto es algo que tiene sentido, porque a partir de este punto, y como acabamos de comprobar de manera practica, ese proceso va a acaparar todos los recursos que tiene nuestro sistema y va a dejar al resto de procesos con menos recursos, con lo cual puede ser un problema de seguridad que yo modifique de manera malintencionada la prioridad de un proceso para, por ejemplo, dejar al resto sin recursos y que funcionen peor
+
+11) ahora vamos a tratar de darle menos prioridad al recurso 6124 (recurso mas bueno con los otros), dandole un NI de 15 vvv
+lionel@lionel-ubuntu:~$ renice 15 -p 6124
+6124 (process ID) old priority 0, new priority 15
+
+lionel@lionel-ubuntu:~$ top (o + COMMAND=programa.sh)
+    PID USER      PR  NI    VIRT    RES    SHR S  %CPU  %MEM     TIME+ COMMAND                                                                                                                              
+   6123 lionel    20   0   12504   3712   3456 R  87,4   0,1   2:53.90 programa.sh                                                                                                                          
+   6128 lionel    30  10   12504   3712   3456 R   9,3   0,1   0:07.91 programa.sh                                                                                                                          
+   6124 lionel    35  15   12504   3584   3328 R   3,0   0,1   1:22.22 programa.sh                                                                                                                          
+
+*** en este caso, vemos que linux SI nos permite modificar la prioridad del recurso sin permisos de administracion
+
+lionel@lionel-ubuntu:~$ sudo renice -15 -p 6341
+[sudo] password for lionel: 
+6341 (process ID) old priority 15, new priority -15
+
+lionel@lionel-ubuntu:~$ top (o + COMMAND=programa.sh)
+ PID USER      PR  NI    VIRT    RES    SHR S  %CPU  %MEM     TIME+ COMMAND                                                                                                                              
+6124 lionel     5 -15   12504   3584   3328 R  96,0   0,1   1:59.65 programa.sh                                                                                                                          
+6123 lionel    20   0   12504   3712   3456 R   3,7   0,1   8:04.73 programa.sh                                                                                                                          
+6128 lionel    30  10   12504   3712   3456 R   0,3   0,1   0:41.30 programa.sh   
+
+12) mato los 3 procesos para que dejen de consumir recursos 
+lionel@lionel-ubuntu:~$ killall programa.sh
+[2]-  Terminated              taskset --cpu-list 1 ./programa.sh
+lionel@lionel-ubuntu:~$ ps
+    PID TTY          TIME CMD
+   5321 pts/0    00:00:00 bash
+   6406 pts/0    00:00:00 ps
+
+--------------------
+
+75. Caso práctico: Hacking de la memoria de un proceso
 
 ...

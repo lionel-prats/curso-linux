@@ -4,3 +4,4 @@ comilla simple  -> Alt 39  -> ''
 virguilla       -> Alt 126 -> ~
 arrow up        ->         -> ↑
 arrow down      ->         -> ↓
+↑↓

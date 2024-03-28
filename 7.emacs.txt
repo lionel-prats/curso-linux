@@ -1,0 +1,54 @@
+tutorial -> https://www.youtube.com/watch?v=8k7BTIqufqQ
+
+- emacs es un editor de texto enriquecido (disponible tanto para linux, como para windows como para mac)
+
+- instalacion
+lionel@lionel-ubuntu:~$ sudo apt-get install emacs
+lionel@lionel-ubuntu:~$ sudo apt-get install emacs
+
+- crear, escribir y guardar cambios de un nuevo fichero desde linea de comandos y desde emacs
+lionel@lionel-ubuntu:~$ ls -lah programa.sh
+ls: cannot access 'programa.sh': No such file or directory
+lionel@lionel-ubuntu:~$ emacs programa.sh &
+[1] 3783
+lionel@lionel-ubuntu:~$ ls -lah programa.sh
+ls: cannot access 'programa.sh': No such file or directory
+lionel@lionel-ubuntu:~$ ls -lah programa.sh
+-rw-rw-r-- 1 lionel lionel 44 mar 28 13:47 programa.sh
+lionel@lionel-ubuntu:~$ cat programa.sh
+fichero creado desde emacs con Ctrl + x + s
+
+- emacs no es un editor de texto convencional, sino que funciona a base de comandos (como por ejemplo VIM)
+
+- Hay 2 teclas fundamentales:
+Ctrl -> para emacs es "c"
+Alt  -> para emacs es "m"
+
+COMANDOS:
+c + x + s para guardar cambios
+c + ↑↓ para moverme entre parrafos
+esc * 3 para minimizar el buffer inferior
+
+- cada ventana en emacs se llama buffer
+- los buffers son como los archivos que tienes abiertos, los elementos que tienes abiertos en emacs, y las ventanas te pueden servir para abrir estos buffers
+
+c + z para minimizar la ventana 
+c + x + c para cerrar el proceso
+c + s para buscar un substring (c+s para avanzar de ocurrencia en ocurrencia | c+r para retroceder)
+
+m + % (shift+5) para reemplazar un string por otro 
+1. ingreso el string a reemplazar + ENTER
+2. ingreso el string de reemplazo + ENTER
+3. SPACE para realizar el cambio
+
+c + g para volver al editor cuando se complica en algun buffer
+
+m + x + "shell" para abrir la terminal de emacs 
+
+c + w para cortar (texto) 
+c + y para pegar (texto) 
+
+emacs es configurable 
+uno puede pasarle estilos
+uno puede pasarle algunsos css especial para emacs, para que se vea diferente
+podemos integrarlo con lenguajes de programacion comunes como python, como ruby, como java, javascript, r, etc 
