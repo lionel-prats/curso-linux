@@ -52,3 +52,9 @@ emacs es configurable
 uno puede pasarle estilos
 uno puede pasarle algunsos css especial para emacs, para que se vea diferente
 podemos integrarlo con lenguajes de programacion comunes como python, como ruby, como java, javascript, r, etc 
+
+--------------------------------------------------------------------------------------------------------------------
+
+75. Caso práctico: Hacking de la memoria de un proceso 
+
+- con Ctrl. + x + v puedo crear un nuevo buffer...

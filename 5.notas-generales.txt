@@ -4178,7 +4178,7 @@ lionel@lionel-ubuntu:~$ ps
    6128 pts/0    00:00:01 programa.sh
    6130 pts/0    00:00:00 ps
 
-9) ahora comprobamos que el kernel le asigna mucho menos recursos de CPU al ultimo proceso que ejecutamos, ya que le dimos un nice de 10, y por ende es mas bueno con los otros 2 procesos cediendo, en este caso, CPU, que es un recurso critico (observar que con el resto de recursos aoarentemente no hay conflicto y los 3 estan consumiendo la misma cantidad de recursos)
+9) ahora comprobamos que el kernel le asigna mucho menos recursos de CPU al ultimo proceso que ejecutamos, ya que le dimos un nice de 10, y por ende es mas bueno con los otros 2 procesos cediendo, en este caso, CPU, que es un recurso critico (observar que con el resto de recursos aparentemente no hay conflicto y los 3 estan consumiendo la misma cantidad de recursos)
     PID USER      PR  NI    VIRT    RES    SHR S  %CPU  %MEM     TIME+ COMMAND                                                                                                                              
    6123 lionel    20   0   12504   3712   3456 R  47,5   0,1   0:51.11 programa.sh                                                                                                                          
    6124 lionel    20   0   12504   3584   3328 R  47,5   0,1   0:50.03 programa.sh                                                                                                                          
@@ -4236,5 +4236,146 @@ lionel@lionel-ubuntu:~$ ps
 --------------------
 
 75. Caso práctico: Hacking de la memoria de un proceso
+
+- ejecuto emacs en segundo plano 
+lionel@lionel-ubuntu:~$ emacs &
+[1] 12013
+
+- (en emacs) "con Ctrl. + x + v puedo crear un nuevo buffer..." (0'35"")
+
+- cuando nosotros iniciamos un proceso, se le asigna una cantidad de memoria dentro de nuestra memoria RAM
+- luego, el proceso se encarga de gestionarla con diferentes estructuras como puede ser por ejemplo la pila (el stack) donde se almacenan cosas como las variables locales que estan definidas en el programa que estamos ejecutando, o tenemos otras estructuras como pueden ser, por ejemplo, el HEAP, donde se va a asignando memoria de manera dinamica y ahi se van guardando cosas como por ejemplo el texto que vamos escribiendo en el editor 
+- entonces, el proceso va gestionando la memmoria RAM que se le va asignando y va a guardadndo ahi informacion que va persistiendo temporalmente para que nosotros podamos realizar diferentes tareas
+
+- nos vamos dentro /proc, donde se encuentran todos los directorios de cada uno de los procesos identificados por sus PIDs
+lionel@lionel-ubuntu:~$ cd /proc
+lionel@lionel-ubuntu:/proc$ 
+
+- entramos al directorio del proceso emacs que acabamos de crear
+lionel@lionel-ubuntu:/proc/12013
+
+lionel@lionel-ubuntu:/proc/12013$ ls
+arch_status         cpuset             limits      numa_maps      schedstat     task
+attr                cwd                loginuid    oom_adj        sessionid     timens_offsets
+autogroup           environ            map_files   oom_score      setgroups     timers
+auxv                exe                maps        oom_score_adj  smaps         timerslack_ns
+cgroup              fd                 mem         pagemap        smaps_rollup  uid_map
+clear_refs          fdinfo             mountinfo   patch_state    stack         wchan
+cmdline             gid_map            mounts      personality    stat
+comm                io                 mountstats  projid_map     statm
+coredump_filter     ksm_merging_pages  net         root           status
+cpu_resctrl_groups  ksm_stat           ns          sched          syscall
+
+- recordar que lo que tenemos dentro de /proc es un sistema de ficheros virtual porque los directorios que hay dentro se van creando de manera dinamica 
+- cuando ejecutamos emacs se creo el directorio /proc/12013 con toda la informacion dentro (que vemos arriba con el comando ls), asociada al proceso que se esta ejecutando
+
+- a traves de los directorios y ficheros que contiene la carpeta del proceso de emacs (/proc/12013) puedo obtener un monton de informacion sobre el proceso en cuestion como por ejemplo:
+* que porcion de memoria se le esta asignando (el kernel?)
+* donde comienzan las diferenctes estructuras (como las que hablabamos anteriormente)
+
+- y ademas, desde esta informacion que contiene /proc/12013, de alguna manera, puedo interactuar con el proceso
+- por eso se suele decir que en linux todo es un fichero: realmente no es que todo sea un fichero, pero si que la manera de interactuar con casi todos los componentes que hay en el kernel es a traves de ficheros, como vamos a ver ahora 
+
+- concretamente, dentro de /proc/12013 hay 2 ficheros muy relevantes: maps y mem
+
+----- 
+
+FICHERO MAP -> /proc/12013/maps
+
+- analizamos el contenido de /proc/12013/maps vvv 
+
+- analizamos la linea que hace referencia a [heap]
+lionel@lionel-ubuntu:/proc/12013$ cat maps
+...
+62e42869c000-62e42948d000 rw-p 00000000 00:00 0                          [heap]
+...
+*** toda esta informacion es relativa a las direcciones de memoria que se le han asignado, y por ende, que esta ocupando este proceso, y donde comienzan diferentes estructuras, como por ejemplo, el heap (que lo vemos en el ejemplo)
+*** esta linea, concretamente, nos esta diciendo que el HEAP comienza en estas direcciones dentro de nuestra memoria RAM -> 62e42869c000-62e42948d000
+*** rw-p -> esto nos indica los permisos que tendria -> permisos de lectura, de escritura, NO de ejecucion
+*** 00000000 -> offset 
+*** 00:00 -> device storing -> seria concretamente el dispositivo que esta almacenando este fichero ([heap]), que no es un fichero como tal, por eso nos aparece 00:00
+*** 0 -> numero de INODO que estaria referenciando esta porcion de memoria (ya veis que esta linea hace referencia al comienzo del HEAP, y por eso no aparece nada)
+*** [heap] -> por ultimo, lo que tendriamos es la ruta a ese fichero (?)
+
+- analizamos la linea que hace referencia al fichero /usr/lib/x86_64-linux-gnu/libapparmor.so.1.8.2
+lionel@lionel-ubuntu:/proc/12013$ cat maps
+...
+7dd4f83ab000-7dd4f83ae000 r--p 00000000 08:03 1075617                    /usr/lib/x86_64-linux-gnu/libapparmor.so.1.8.2
+...
+*** 7dd4f83ab000-7dd4f83ae000 -> direccion de comienzo y direccion final de memoria, es decir, la porcion de memoria que esta ocupando el fichero "/usr/lib/x86_64-linux-gnu/libapparmor.so.1.8.2", que ha tenido que cargar en memoria emacs para poder funcionar
+*** r--p -> permisos de esta procion de memoria (unicamente de lectura)
+00000000 -> offset 
+08:03 -> device storing, en el que se esta almacenando este fichero
+1075617 -> inodo del fichero que esta referenciando esta procion, estos bloques de memoria RAM (7dd4f83ab000-7dd4f83ae000)
+/usr/lib/x86_64-linux-gnu/libapparmor.so.1.8.2 -> ruta, path a ese fichero
+
+- entonces, dentro del fichero /proc/12013/maps, podemos observar que cosas tiene cargadas el proceso en memoria y concretamente en que direcciones de memoria las tiene cargadas
+
+----- 
+
+FICHERO MEM -> /proc/12013/mem
+
+lionel@lionel-ubuntu:/proc/12013$ ls -lah maps; ls -lah mem
+-r--r--r-- 1 lionel lionel 0 mar 29 10:22 maps
+-rw------- 1 lionel lionel 0 mar 29 10:22 mem
+*** vemos que todos tienen 0 bytes porque son interfaces para interactuar con los procesos 
+
+- este fichero /proc/12013/mem nos permite visualizar el contenido que este proceso (el 12013) tiene almacenado en memoria
+
+- llevamos al proceso 12013 nuevamente al primer plano
+lionel@lionel-ubuntu:~$ fg
+emacs
+
+- abrimos el editor de emacs donde tenemos escrita la cadena de texto "este es un texto de pruebas"
+
+- el profesor explica vvv 
+- esta cadena de texto esta cargada en memoria
+- esta cadena de texto la carga en el heap: reserva espacio de manera dinamica ya que el texto lo puedo ir incrementando y necesitar mas espacio, por lo cual se reserva en esta estructura dinamica (heap?) dentro de nuestra memoria RAM 
+
+-----
+
+EJERCICIO DE HACKING 
+
+- como esto esta en el heap, por que no programamos un script que lo que haga es leer la direccion de comienzo del heap, leer la memoria que hay dentro del heap, busque esta cadena de texto ("este es un texto de pruebas") y la sustituyamos por la cadena de texto que nosotros querramos?
+- es decir, hackear la memoria del proceso, hackear la memoria RAM que esta asignada a este proceso en tiempo de ejecucion del propio proceso
+
+- con emacs creamos el script hack_proc.py (programa escrito en lenguaje python, el codigo fuente para el copy-paste disponible en "76. Código del caso práctico", en Udemy) 
+- con el argumento "-nw" ejecutamos emacs sin interfaz grafica, es decir, ejecutamos emacs directamente desde la terminal 
+
+lionel@lionel-ubuntu:~$ emacs -nw hack_proc.py
+*** aca pegamos el codigo que copiamos en "76. Código del caso práctico" 
+
+- python3 viene instalado por defecto dentro de Ubuntu 
+
+- el profesor analiza y explica todo el script hack_proc.py (ver notas en el fichero /75-hacking-de-la-memoria-de-un-proceso, en este mismo directorio /curso-linux)
+
+- cuando termina de explicar el script procede a guardar cambios y cerrar el fichero creado desde emacs "hack_proc.py", y volver a la terminal vvv 
+*** con Ctrl + x + s guardamos cambios (en este punto, el fichero hack_proc.py ha sido creado en nuestro WD)
+*** con Ctrl + x + c matamos el proceso de emacs que se esta ejecutando en primer plano, volviendo a la terminal
+
+- ahora modifica los permisos del script por 755 para poder ejecutarlo 
+
+lionel@lionel-ubuntu:~$ ls -lah hack_proc.py
+-rw-rw-r-- 1 lionel lionel 2,6K mar 29 14:01 hack_proc.py
+lionel@lionel-ubuntu:~$ chmod 755 hack_proc.py
+lionel@lionel-ubuntu:~$ ls -lah hack_proc.py
+-rwxr-xr-x 1 lionel lionel 2,6K mar 29 14:01 hack_proc.py
+
+- ejecuto el programa como lionel 
+lionel@lionel-ubuntu:~$ ./hack_proc.py 18752 "este es un texto de pruebas" "memoria hackeada"
+bash: ./hack_proc.py: Permission denied
+
+- ejecuto el programa como sudo
+lionel@lionel-ubuntu:~$ sudo ./hack_proc.py 19494 "este es un texto de pruebas" "memoria hackeada"
+lionel@lionel-ubuntu:~$
+*** con el editor de emacs abierto, comprobamos como el hackero funciona en tiempo de ejecucion
+
+CONCLUSION:
+- al ejectutae el script malicioso estamos modificano la memoria RAM que tiene asociada este proceso emacs 
+- tened en cuenta las implicancias de seguridad que puede tener esto: realmente podriamos modificar cualquier cosa que tuviese un programa escrito
+
+--------------------
+
+77. Introducción a la sección
 
 ...
