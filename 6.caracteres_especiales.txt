@@ -5,3 +5,24 @@ virguilla       -> Alt 126 -> ~
 arrow up        ->         -> ↑
 arrow down      ->         -> ↓
 ↑↓
+
+Sección  1: xxx 
+Sección  2: xxx 
+Sección  3: xxx 
+Sección  4: xxx 
+Sección  5: xxx 
+Sección  6: xxx 
+Sección  7: xxx 
+Sección  8: xxx 
+Sección  9: xxx 
+Sección 10: xxx 
+Sección 11: Gestión de paquetes y librerías en Linux 
+Sección 12: El entorno en Linux 
+Sección 13: Dispositivos de almacenamiento externo en Linux 
+Sección 14: Activando y comprimiendo ficheros en Linux 
+Sección 15: Expresiones regulares y búsquedas avanzadas  
+Sección 16: PARTE II: SHELL SCRIPT
+Sección 17: Introducción a Shell Script 
+Sección 18: Shell Script: Control de flujo 
+Sección 19: Shell Script: Otros componentes importantes
+Sección 20: Despedida del curso

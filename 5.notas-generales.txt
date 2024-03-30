@@ -4376,6 +4376,187 @@ CONCLUSION:
 
 --------------------
 
+Sección 10: Networking en Linux 
+
 77. Introducción a la sección
 
+- en esta seccion vamos a hablar de networking, es decir, hablar sobre redes, sobre como gestiona linux las conexiones de red 
+- tenemos que tener en cuenta que a dia de hoy todas las maquinas estan conectadas a algun tipo de red, ya sea una red interna, o Internet, y es fundamental conocer como gestiona linux, por ejemplo:
+* la direccion IP que recibe nuestra maquina 
+* como gestiona linux las conexiones remotas 
+* como podemos intercambiar informacion con otros nodos, con otros equipos, que se encuentran en la misma red que nosotros 
+* el caso practico que vamos a ver en esta seccion es muy interesante: vamos a montar una maquina ubuntu en la nube y nos vamos a conectar de manera remota a ella
+
+--------------------
+
+78. Interfaces de red
+
+- en esta clase vamos a hablar sobre uno de los componentes principales cuando hablamos de comunicacion a traves de la red con nuestro sistema, que es LA INTERFAZ GRAFICA 
+
+- la INTERFAZ DE RED se va a corresponder con un software, con un componente de nuestro SO que va a ser de interfaz, con algunos dispositivos hardware como por ejemplo nuestra tarjeta de red 
+
+- esto lo que va a permitir es que nuestro ordenador, que nuestro sistema, estando conectado a una red, se pueda conectar con otros ordenadores, otros nodos, que se encuentren conectados a esa misma infraestructura de red
+
+- la INTERFAZ DE RED va a ser un componente indispensable y nosotros vamos a tener que disponer de, al menos, una interfaz para poder tener conectividad
+
+----- 
+
+COMANDO IP 
+
+- ip es uno de los comandos mas importantes cuando hablamos de redes dentro de linux
+- el comando ip lo vamos a ir utilizando para ver y cambiar diferentes parametros de configuracion de red dentro de nuestro SO linux 
+- concretamente en esta clase, lo vamos a utilizar para visualizar las interfaces de red que tenemos para poder, por ejemplo, levantar otras interfaces, dejar inactivas interfaces que tenemos activas, etc 
+
+lionel@lionel-ubuntu:~$ man ip
+SYNOPSIS
+    ip [ OPTIONS ] OBJECT { COMMAND | help }
+OBJECT := { link | address | addrlabel | route | rule | neigh | ntable | tunnel | tuntap | maddress | mroute | 
+            mrule | monitor | xfrm | netns | l2tp | tcp_metrics | token | macsec | vrf | mptcp | ioam }
+
+- los objetos van a hacer referencia a diferentes componentes de red
+* objeto link -> va a hacer referencia a los dispositivos de red (interfaces, tarjetas, etc). Hace referencia al network device (dispositivo de red) y en este caso tambien a las interfaces de red
+* objeto addres -> hace referencia a la direccion IPV4 o IPV6 que ha recibido nuestro sistema 
+* objeto route -> hace referencia a la tabla de rutas que tenemos en nuestro sistema: es decir, cuando me quiero comunicar con una direccion IP determinada que esta en nuestra red hacia donde tengo que redirigir ese paquete para que se enrute hacia ese nodo concreto 
+* objeto neigh -> tiene que ver con el tema de la ARP y diferentes protocolos para determinar la direccion fisica de una maquina a traves de su direccion IP, etc
+
+----- 
+
+OBJETO LINK
+
+lionel@lionel-ubuntu:~$ ip link help
+*** si hacemos un help sobre cualquier objeto vamos a ver la ayuda de ese objeto en particular
+
+lionel@lionel-ubuntu:~$ ip l
+1: lo: <LOOPBACK,UP,LOWER_UP> mtu 65536 qdisc noqueue state UNKNOWN mode DEFAULT group default qlen 1000
+    link/loopback 00:00:00:00:00:00 brd 00:00:00:00:00:00
+2: ens33: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc fq_codel state UP mode DEFAULT group default qlen 1000
+    link/ether 00:0c:29:70:a4:c2 brd ff:ff:ff:ff:ff:ff
+    altname enp2s1
+*** todos los objetos de ip tienen una abreviatura que suele ser la primera letra, en el caso de link la abreviatura es "l", por lo que es lo mismo ejecutar "ip l"
+
+- lo que nos devuelve "ip l" hace referencia a las interfaces de red que tenemos ahora mismo dadas de alta en nuestro sistema 
+- como podemos observar tenemos 2 interfaces vvv 
+
+* Primera de las interefaces
+1: lo: <LOOPBACK ... 
+*** viene referenciada con "lo", que es una abreviacion de loopback
+*** esta interfaz es una interfaz virtual: no esta asociada con ninguna tarjeta de red, con ningun dispositivo fisico que tengamos instalado en nuestro sistema 
+*** esta interfaz hace referencia a nuestra propia maquina y nosotros si enviamos trafico a traves de esta interfaz de red lo que va a hacer ese trafico es llegarnos a nosotros mismos 
+*** esta interfaz loopback la tendremos casi por defecto en cualquier distribucion linux
+
+- el resto de la lista seran las interfaces de red asociadas con los dispositivos fisicos que tengamos para conectarnos a las diferentes redes vvv
+
+* Segunda de las interfaces que nos muestra "ip link" o "ip l"
+2: ens33: <BROADCAST ...
+*** en este caso mi interfaz de red es "ens33", y es una interfaz que, en este caso, ha creado mi cliente de virtualizacion (VMWare), pero que esta asociada en ultima instancia con la tarjeta de red que tiene mi maquina
+
+- obtenemos la informacion solamente de la interfaz que le estamos indicando vvv 
+
+lionel@lionel-ubuntu:~$ ip l show dev ens33
+2: ens33: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc fq_codel state UP mode DEFAULT group default qlen 1000
+    link/ether 00:0c:29:70:a4:c2 brd ff:ff:ff:ff:ff:ff
+    altname enp2s1
+*** "dev" se refiere a la interfaz concreta que nos iteresa 
+*** BROADCAST -> como vemos, esta interfaz tiene una direccion de broadcast
+*** MULTICAST -> tiene tambien multicast 
+*** UP -> es una interfaz que esta UP, que quiere decir que esta en funcionamiento
+*** link/ether 00:0c:29:70:a4:c2 -> es la direccion fisica de esta interafz concreta
+    * cada dispositivo de red, por ejemplo nuestra tarjeta de red, va a tener asociada una direccion fisica que en principio no deberia poder cambiarse (aunque vamos a ver que si se puede cambiar en linux) y que identifica mi dispositivo en una red
+    * entonces concretamente para esta interfaz (ens33), la direccion fisica, la direccion MAC es "00:0c:29:70:a4:c2"
+*** ens33 es la interfaz que estamos utilizando para comunicarnos con (la red) Internet
+
+----- 
+
+¿Que operaciones podriamos realizar sobre las interfaces?
+
+1) podemos obtener estadisticas de las interfaces vvv 
+lionel@lionel-ubuntu:~$ ip -s link dev ens33
+Command "dev" is unknown, try "ip link help".
+lionel@lionel-ubuntu:~$ ip -s link
+1: lo: <LOOPBACK,UP,LOWER_UP> mtu 65536 qdisc noqueue state UNKNOWN mode DEFAULT group default qlen 1000
+    link/loopback 00:00:00:00:00:00 brd 00:00:00:00:00:00
+    RX:  bytes packets errors dropped  missed   mcast           
+         11299     133      0       0       0       0 
+    TX:  bytes packets errors dropped carrier collsns           
+         11299     133      0       0       0       0 
+2: ens33: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc fq_codel state UP mode DEFAULT group default qlen 1000
+    link/ether 00:0c:29:70:a4:c2 brd ff:ff:ff:ff:ff:ff
+    RX:  bytes packets errors dropped  missed   mcast           
+        407589    1141      0       0       0       0 
+    TX:  bytes packets errors dropped carrier collsns           
+         39649     335      0       0       0       0 
+    altname enp2s1
+
+2) navegamos en chrome para hacer una prueba vvv 
+"www.google.es" | "phrack.org"
+
+3) Volvemos a obtener las estadisticas de las interfaces de red que tenemos dadas de alta en nuestro sistema
+lionel@lionel-ubuntu:~$ ip -s link
+1: lo: <LOOPBACK,UP,LOWER_UP> mtu 65536 qdisc noqueue state UNKNOWN mode DEFAULT group default qlen 1000
+    link/loopback 00:00:00:00:00:00 brd 00:00:00:00:00:00
+    RX:  bytes packets errors dropped  missed   mcast           
+         28255     299      0       0       0       0 
+    TX:  bytes packets errors dropped carrier collsns           
+         28255     299      0       0       0       0 
+2: ens33: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc fq_codel state UP mode DEFAULT group default qlen 1000
+    link/ether 00:0c:29:70:a4:c2 brd ff:ff:ff:ff:ff:ff
+    RX:  bytes packets errors dropped  missed   mcast           
+       9255634    8960      0       0       0       0 
+    TX:  bytes packets errors dropped carrier collsns           
+        494160    2738      0       0       0       0 
+    altname enp2s1
+
+4) comprobamos que el trafico (bytes y packets) ha aumentado en ambas interfaces, sobre todo en ens33, ya que es la interfaz que estamos utilizando para comunicarnos con (la red) Internet
+
+5) hago un ping a localhost (que seria (un ping) a mi propia maquina) utilizando esa interfaz de LOOPBACK vvv 
+
+lionel@lionel-ubuntu:~$ ping localhost
+PING localhost (127.0.0.1) 56(84) bytes of data.
+64 bytes from localhost (127.0.0.1): icmp_seq=1 ttl=64 time=0.016 ms
+64 bytes from localhost (127.0.0.1): icmp_seq=2 ttl=64 time=0.022 ms
+64 bytes from localhost (127.0.0.1): icmp_seq=3 ttl=64 time=0.020 ms
+64 bytes from localhost (127.0.0.1): icmp_seq=4 ttl=64 time=0.024 ms
+64 bytes from localhost (127.0.0.1): icmp_seq=5 ttl=64 time=0.021 ms
 ...
+Ctrl. + c 
+*** con esto estoy mandando trafico y paquetes de red hacia mi propia maquina
+
+6) Volvemos a obtener las estadisticas de las interfaces de red, y ahora comprobamos que el trafico (bytes y packets) ah aumentado sisgnficativamente en la interfaz "lo" mientras que "ens33" practicamente no ha modificado su trafico
+
+- con estas estadisticas podemos saber, por ejemplo, si se esta usando una interfaz, si no se esta usando, etc
+- tener en cuenta tambien que cuando nosotros, por ejemplo, arrancamos el navegador y demas, aunque en teoria estamos usando una unica interfaz (ens33), en muchas ocasiones hay procesos por detras, hay cosas por detras que tambien estan haciendo uso de, a lo mejor la interfaz de loopback, o se esta enviando algun paquete por ahi, y por eso quiza tambien vemos trafico en interfaces que en principio pensariamos que no estamos utilizando en esa comunicacion en concreto 
+
+----- 
+
+- Si queremos saber las interfaces que estan UP, es decir, que estan levantadas, podemos utilizar el comando "ip l ls up" vvv
+lionel@lionel-ubuntu:~$ ip l ls up
+...
+
+----- 
+
+- Dejar inactiva una interfaz vvv 
+
+lionel@lionel-ubuntu:~$ ip l set ens33 down
+RTNETLINK answers: Operation not permitted
+*** esta accion requiere permisos de administracion 
+
+lionel@lionel-ubuntu:~$ sudo ip l set ens33 down
+[sudo] password for lionel: 
+lionel@lionel-ubuntu:~$ 
+*** con esto he puesto inactiva la interfaz ens33 
+*** con esta interfaz inactiva, hice la prueba, y no puedo navegar por internet, es decir, no puedo comunicarme con otros nodos conectados a la red Internet, es decir, no puedo conectarme con Internet, que al final es una interconexion de redes
+
+----- 
+
+- Levantar una interfaz inactiva vvv 
+lionel@lionel-ubuntu:~$ sudo ip l set ens33 up
+
+----- 
+
+CONCLUSION:
+- la interfaz de red ens33 esta haciendo de pasarela para que yo (desde mi maquina) pueda redirigir nuestros paquetes de red, nuestro trafico de red, hacia el servidor conectado a la red Internet, donde esta alojada la web "phrack.org"
+- los programas Chrome o Mozilla, para comunicarse con Internet en este caso, estan utilizando la interfaz ens33 
+
+--------------------
+
+79. Direcciones IP
