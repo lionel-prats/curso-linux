@@ -3043,7 +3043,7 @@ bash: cd: 8629: No such file or directory
 
 COMANDO ps:
 - ps - report a snapshot of the current processes. (man ps)
-- ps va a reportanrnos un snapshot de los procesos que se estan ejecutando en un momento determinado ()
+- ps va a reportarnos un snapshot de los procesos que se estan ejecutando en un momento determinado ()
 - ps nos va a sacar una imagen de los procesos que se encuentran en ejecucion, que se encuentran dormidos, que se encuentran en general activos dentro de nuestro SO pero en el momento en el que yo he ejecutado ese comando, es decir, no va a ser una salida en tiempo real
 
 lionel@lionel-ubuntu:~$ ps
@@ -3552,7 +3552,7 @@ lionel@lionel-ubuntu:~$ ps
    2359 pts/0    00:00:00 bash
    3561 pts/0    00:00:00 emacs
    3569 pts/0    00:00:00 ps
-lionel@lionel-ubuntu:~$ kill -KILL 3561
+lionel@lionel-ubuntu:~$ kill -KILL 3561 (== kill -9 3561)
 lionel@lionel-ubuntu:~$ ps
     PID TTY          TIME CMD
    2359 pts/0    00:00:00 bash
@@ -4414,14 +4414,16 @@ OBJECT := { link | address | addrlabel | route | rule | neigh | ntable | tunnel 
             mrule | monitor | xfrm | netns | l2tp | tcp_metrics | token | macsec | vrf | mptcp | ioam }
 
 - los objetos van a hacer referencia a diferentes componentes de red
-* objeto link -> va a hacer referencia a los dispositivos de red (interfaces, tarjetas, etc). Hace referencia al network device (dispositivo de red) y en este caso tambien a las interfaces de red
+* objeto link   -> va a hacer referencia a los dispositivos de red (interfaces, tarjetas, etc). Hace referencia al network device (dispositivo de red) y en este caso tambien a las interfaces de red
 * objeto addres -> hace referencia a la direccion IPV4 o IPV6 que ha recibido nuestro sistema 
-* objeto route -> hace referencia a la tabla de rutas que tenemos en nuestro sistema: es decir, cuando me quiero comunicar con una direccion IP determinada que esta en nuestra red hacia donde tengo que redirigir ese paquete para que se enrute hacia ese nodo concreto 
-* objeto neigh -> tiene que ver con el tema de la ARP y diferentes protocolos para determinar la direccion fisica de una maquina a traves de su direccion IP, etc
+* objeto route  -> hace referencia a la tabla de rutas que tenemos en nuestro sistema: es decir, cuando me quiero comunicar con una direccion IP determinada que esta en nuestra red hacia donde tengo que redirigir ese paquete para que se enrute hacia ese nodo concreto 
+* objeto neigh  -> tiene que ver con el tema de la ARP y diferentes protocolos para determinar la direccion fisica de una maquina a traves de su direccion IP, etc
 
 ----- 
 
 OBJETO LINK
+
+* objeto link   -> va a hacer referencia a los dispositivos de red (interfaces, tarjetas, etc). Hace referencia al network device (dispositivo de red) y en este caso tambien a las interfaces de red
 
 lionel@lionel-ubuntu:~$ ip link help
 *** si hacemos un help sobre cualquier objeto vamos a ver la ayuda de ese objeto en particular
@@ -4450,8 +4452,7 @@ lionel@lionel-ubuntu:~$ ip l
 2: ens33: <BROADCAST ...
 *** en este caso mi interfaz de red es "ens33", y es una interfaz que, en este caso, ha creado mi cliente de virtualizacion (VMWare), pero que esta asociada en ultima instancia con la tarjeta de red que tiene mi maquina
 
-- obtenemos la informacion solamente de la interfaz que le estamos indicando vvv 
-
+- obtenemos la informacion de una interfaz en particular vvv 
 lionel@lionel-ubuntu:~$ ip l show dev ens33
 2: ens33: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc fq_codel state UP mode DEFAULT group default qlen 1000
     link/ether 00:0c:29:70:a4:c2 brd ff:ff:ff:ff:ff:ff
@@ -4460,18 +4461,17 @@ lionel@lionel-ubuntu:~$ ip l show dev ens33
 *** BROADCAST -> como vemos, esta interfaz tiene una direccion de broadcast
 *** MULTICAST -> tiene tambien multicast 
 *** UP -> es una interfaz que esta UP, que quiere decir que esta en funcionamiento
-*** link/ether 00:0c:29:70:a4:c2 -> es la direccion fisica de esta interafz concreta
-    * cada dispositivo de red, por ejemplo nuestra tarjeta de red, va a tener asociada una direccion fisica que en principio no deberia poder cambiarse (aunque vamos a ver que si se puede cambiar en linux) y que identifica mi dispositivo en una red
+*** link/ether 00:0c:29:70:a4:c2 -> es la direccion fisica de esta interfaz concreta
+    * cada dispositivo de red, por ejemplo nuestra tarjeta de red, va a tener asociada una direccion fisica que en principio no deberia poder cambiarse (aunque vamos a ver que si se puede cambiar en linux) y que identifica a mi dispositivo en una red de nodos
     * entonces concretamente para esta interfaz (ens33), la direccion fisica, la direccion MAC es "00:0c:29:70:a4:c2"
-*** ens33 es la interfaz que estamos utilizando para comunicarnos con (la red) Internet
+*** ens33 es la interfaz que estamos utilizando para comunicarnos con otros nodos de (la red) Internet
+*** cuando hacemos una peticion (comunicandonos) a "https://www.google.com" nos estamos comunicando con el servidor que tiene alojada esta direccion (y esto implica un trafico de red que estamos intercambiando con dicho servidor, paquetes de red que van y vienen) gracias, entre otros, a esta interfaz de red ens33 (que entiendo esta vinculada a la tarjeta de red fisica de mi pc anfirtriona) 
 
 ----- 
 
 ¿Que operaciones podriamos realizar sobre las interfaces?
 
-1) podemos obtener estadisticas de las interfaces vvv 
-lionel@lionel-ubuntu:~$ ip -s link dev ens33
-Command "dev" is unknown, try "ip link help".
+1.1) podemos obtener estadisticas de todas las interfaces disponibles en nuestro SO vvv 
 lionel@lionel-ubuntu:~$ ip -s link
 1: lo: <LOOPBACK,UP,LOWER_UP> mtu 65536 qdisc noqueue state UNKNOWN mode DEFAULT group default qlen 1000
     link/loopback 00:00:00:00:00:00 brd 00:00:00:00:00:00
@@ -4487,8 +4487,19 @@ lionel@lionel-ubuntu:~$ ip -s link
          39649     335      0       0       0       0 
     altname enp2s1
 
+1.2) o de una interfaz en particular vvv 
+lionel@lionel-ubuntu:~$ ip -s l show dev ens33
+2: ens33: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc fq_codel state UP mode DEFAULT group default qlen 1000
+    link/ether 00:0c:29:70:a4:c2 brd ff:ff:ff:ff:ff:ff
+    RX:  bytes packets errors dropped  missed   mcast           
+        214418    2135      0       0       0       0 
+    TX:  bytes packets errors dropped carrier collsns           
+         60118     529      0       0       0       0 
+    altname enp2s1
+
 2) navegamos en chrome para hacer una prueba vvv 
 "www.google.es" | "phrack.org"
+*** en esta comunnicacion estamos intercambiando trafico de red (paquetes que van y vienen)
 
 3) Volvemos a obtener las estadisticas de las interfaces de red que tenemos dadas de alta en nuestro sistema
 lionel@lionel-ubuntu:~$ ip -s link
@@ -4524,7 +4535,7 @@ Ctrl. + c
 6) Volvemos a obtener las estadisticas de las interfaces de red, y ahora comprobamos que el trafico (bytes y packets) ah aumentado sisgnficativamente en la interfaz "lo" mientras que "ens33" practicamente no ha modificado su trafico
 
 - con estas estadisticas podemos saber, por ejemplo, si se esta usando una interfaz, si no se esta usando, etc
-- tener en cuenta tambien que cuando nosotros, por ejemplo, arrancamos el navegador y demas, aunque en teoria estamos usando una unica interfaz (ens33), en muchas ocasiones hay procesos por detras, hay cosas por detras que tambien estan haciendo uso de, a lo mejor la interfaz de loopback, o se esta enviando algun paquete por ahi, y por eso quiza tambien vemos trafico en interfaces que en principio pensariamos que no estamos utilizando en esa comunicacion en concreto 
+- tener en cuenta tambien que cuando nosotros, por ejemplo, arrancamos el navegador y demas, aunque en teoria estamos usando una unica interfaz (ens33), en muchas ocasiones hay procesos por detras, hay cosas por detras que tambien estan haciendo uso de, a lo mejor la interfaz de loopback, o se esta enviando algun paquetillo por ahi, y por eso quiza tambien vemos trafico en interfaces que en principio pensariamos que no estamos utilizando en esa comunicacion en concreto (vemos que algunos paquetes aparecen en interfaces que en principio vosotros pensais que no deberian ir)
 
 ----- 
 
@@ -4555,8 +4566,226 @@ lionel@lionel-ubuntu:~$ sudo ip l set ens33 up
 
 CONCLUSION:
 - la interfaz de red ens33 esta haciendo de pasarela para que yo (desde mi maquina) pueda redirigir nuestros paquetes de red, nuestro trafico de red, hacia el servidor conectado a la red Internet, donde esta alojada la web "phrack.org"
-- los programas Chrome o Mozilla, para comunicarse con Internet en este caso, estan utilizando la interfaz ens33 
+- los programas Chrome o Mozilla (procesos ejecutandose en mi maquina), para comunicarse con Internet en este caso, estan utilizando la interfaz ens33 (y lo comprobamos cuando dejamos inactiva ens33, situacion en la cual perdemos la conexion a Internet)
+
+--------------------
+
+EXTRA - Definiciones de Interfaz de red (fisica y logica) y de direccion MAC
+
+- ¿Que es una interfaz de red? (chatGTP)
+* Una interfaz de red es un punto de conexión físico o lógico entre un dispositivo y una red de comunicaciones. 
+* Es el medio a través del cual un dispositivo puede enviar y recibir datos en una red. 
+* Las interfaces de red pueden ser hardware, software o una combinación de ambos, y su función principal es permitir que los dispositivos se comuniquen entre sí dentro de una red.
+
+- Aquí hay una descripción de los dos tipos principales de interfaces de red:
+
+- Interfaz de red física
+* También conocida como tarjeta de red, adaptador de red o NIC (Network Interface Card, por sus siglas en inglés), es un componente físico instalado en un dispositivo, como una computadora, que permite la conexión a una red. 
+* Las interfaces de red físicas pueden ser conexiones por cable, como Ethernet o USB, o inalámbricas, como Wi-Fi o Bluetooth.
+
+- Interfaz de red lógica
+* Este tipo de interfaz de red es una representación lógica de una conexión de red, que puede ser proporcionada por software. 
+* Por ejemplo, las interfaces de red virtuales, como las interfaces de red de máquinas virtuales en un hipervisor (por ejemplo VMWare), las interfaces de red de contenedores o las interfaces de red de VPN (Virtual Private Network), son ejemplos de interfaces de red lógicas que no corresponden a hardware físico específico.
+
+- ¿Que es una direccion MAC? (chatGTP) 
+* Una dirección MAC (Media Access Control) es un identificador único asignado a cada interfaz de red de dispositivos que se conectan a una red de área local (LAN). 
+* Esta dirección se utiliza para identificar de manera única un dispositivo en una red de nivel de enlace de datos.
+* Las direcciones MAC son asignadas por el fabricante de hardware de red y están incrustadas en el hardware de la tarjeta de red. 
+* Estas direcciones son permanentes y únicas para cada dispositivo de red. 
+* Una dirección MAC consta de 6 bytes (48 bits) y se representa típicamente en notación hexadecimal, con dos dígitos separados por dos puntos o guiones, como por ejemplo: 00:1A:2B:3C:4D:5E.
+* Las direcciones MAC son utilizadas principalmente para el direccionamiento a nivel de enlace de datos en la capa de enlace de datos del modelo OSI. 
+* Cada trama de datos enviada a través de una red contiene la dirección MAC del remitente y del destinatario, lo que permite a los dispositivos de red enviar y recibir datos de manera adecuada en la red.
 
 --------------------
 
 79. Direcciones IP
+
+- vamos a hablar sobre las direcciones IP 
+- lo primero que tenemos que entender es por que tenemos una direccion MAC una direccion fisica, que lo veiamos en la clase anterior cuando hablabamos de interfaces de red, y por que tenemos una direccion IP
+- teneis que tener en cuenta que la direccion fisica (direccion MAC), la que tiene asociada nuestra interfaz de red (ens33 | link/ether 00:0c:29:70:a4:c2) es una direccion que vamos a utilizar para comunicarnos con nodos que se encuentran dentro de nuestra red local (LAN - local area network)
+- sin embargo, en el momento en que nosotros queremos comunicarnos con un nodo que se encuentra en otra red distinta y que esta conectada a nuestra red local, por ejemplo, a traves de un dispositivo de red como un router, nosotros vamos a necesitar otra direccion diferente que es la direccion IP 
+- entonces, si en la interfaz de red no aparecia asociada esa direccion IP, donde aparece y como podemos visualizarla? 
+
+- para visualizar la direccion IP vamos a utilizar nuevamente el comando IP con el objeto address (abreviaciones: "a" y "addr") vvv
+
+- objetos del comando ip vvv
+OBJECT := { link | address | addrlabel | route | rule | neigh | ntable | tunnel | tuntap | maddress | mroute | 
+            mrule | monitor | xfrm | netns | l2tp | tcp_metrics | token | macsec | vrf | mptcp | ioam }
+
+lionel@lionel-ubuntu:~$ ip a
+1: lo: <LOOPBACK,UP,LOWER_UP> mtu 65536 qdisc noqueue state UNKNOWN group default qlen 1000
+    link/loopback 00:00:00:00:00:00 brd 00:00:00:00:00:00
+    inet 127.0.0.1/8 scope host lo
+       valid_lft forever preferred_lft forever
+    inet6 ::1/128 scope host 
+       valid_lft forever preferred_lft forever
+2: ens33: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc fq_codel state UP group default qlen 1000
+    link/ether 00:0c:29:70:a4:c2 brd ff:ff:ff:ff:ff:ff
+    altname enp2s1
+    inet 192.168.233.128/24 brd 192.168.233.255 scope global dynamic noprefixroute ens33
+       valid_lft 1325sec preferred_lft 1325sec
+    inet6 fe80::c61:df04:91cc:8226/64 scope link noprefixroute 
+       valid_lft forever preferred_lft forever
+
+- el comando "ip a" nos devuelve informacion similar al coimando "ip l" 
+- es decir, nos sigue devolviendo data de las interfaces de red disponibles en nuestro sistema linux, pero con mas informacion de cada una vvv 
+
+* interfaz de loopback (lo)
+    ** direccion fisica o MAC -> link/loopback 00:00:00:00:00:00
+    ** direccion IPV4         -> inet 127.0.0.1/8
+    ** direccion IPV6         -> inet6 ::1/128
+* interfaz ens33
+    direccion fisica o MAC    -> link/ether 00:0c:29:70:a4:c2
+    ** direccion IPV4         -> inet 192.168.233.128/24
+    ** direccion IPV6         -> inet6 fe80::c61:df04:91cc:8226/64
+
+- IPV4 e IPV6 son los dos estandares que tenemos a dia de hoy para comunicarnos con nodos que se encuentran en diferentes reder y tienen numeros de bits diferentes
+
+----- 
+
+- interfaz de loopback (lo)
+
+lionel@lionel-ubuntu:~$ ip a show dev lo
+1: lo: <LOOPBACK,UP,LOWER_UP> mtu 65536 qdisc noqueue state UNKNOWN group default qlen 1000
+    link/loopback 00:00:00:00:00:00 brd 00:00:00:00:00:00
+    inet 127.0.0.1/8 scope host lo
+       valid_lft forever preferred_lft forever
+    inet6 ::1/128 scope host 
+       valid_lft forever preferred_lft forever
+
+
+* la direccion IPV4 (127.0.0.1) se va a asignar por defecto a nuestra propia maquina
+* ya sabeis que cuando redirigimos trafico a esta direccion IP lo estamos haciendo a traves de la direccion de loopback y por lo tanto ese trafico va a ir hacia nosotros mismos 
+* lo mismo ocurre con la direccion IPV6 (::1/128)
+
+----- 
+
+- interfaz ens33
+
+lionel@lionel-ubuntu:~$ ip a show dev ens33
+2: ens33: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc fq_codel state UP group default qlen 1000
+    link/ether 00:0c:29:70:a4:c2 brd ff:ff:ff:ff:ff:ff
+    altname enp2s1
+    inet 192.168.233.128/24 brd 192.168.233.255 scope global dynamic noprefixroute ens33
+       valid_lft 1414sec preferred_lft 1414sec
+    inet6 fe80::c61:df04:91cc:8226/64 scope link noprefixroute 
+       valid_lft forever preferred_lft forever
+
+- aqui tenemos concretamente 2 direcciones IP vvv 
+
+1) direccion IPV4 -> inet 192.168.233.128/24 brd 192.168.233.255 scope global dynamic noprefixroute ens33
+    1.1)
+    - inet 192.168.233.128/24 es la direccion IPV4 que tiene asignada esta interfaz de red (ens33)
+    - esta direccion IPV4 nos esta identificando dentro de la red a la que este conectada nuestra interfaz concreta y nuestra tarjeta de red
+    - concretamente mi maquina tiene esta direccion IPV4 que es 192.168.233.128
+    - y adicionalmente tenemos este "/24", que concatenado con lo anterior, o sea, 192.168.233.128/24, se denomina notacion CIDR (Clasless Inter-Domain Routing), y lo que nos esta diciendo fundamentalmente con esta notacion es que una direccion IPV4 concretamente esta formada por un numero total de 32 bits y aqui nos dice que esta dejando 24 bits para denotar, para designar la subred (que serian los primeros 24 bits: 192.168.233) y luego deja un numero de bits igual a 8 para ir denotando, ir designando los hosts que se van a conectar a esta red
+    - 192.168.233 -> estos valores se corresponderian con la subred (24 bits)
+    - 128         -> estos valores se corresponderian con la parte que deja para los hosts (8 bits)
+    - en nuestro caso, lo que esta designando (identificando ? ) nuestro host (referencia a la interfaz ens33 ? ) es el "128"
+    - con lo cual nuestra direccion IP ( de la interfaz ens33 ? ) dentro de nuestra red es la 192.168.233.128
+    - a otro host, pues por ejemplo se le asignara la 129, 130, pero la parte que refiere a la subred (192.168.233) se mantendra igual
+    - 192.168.233.128 -> 11000000.10101000.11101001.10000000 (32 bits)
+    192
+    1  1  0  0 0 0 0 0
+    128 64 32 16 8 4 2 1
+
+    168 
+    1  0  1  0 1 0 0 0
+    128 64 32 16 8 4 2 1
+
+    233 
+    1  1  1  0 1 0 0 1
+    128 64 32 16 8 4 2 1
+
+    128 
+    1  0  0  0 0 0 0 0
+    128 64 32 16 8 4 2 1
+    - 1 byte = 8 bits = xxxxxxxx
+
+    1.2) 192.168.233.255 -> esto tiene que ver con la notacion CIDR
+
+2) direccion IPV6, tambien asignada a esta interfaz ens33 -> inet6 fe80::c61:df04:91cc:8226/64 scope link noprefixroute 
+- con esta direccion IPV6 podriamos comunicarnos tambien con dispositivos que se encontrasen en nuestra red o en otras redes diferentes 
+
+----- 
+
+- ahora ya sabemos como obtener las direcciones IPV4 y IPV6 que estan asignadas a una interfaz
+
+- a continuacion veremos que operaciones podemos realizar con este comando ip vvv 
+
+- obtengo unicamente las direcciones IPV6 asignadas a cada una de las interfaces 
+lionel@lionel-ubuntu:~$ ip -6 a vvv
+1: lo: <LOOPBACK,UP,LOWER_UP> mtu 65536 state UNKNOWN qlen 1000
+    inet6 ::1/128 scope host 
+       valid_lft forever preferred_lft forever
+2: ens33: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 state UP qlen 1000
+    inet6 fe80::c61:df04:91cc:8226/64 scope link noprefixroute 
+       valid_lft forever preferred_lft forever
+
+- obtengo unicamente las direcciones IPV4 asignadas a cada una de las interfaces vvv
+lionel@lionel-ubuntu:~$ ip -4 a
+...
+
+- mas alla de esto, realmente lo que a nosotros nos interesa en nuestro dia a dia cuando estamos gestionando las direcciones de nuestra maquina es, o añadir una direccion nueva, o elimiar una direccion 
+- por norma general lo vamos a hacer con direcciones IPV4, que es lo que mas se utiliza a dia de hoy, por lo tanto vamos a ver exactamente como seria esto vvv 
+
+-----
+
+- para añadir una direccion IPV4 vamos a tener que poner la direccion (de 32 bits) que queremos añadirle  
+- tened en cuenta lo que hablamos anteriormente:
+- si los primeros 24 bits (192.168.233) estan designando nuestra subred y los ultimos 8 bits se utilizan para ir designando cada uno de los hosts, obviamente si nosotros queremos añadirle una nueva direccion IP y queremos que funcione todo correctamente, nuestra (nueva) direccion tiene que empezar por 192.168.233, tiene que tener en los ultimos 8 bits un valor diferente al que ya tienen los hosts de la propia red y finalmente agregar un "/24" para indicar que los primeros 24 bits refieren a la subred y los ultimos 8 designan el host vvv 
+
+- intentamos añadir una nueva ip vvv
+lionel@lionel-ubuntu:~$ ip a add 192.168.233.188/24 dev ens33
+RTNETLINK answers: Operation not permitted
+*** persmiso denegado 
+
+- todas estas operaciones que tienen que ver con interfaces, direcciones y demas van a requerir permisos de administracion vvv 
+
+- añado correctamente, con permisos de administrador, una nueva direccion IPV4 a la interfaz ens33 vvv
+lionel@lionel-ubuntu:~$ sudo ip a add 192.168.233.188/24 dev ens33
+[sudo] password for lionel: 
+lionel@lionel-ubuntu:~$
+
+- ahora podemos observar que nuestra interfaz de red ens33 ahora tiene una nueva direccion IPV4 (192.168.233.188)
+lionel@lionel-ubuntu:~$ ip a show dev ens33
+2: ens33: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc fq_codel state UP group default qlen 1000
+    link/ether 00:0c:29:70:a4:c2 brd ff:ff:ff:ff:ff:ff
+    altname enp2s1
+    inet 192.168.233.128/24 brd 192.168.233.255 scope global dynamic noprefixroute ens33
+       valid_lft 1710sec preferred_lft 1710sec
+    inet 192.168.233.188/24 scope global secondary ens33
+       valid_lft forever preferred_lft forever
+    inet6 fe80::c61:df04:91cc:8226/64 scope link noprefixroute 
+       valid_lft forever preferred_lft forever
+
+- aca podemos observar que lo que sigue a la direccion IPV4 ha cambiado vvv
+inet 192.168.233.128/24 brd 192.168.233.255 scope global dynamic noprefixroute ens33
+inet 192.168.233.188/24                     scope global secondary ens33
+*** lo que le sigue a las direcciones IPV4 son algunos flags que se añaden a la direccion y que tienen algun significado, aunque son significados bastante especificos
+*** realmente no son cosas que nos tengan que importar para el dia a dia
+*** si alguien quiere saber exactamente lo que signican todos los flags, e incluso añadir una direccion con nuevos flags, echen un ojo a esta documentacion, aunque ya os digo que para el dia a dia rara vez los vais a usar vvv
+https://man7.org/linux/man-pages/man8/ip-address.8.html
+
+----- 
+
+- tambien podemos elimiar una direccion IP si no nos interesa tenerla o si queremos crear otra diferente para que tenga una direccion concreta vvv 
+
+- elimino la direccion IP recien creada vvv
+lionel@lionel-ubuntu:~$ sudo ip a del 192.168.233.188/24 dev ens33
+
+- chequeo
+lionel@lionel-ubuntu:~$ ip a show dev ens33
+2: ens33: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc fq_codel state UP group default qlen 1000
+    link/ether 00:0c:29:70:a4:c2 brd ff:ff:ff:ff:ff:ff
+    altname enp2s1
+    inet 192.168.233.128/24 brd 192.168.233.255 scope global dynamic noprefixroute ens33
+       valid_lft 1101sec preferred_lft 1101sec
+    inet6 fe80::c61:df04:91cc:8226/64 scope link noprefixroute 
+       valid_lft forever preferred_lft forever
+
+--------------------
+
+80. Dirección de broadcast
+
+...
