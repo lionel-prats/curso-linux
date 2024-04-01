@@ -690,6 +690,7 @@ VIDEO 34 - Command Substitution
 lionel@lionel-ubuntu:~$ which cat
 /usr/bin/cat
 * which  returns the pathnames of the files (or links) which would be executed in the current environment (documentacion obtenida con info which)
+*** el comando which se utiliza para mostrar la ruta del archivo ejecutable de un comando o programa en el sistema de archivos.
 
 lionel@lionel-ubuntu:~$ type cat
 cat is /usr/bin/cat
@@ -4566,7 +4567,7 @@ lionel@lionel-ubuntu:~$ sudo ip l set ens33 up
 
 CONCLUSION:
 - la interfaz de red ens33 esta haciendo de pasarela para que yo (desde mi maquina) pueda redirigir nuestros paquetes de red, nuestro trafico de red, hacia el servidor conectado a la red Internet, donde esta alojada la web "phrack.org"
-- los programas Chrome o Mozilla (procesos ejecutandose en mi maquina), para comunicarse con Internet en este caso, estan utilizando la interfaz ens33 (y lo comprobamos cuando dejamos inactiva ens33, situacion en la cual perdemos la conexion a Internet)
+- los programas Chrome o Mozilla (procesos ejecutandose en mi maquina), para comunicarse con Internet en este caso, estan utilizando la interfaz ens33 (y lo comprobamos cuando hemos dejado inactiva ens33, situacion en la cual perdimos la conexion a Internet)
 
 --------------------
 
@@ -4579,7 +4580,7 @@ EXTRA - Definiciones de Interfaz de red (fisica y logica) y de direccion MAC
 
 - Aquí hay una descripción de los dos tipos principales de interfaces de red:
 
-- Interfaz de red física
+- Interfaz de red física (tarjeta o placa de red)
 * También conocida como tarjeta de red, adaptador de red o NIC (Network Interface Card, por sus siglas en inglés), es un componente físico instalado en un dispositivo, como una computadora, que permite la conexión a una red. 
 * Las interfaces de red físicas pueden ser conexiones por cable, como Ethernet o USB, o inalámbricas, como Wi-Fi o Bluetooth.
 
@@ -4608,7 +4609,7 @@ EXTRA - Definiciones de Interfaz de red (fisica y logica) y de direccion MAC
 
 - para visualizar la direccion IP vamos a utilizar nuevamente el comando IP con el objeto address (abreviaciones: "a" y "addr") vvv
 
-- objetos del comando ip vvv
+- objetos del comando ip (man ip) vvv
 OBJECT := { link | address | addrlabel | route | rule | neigh | ntable | tunnel | tuntap | maddress | mroute | 
             mrule | monitor | xfrm | netns | l2tp | tcp_metrics | token | macsec | vrf | mptcp | ioam }
 
@@ -4627,19 +4628,20 @@ lionel@lionel-ubuntu:~$ ip a
     inet6 fe80::c61:df04:91cc:8226/64 scope link noprefixroute 
        valid_lft forever preferred_lft forever
 
-- el comando "ip a" nos devuelve informacion similar al coimando "ip l" 
-- es decir, nos sigue devolviendo data de las interfaces de red disponibles en nuestro sistema linux, pero con mas informacion de cada una vvv 
+- el comando "ip a" nos devuelve informacion similar al comando "ip l"
+- fijaros que seguimos obteniendo todas las interfaces que tenemos disponibles en nuestro sistema linux, pero con un poquito mas de informacion de cada una vvv 
+- ademas de la direccion fisica (MAC) de cada interfaz, nos da las direcciones IPV4 y IPV6 de cada una de las interfaces de red
 
 * interfaz de loopback (lo)
     ** direccion fisica o MAC -> link/loopback 00:00:00:00:00:00
-    ** direccion IPV4         -> inet 127.0.0.1/8
-    ** direccion IPV6         -> inet6 ::1/128
+    ** direccion IPV4         -> inet 127.0.0.1/8                   (32 bits o 4 bytes)
+    ** direccion IPV6         -> inet6 ::1/128                      (mayor numero de bits/bytes)
 * interfaz ens33
     direccion fisica o MAC    -> link/ether 00:0c:29:70:a4:c2
-    ** direccion IPV4         -> inet 192.168.233.128/24
-    ** direccion IPV6         -> inet6 fe80::c61:df04:91cc:8226/64
+    ** direccion IPV4         -> inet 192.168.233.128/24            (32 bits o 4 bytes)
+    ** direccion IPV6         -> inet6 fe80::c61:df04:91cc:8226/64  (mayor numero de bits/bytes)
 
-- IPV4 e IPV6 son los dos estandares que tenemos a dia de hoy para comunicarnos con nodos que se encuentran en diferentes reder y tienen numeros de bits diferentes
+- IPV4 e IPV6 son los dos estandares que tenemos a dia de hoy para comunicarnos con nodos que se encuentran en diferentes redes y tienen numeros de bits diferentes
 
 ----- 
 
@@ -4654,8 +4656,8 @@ lionel@lionel-ubuntu:~$ ip a show dev lo
        valid_lft forever preferred_lft forever
 
 
-* la direccion IPV4 (127.0.0.1) se va a asignar por defecto a nuestra propia maquina
-* ya sabeis que cuando redirigimos trafico a esta direccion IP lo estamos haciendo a traves de la direccion de loopback y por lo tanto ese trafico va a ir hacia nosotros mismos 
+* la direccion IPV4 (127.0.0.1) que se va a asignar por defecto a nuestra propia maquina
+* ya sabeis que cuando redirigimos trafico a esta direccion IP lo estamos haciendo a traves de la direccion (interfaz ? ) de loopback y por lo tanto ese trafico va a ir hacia nosotros mismos 
 * lo mismo ocurre con la direccion IPV6 (::1/128)
 
 ----- 
@@ -4676,9 +4678,10 @@ lionel@lionel-ubuntu:~$ ip a show dev ens33
 1) direccion IPV4 -> inet 192.168.233.128/24 brd 192.168.233.255 scope global dynamic noprefixroute ens33
     1.1)
     - inet 192.168.233.128/24 es la direccion IPV4 que tiene asignada esta interfaz de red (ens33)
-    - esta direccion IPV4 nos esta identificando dentro de la red a la que este conectada nuestra interfaz concreta y nuestra tarjeta de red
+    - esta direccion IPV4 nos esta identificando dentro de la red a la que este conectada nuestra interfaz concreta y nuestra tarjeta de red 
     - concretamente mi maquina tiene esta direccion IPV4 que es 192.168.233.128
     - y adicionalmente tenemos este "/24", que concatenado con lo anterior, o sea, 192.168.233.128/24, se denomina notacion CIDR (Clasless Inter-Domain Routing), y lo que nos esta diciendo fundamentalmente con esta notacion es que una direccion IPV4 concretamente esta formada por un numero total de 32 bits y aqui nos dice que esta dejando 24 bits para denotar, para designar la subred (que serian los primeros 24 bits: 192.168.233) y luego deja un numero de bits igual a 8 para ir denotando, ir designando los hosts que se van a conectar a esta red
+    - CIDR wikipedia (https://es.wikipedia.org/wiki/Classless_Inter-Domain_Routing)
     - 192.168.233 -> estos valores se corresponderian con la subred (24 bits)
     - 128         -> estos valores se corresponderian con la parte que deja para los hosts (8 bits)
     - en nuestro caso, lo que esta designando (identificando ? ) nuestro host (referencia a la interfaz ens33 ? ) es el "128"
@@ -4702,10 +4705,12 @@ lionel@lionel-ubuntu:~$ ip a show dev ens33
     128 64 32 16 8 4 2 1
     - 1 byte = 8 bits = xxxxxxxx
 
-    1.2) 192.168.233.255 -> esto tiene que ver con la notacion CIDR
+    1.2) brd 192.168.233.255 -> esto tiene que ver con la notacion CIDR
 
-2) direccion IPV6, tambien asignada a esta interfaz ens33 -> inet6 fe80::c61:df04:91cc:8226/64 scope link noprefixroute 
+2) direccion IPV6
+- esta direccion tambien esta asignada a esta interfaz ens33 -> inet6 fe80::c61:df04:91cc:8226/64 scope link noprefixroute 
 - con esta direccion IPV6 podriamos comunicarnos tambien con dispositivos que se encontrasen en nuestra red o en otras redes diferentes 
+*** parecieran 5 o 6 bloques de muchos bits, representados en hexadecimal 
 
 ----- 
 
@@ -4722,9 +4727,12 @@ lionel@lionel-ubuntu:~$ ip -6 a vvv
     inet6 fe80::c61:df04:91cc:8226/64 scope link noprefixroute 
        valid_lft forever preferred_lft forever
 
-- obtengo unicamente las direcciones IPV4 asignadas a cada una de las interfaces vvv
-lionel@lionel-ubuntu:~$ ip -4 a
-...
+- obtengo unicamente las direcciones IPV4 asignadas a la interfaz que yo indico (en este caso la interfaz ens33) vvv
+lionel@lionel-ubuntu:~$ ip -4 a show dev ens33
+2: ens33: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc fq_codel state UP group default qlen 1000
+    altname enp2s1
+    inet 192.168.233.128/24 brd 192.168.233.255 scope global dynamic noprefixroute ens33
+       valid_lft 1237sec preferred_lft 1237sec
 
 - mas alla de esto, realmente lo que a nosotros nos interesa en nuestro dia a dia cuando estamos gestionando las direcciones de nuestra maquina es, o añadir una direccion nueva, o elimiar una direccion 
 - por norma general lo vamos a hacer con direcciones IPV4, que es lo que mas se utiliza a dia de hoy, por lo tanto vamos a ver exactamente como seria esto vvv 
@@ -4733,7 +4741,7 @@ lionel@lionel-ubuntu:~$ ip -4 a
 
 - para añadir una direccion IPV4 vamos a tener que poner la direccion (de 32 bits) que queremos añadirle  
 - tened en cuenta lo que hablamos anteriormente:
-- si los primeros 24 bits (192.168.233) estan designando nuestra subred y los ultimos 8 bits se utilizan para ir designando cada uno de los hosts, obviamente si nosotros queremos añadirle una nueva direccion IP y queremos que funcione todo correctamente, nuestra (nueva) direccion tiene que empezar por 192.168.233, tiene que tener en los ultimos 8 bits un valor diferente al que ya tienen los hosts de la propia red y finalmente agregar un "/24" para indicar que los primeros 24 bits refieren a la subred y los ultimos 8 designan el host vvv 
+- si los primeros 24 bits (192.168.233) estan designando nuestra subred y los ultimos 8 bits se utilizan para ir designando cada uno de los hosts, obviamente si nosotros queremos añadirle una nueva direccion IP (a una interfaz ya disponible) y queremos que funcione todo correctamente, nuestra (nueva) direccion tiene que empezar por 192.168.233, tiene que tener en los ultimos 8 bits un valor diferente al que ya tienen los hosts de la propia red y finalmente agregar un "/24" para indicar que los primeros 24 bits refieren a la subred y los ultimos 8 designan el host vvv 
 
 - intentamos añadir una nueva ip vvv
 lionel@lionel-ubuntu:~$ ip a add 192.168.233.188/24 dev ens33
@@ -4748,15 +4756,12 @@ lionel@lionel-ubuntu:~$ sudo ip a add 192.168.233.188/24 dev ens33
 lionel@lionel-ubuntu:~$
 
 - ahora podemos observar que nuestra interfaz de red ens33 ahora tiene una nueva direccion IPV4 (192.168.233.188)
-lionel@lionel-ubuntu:~$ ip a show dev ens33
+lionel@lionel-ubuntu:~$ ip -4 a show dev ens33
 2: ens33: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc fq_codel state UP group default qlen 1000
-    link/ether 00:0c:29:70:a4:c2 brd ff:ff:ff:ff:ff:ff
     altname enp2s1
     inet 192.168.233.128/24 brd 192.168.233.255 scope global dynamic noprefixroute ens33
-       valid_lft 1710sec preferred_lft 1710sec
+       valid_lft 1636sec preferred_lft 1636sec
     inet 192.168.233.188/24 scope global secondary ens33
-       valid_lft forever preferred_lft forever
-    inet6 fe80::c61:df04:91cc:8226/64 scope link noprefixroute 
        valid_lft forever preferred_lft forever
 
 - aca podemos observar que lo que sigue a la direccion IPV4 ha cambiado vvv
@@ -4775,17 +4780,254 @@ https://man7.org/linux/man-pages/man8/ip-address.8.html
 lionel@lionel-ubuntu:~$ sudo ip a del 192.168.233.188/24 dev ens33
 
 - chequeo
-lionel@lionel-ubuntu:~$ ip a show dev ens33
+lionel@lionel-ubuntu:~$ ip -4 a show dev ens33
 2: ens33: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc fq_codel state UP group default qlen 1000
-    link/ether 00:0c:29:70:a4:c2 brd ff:ff:ff:ff:ff:ff
     altname enp2s1
     inet 192.168.233.128/24 brd 192.168.233.255 scope global dynamic noprefixroute ens33
-       valid_lft 1101sec preferred_lft 1101sec
-    inet6 fe80::c61:df04:91cc:8226/64 scope link noprefixroute 
-       valid_lft forever preferred_lft forever
+       valid_lft 1537sec preferred_lft 1537sec
 
 --------------------
 
 80. Dirección de broadcast
+
+Es posible que alguno de vosotros se haya fijado en la siguiente dirección ip que aparece cuando ejecutamos el comando ip a vvv 
+192.168.233.255 (aparece seguido a la direccion IPV4 de la interfaz de red ens33)
+
+¿Qué es esta dirección?
+- Esta dirección se denomina dirección de broadcast. 
+- Cada red o subred tiene una dirección de broadcast reservada que puede ser utilizada por todos los participantes de la red para enviar tráfico de red a todos los nodos. 
+- El broadcast permiten transmitir información a todos los dispositivos y componentes de la red sin necesidad de conocer sus direcciones IP individuales. 
+- Entre otras cosas, los routers de una red local utilizan la IP de broadcast para enviar paquetes HELLO a todos los nodos de la red, switches y otros routers para descubrirlos y obtener cierta información sobre ellos.
+
+Para el que quiera seguir profundizando sobre esto, le recomiendo que revise el siguiente enlace: https://en.wikipedia.org/wiki/Broadcast_address
+¡Un saludo y nos vemos en la siguiente sección!
+Santiago.
+
+--------------------
+
+81. Routing
+
+- ya vimos que una interfaz de red va a disponer de una direccion fisica (sireccion MAC), con la que ibamos a poder comunicarnos con otros nodos (otros ordenadores) que se encontrasen dentro de nuestra red local 
+- vimos tambien que una interfaz de red va a disponer de una o varias direcciones IP con las que ibamos a poder comunicarnos con nodos (ordenadores) que se encontrasen en distintas redes 
+
+- ya sabemos que diferentes redes pueden unirse a traves de diferentes dispositivos de red como pueden ser los routers
+
+----- 
+
+EXTRA 
+
+¿Que es un router? (https://es.wikipedia.org/wiki/R%C3%BAter)
+
+- Un rúter,1​ enrutador2​ (del inglés router) o encaminador3​ es un dispositivo que permite interconectar redes con distinto prefijo en su dirección IP. 
+- Su función es la de establecer la mejor ruta que destinará a cada paquete de datos para llegar a la red y al dispositivo de destino. 
+- Es bastante utilizado para conectarse a Internet, ya que conecta la red de nuestro hogar, oficina o cualquier red a la red de nuestro proveedor de este servicio. 
+- La mayoría de los rúteres que se utilizan para el hogar y oficinas tienen incorporadas otras funciones adicionales al enrutador, como por ejemplo: 
+- punto de acceso inalámbrico, que permite crear y conectarse a una red Wifi; 
+- módem, que convierte las señales analógicas a digitales y viceversa; 
+- Conmutador, que conecta varios dispositivos a través de cable, creando una red local.
+
+----- 
+
+¿Como sabe nuestro sistema (en este caso nuestro sistema linux) a donde tiene que dirigir los paquetes de red (el trafico de red) si yo puedo disponer disponer de varias interfaces, puedo, pues yo que se, dirigir un paquete, por ejemplo, a una maquina que se encuentre en mi red, o puedo dirigirlo a una maquina que se encuentre en otra red distinta (por lo tanto tiene que ir hacia el router), como sabe nuestro sistema si ese paquete va hacia un dispositivo de nuestra red, va a hacia un router, va por una interfaz o por otra interfaz ... ?
+
+- Bueno, pues esto lo sabe por una serie de rutas 
+- concretamente, rutas que se encuentran en la tabla de rutas del sistema 
+
+- en man ip, podemos ver que otro de los objetos del comando ip, es el objeto route vvv
+OBJECT := { link | address | addrlabel | route | rule | neigh | ntable | tunnel | tuntap | maddress | mroute | 
+            mrule | monitor | xfrm | netns | l2tp | tcp_metrics | token | macsec | vrf | mptcp | ioam }
+
+- con el comando "ip route" vemos la tabla de rutas de nuestro sistema vvv
+lionel@lionel-ubuntu:~$ ip route
+default via 192.168.233.2 dev ens33 proto dhcp metric 100 
+169.254.0.0/16 dev ens33 scope link metric 1000 
+192.168.233.0/24 dev ens33 proto kernel scope link src 192.168.233.128 metric 100 
+
+- lo que nos esta indicando esta tabla de rutas es hacia donde se va a dirigir el trafico de red en funcion del objetivo 
+
+----- 
+
+EXTRA 
+
+¿Que es "trafico de red"? (https://es.wikipedia.org/wiki/Tr%C3%A1fico_de_red#:~:text=El%20tr%C3%A1fico%20de%20red%20o,la%20carga%20en%20la%20red.)
+
+- El tráfico de red o tráfico de datos es la cantidad de datos que se mueven a través de una red en un momento dado.​
+- Los datos de red en las redes informáticas se encapsulan principalmente en paquetes de red, que proporcionan la carga en la red. 
+- El tráfico de red es el componente principal para la medición del tráfico de red, el control del tráfico de red y la simulación.
+...
+
+----- 
+
+- analizamos la primera regla vvv
+
+default via 192.168.233.2 dev ens33 proto dhcp metric 100 
+
+- la primera regla nos esta diciendo que por defecto todo el trafico de red va a ir dirigido a la direccion 192.168.233.2 
+- como hemos bisto en la clase anterior, nosotros nos encontramos en la subred 192.168.233, y concretamente, la .2 (el host .2, el nodo .2) es lo que actua de router dentro de nuestra infraestructura de red virtual que hemos creado con VMWare (en holamundo vimos que una VM dispone de un hardware virtual, un kernel virtual y su capa de aplicaciones)
+- entonces, lo que esta diciendo esta linea es, que por defecto todo el trafico de red lo vas a dirigir a la direccion IP 192.168.233.2 (que va a ser el router) a traves de la interfaz ens33 
+
+----- 
+
+- analizamos la segunda regla vvv
+
+169.254.0.0/16 dev ens33 scope link metric 1000 
+
+- aqui esta diciendo, oye, vas a dirigir todo el trafico por defecto (referencia a la primera ruta), excepto aquel trafico que vaya dirigido a la subred 169.254.0.0/16 (el cual ira dirido a esta subred, a traves de la interfaz ens33)
+- como hemos visto en la clase anterior, "169.254.0.0/16" es notacion CIDR 
+- los 16 bits "169.254" son los que designarian la subred y los otros 16 bits ("0.0") designarian los hosts
+
+-----
+
+- analizamos la tercera regla vvv
+
+- esta tercera regla que nos dice que todo el trafico que vaya dirigido a cualquier host que se encuentre en 192.168.233.0 va a ir directamente, a travez de nuestra interfaz ens33, a ese host, o sea que no va a pasar por una cosa como el router (.2)
+- ¿Por qué? Pues bueno, porque fijaros que cuando estamos dentro de nuestra red local, nos vamos a poder comunicar directamente con cualquier otro nodo que se encuentre dentro de esta red, pero cuando queramos conectarnos con otro nodo que se encuentre fuera de nuestra red local, pues nosotros lo vamos a hacer a traves del router
+
+- esto podemos compobarlo de manera muy sencilla, haciendo uso del comando traceroute
+- traceroute lo que nos va a decir son los saltos que van pegando nuestros paquetes de red por diferentes routes (rutas ? ) hasta que llegan al objetivo, es decir, la ruta concreta que esta siguiendo nuestro trafico de red
+- como por defecto no viene en ubuntu vamos a tener que instalarlo vvv
+
+----- 
+
+EXTRA 
+
+- antes de instalar traceroute, verifico que no tengo instalado ya el paquete taceroute, corriendo algunos comandos que retornan info de un paquete instalado (explicacion de los comandos en el fichero "8.apt_install.txt") vvv 
+
+lionel@lionel-ubuntu:~$ which nano
+/usr/bin/nano
+lionel@lionel-ubuntu:~$ which traceroute
+lionel@lionel-ubuntu:~$ 
+
+lionel@lionel-ubuntu:~$ whereis nano
+nano: /usr/bin/nano /usr/share/nano /usr/share/man/man1/nano.1.gz /usr/share/info/nano.info.gz
+lionel@lionel-ubuntu:~$ whereis traceroute
+traceroute:
+
+lionel@lionel-ubuntu:~$ dpkg-query -L nano
+...
+lionel@lionel-ubuntu:~$ dpkg-query -L traceroute
+dpkg-query: package 'traceroute' is not installed
+Use dpkg --contents (= dpkg-deb --contents) to list archive files contents.
+
+----- 
+
+lionel@lionel-ubuntu:~$ sudo apt install traceroute
+[sudo] password for lionel: 
+...
+
+- chequeo:
+lionel@lionel-ubuntu:~$ which traceroute
+/usr/sbin/traceroute
+
+- chequeo:
+lionel@lionel-ubuntu:~$ whereis traceroute
+traceroute: /usr/bin/traceroute /usr/sbin/traceroute /usr/share/man/man1/traceroute.1.gz
+
+- chequeo:
+lionel@lionel-ubuntu:~$ dpkg-query -L traceroute 
+...
+
+- manual
+lionel@lionel-ubuntu:~$ man traceroute
+...
+*** al final este es un programita muy sencillo, nos va  decir las rutas que van recorriendo nuestros paquetes (nuestro trafico de red)
+*** tenemos diferentes opciones para enviar un paquete distinto: tcp, icmp, udp, ect 
+*** yo recomiendo que utilizeis el tcp si realmente quereis aseguraros de que los routes que esta recorriendo son los correctos
+
+----- 
+
+- hago un traceroute a "www.google.es"
+lionel@lionel-ubuntu:~$ traceroute -T www-google.es
+You do not have enough privileges to use this traceroute method.
+socket: Operation not permitted
+*** permiso denegado
+
+- verifico la tabla de rutas de mi sistema vvv
+lionel@lionel-ubuntu:~$ ip r
+default via 192.168.233.2 dev ens33 proto dhcp metric 100 
+169.254.0.0/16 dev ens33 scope link metric 1000 
+192.168.233.0/24 dev ens33 proto kernel scope link src 192.168.233.128 metric 100 
+
+- hago un traceroute a "www.google.es" con privilegios de administrador
+lionel@lionel-ubuntu:~$ sudo traceroute -T www.google.es
+traceroute to www.google.es (142.251.134.67), 30 hops max, 60 byte packets
+ 1  _gateway (192.168.233.2)  0.223 ms  0.247 ms  0.187 ms
+ 2  eze10s11-in-f3.1e100.net (142.251.134.67)  12.814 ms  12.700 ms  18.505 ms
+
+- esto quiere decir que yo, obviamente, estoy intentando comunicarme en este caso con un servidor de google que se encuentra en Internet
+- por lo tanto, deberia de salir por nuestro router y por varios routes hasta que llegue  a ese servidor
+- fijaros que nuestro router por defecto es 192.168.233.2, y nosotros hemos dicho que todo trafico que vaya dirigido a otros sitios que no sean las subredes 169.254.0.0/16 o 192.168.233.0/24 (que obviamente no se corresponden con la subred donde se encontrara el servidor de google, que es Internet) tienen que ir a traves de la direccion IP 192.168.233.2
+
+- el primer salto que esta pegando nuestro paquete de red es a "esta direccion de aqui" vvv 
+ 1  _gateway (192.168.233.2)  0.223 ms  0.247 ms  0.187 ms
+*** observamos que "esta direccion de aqui" (192.168.233.2) es la que se corresponde con la que esta definida en la primera regla que nos devuelve "ip r", es decir, con la direccion IP de nuestro router dentro de nuestra infraestructura de red virtual
+
+- de 192.168.233.2 va saltando a otros routes (como por ejemplo a 142.251.134.67), hasta que llega al servidor que estamos tratando de consultar
+
+- si nosotros en vez de hacer un traceroute a google estuviesemos intentando hacerlo a otro nodo, por ejemplo un nodo que se encuentre en nuestra red local, por ejemplo al nodo 192.168.233.2 vvv 
+lionel@lionel-ubuntu:~$ sudo traceroute -T 192.168.233.2
+traceroute to 192.168.233.2 (192.168.233.2), 30 hops max, 60 byte packets
+ 1  _gateway (192.168.233.2)  2.645 ms  2.690 ms  0.326 ms
+*** observamos que va directo al host de destino sin pasar por ningun otro sitio (visualizamo un solo salto en lugar de 2)
+*** esto es porque esta comunicacion esta coincidiendo con la tercer regla vvv
+*** "todo el trafico que vaya dirigido a cualquier host o nodo que se encuentre en la subred 192.168.233 va a ir directamente, a travez de nuestra interfaz ens33, a ese host, o sea que no va a pasar por una cosa como el router (.2)"
+*** comprobamos que este trafico de red va a directo al host y no pega saltos por ningun lado (esto es porque esta puesto en las tablas de rutas)
+
+----- 
+
+- si nosotros quisiesemos añadir nuevas rutas (a la tabla de rutas) podemos hacerlo de manera muy sencillita vvv 
+
+- consultamos la tabla de rutas
+ionel@lionel-ubuntu:~$ ip r
+default via 192.168.233.2 dev ens33 proto dhcp metric 100 
+169.254.0.0/16 dev ens33 scope link metric 1000 
+192.168.233.0/24 dev ens33 proto kernel scope link src 192.168.233.128 metric 100 
+
+- creo una nueva ruta y quiero que todo el trafico por defecto vaya por la direccion 192.168.233.3 (nueva ruta) vvv
+lionel@lionel-ubuntu:~$ sudo ip r add default via 192.168.233.3
+lionel@lionel-ubuntu:~$ 
+*** por defecti, va a ir por la interfaz ens33, podria haber indicado cualquier otra interfaz agregando "... dev xxx" al final del comando (sudo ip r add default via 192.168.233.3 dev xxx)
+
+- consultamos nuevamente la tabla de rutas
+lionel@lionel-ubuntu:~$ ip r
+default via 192.168.233.3 dev ens33 
+default via 192.168.233.2 dev ens33 proto dhcp metric 100 
+169.254.0.0/16 dev ens33 scope link metric 1000 
+192.168.233.0/24 dev ens33 proto kernel scope link src 192.168.233.128 metric 100 
+
+- aqui estamos teniendo un problema, ya que por defecto el router virtualde VMWare se encuentra en 192.168.233.2 pero yo he definido (con la nueva regla) que todo el trafico por defecto valla por la 192.168.233.3 (nodo que no actua como ruter virtual dentro de VMWare)
+- como prueba, intento acceder a "google.es" desde Chrome y compruebo que no me puedo conectar 
+- el trafico de red parece que no esta saliendo de nuestra maquina
+
+- hacemos un traceroute a "www.google.es" vvv 
+lionel@lionel-ubuntu:~$ sudo traceroute -T www.google.es
+traceroute to www.google.es (142.250.79.131), 30 hops max, 60 byte packets
+ 1  lionel-ubuntu (192.168.233.128)  1798.636 ms !H  1798.630 ms !H  1798.625 ms !H
+*** verificamos que el trafico de red no sale de nuestra maquina
+
+- lo que sucede es que el trafico esta yendo a 192.168.233.3, pero luego este paquete no se reenvia a ninguna otra parte porque 192.168.233.3 no esta actuando de router virtual
+- entonces al añadir esta nueva regla estamos enrutando hacia un nodo que no se encuentra activo, y por lo tanto ese trafico de red se esta perdiendo
+
+----- 
+
+- eliminamos esta nueva ruta para que todo funcione de nuevo vvv
+lionel@lionel-ubuntu:~$ sudo ip r del default via 192.168.233.3
+lionel@lionel-ubuntu:~$ 
+
+- chequeo que la nueva regla se elimino de la tabla de rutas
+lionel@lionel-ubuntu:~$ ip r
+default via 192.168.233.2 dev ens33 proto dhcp metric 20100 
+169.254.0.0/16 dev ens33 scope link metric 1000 
+192.168.233.0/24 dev ens33 proto kernel scope link src 192.168.233.128 metric 100 
+
+- compruebo que me puedo comunicar con el servidor de google, ya que ahora el trafico de nuestra maquina nuevamente esta saliendo por el router virtual de nuestra VM con direccion 192.168.233.2
+lionel@lionel-ubuntu:~$ sudo traceroute -T www.google.es
+traceroute to www.google.es (142.251.134.67), 30 hops max, 60 byte packets
+ 1  _gateway (192.168.233.2)  0.213 ms  0.127 ms  0.149 ms
+ 2  eze10s11-in-f3.1e100.net (142.251.134.67)  11.489 ms  12.725 ms  19.318 ms
+
+--------------------
+
+82. Sniffers: Wireshark y Tcpdump 
 
 ...

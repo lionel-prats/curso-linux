@@ -1,0 +1,58 @@
+chatGTP vvv 
+
+PREGUNTA: 
+te hago una pregunta, porque siempre se trata de instalar programas, utilidades, en mi SO ubuntu...
+"fisicamente", a donde van a parar dentro de mis sistema de ficheros esas instalaciones?
+cuando instalo nano por ejemplo, se se crean ficheros y/o directorios nuevos en mi sistema de ficheros? de ese se trata una instalacion en ubuntu?
+
+RESPUESTA:
+- Cuando instalas programas en Ubuntu utilizando el comando sudo apt install, los archivos asociados con esos programas se instalan en ubicaciones específicas dentro de tu sistema de archivos.
+- En el caso de Nano, al instalarlo, se crearán varios archivos y directorios en tu sistema de archivos. 
+- Aquí hay una breve descripción de dónde van estos archivos:
+* Ejecutables: El ejecutable principal de Nano (el binario) se colocará en un directorio como /usr/bin. Esto significa que podrás ejecutar Nano simplemente escribiendo nano en la línea de comandos.
+* Archivos de configuración: Los archivos de configuración de Nano y cualquier archivo de configuración adicional (como temas, atajos de teclado personalizados, etc.) se colocarán en el directorio /etc/nano. Aquí encontrarás archivos como nanorc, que es el archivo de configuración principal de Nano.
+* Documentación: La documentación relacionada con Nano, si la hay, podría colocarse en directorios como /usr/share/doc/nano.
+* Otros recursos: Dependiendo del paquete específico de Nano que estés instalando, puede haber otros recursos que se instalen en diferentes ubicaciones dentro del sistema de archivos.
+- En resumen, la instalación de programas en Ubuntu implica colocar archivos ejecutables, configuraciones, documentación y otros recursos en ubicaciones específicas dentro del sistema de archivos para que el programa funcione correctamente. 
+- Estos archivos y directorios se crean como parte del proceso de instalación y se utilizan cuando ejecutas el programa instalado.
+
+----- 
+
+PREGUNTA:
+y cuando instal traceroute, que pasa a nivel sistema de ficheros?
+
+RESPUESTA:
+- Cuando instalas traceroute en Ubuntu, ocurren varias cosas a nivel del sistema de archivos:
+- Binario ejecutable: El binario ejecutable de traceroute se instala en una ubicación como /usr/bin, lo que te permite ejecutar el comando traceroute desde cualquier lugar en tu sistema utilizando la línea de comandos.
+- Archivos de configuración: En el caso de traceroute, no suele haber archivos de configuración adicionales, ya que es una herramienta de línea de comandos que no requiere configuración específica.
+- Documentación: Es posible que se instale documentación relacionada con traceroute en directorios como /usr/share/doc/traceroute.
+- Otros recursos: Dependiendo de la implementación específica de traceroute que se esté instalando, podría haber otros recursos relacionados que se instalen en diferentes ubicaciones dentro del sistema de archivos.
+- En general, la instalación de traceroute sigue un proceso similar al de cualquier otro programa en Ubuntu. Se colocan los archivos ejecutables y cualquier documentación relacionada en ubicaciones específicas dentro del sistema de archivos para que puedas utilizar la herramienta traceroute desde la línea de comandos.
+
+----- 
+
+PREGUNTA:
+hay forma de saber donde se encuentra todo lo relacionado a una instalacion?
+
+RESPUESTA:
+- Sí, hay varias formas de determinar dónde se encuentran los archivos relacionados con una instalación en Ubuntu. 
+Aquí hay algunas opciones:
+
+1. Comando which
+- Puedes usar el comando which seguido del nombre del programa para encontrar la ubicación del ejecutable. 
+- Por ejemplo, para encontrar la ubicación del ejecutable de nano, puedes ejecutar:
+lionel@lionel-ubuntu:~$ which nano
+*** Esto te devolverá la ubicación del ejecutable de Nano en tu sistema.
+
+2. Comando whereis
+- El comando whereis es similar a which, pero te dará más información sobre la ubicación de diferentes tipos de archivos relacionados con el programa. 
+lionel@lionel-ubuntu:~$ whereis nano
+*** Esto te mostrará la ubicación del ejecutable de Nano, así como las ubicaciones de los archivos de documentación y otros archivos relacionados.
+
+3. Comando dpkg-query
+- Puedes usar el comando dpkg-query para obtener información detallada sobre los archivos instalados por un paquete. 
+- Por ejemplo, para obtener información sobre el paquete nano, puedes ejecutar:
+lionel@lionel-ubuntu:~$ dpkg-query -L nano
+*** Esto te proporcionará una lista detallada de todos los archivos instalados por el paquete nano, incluidos los ejecutables, archivos de configuración y archivos de documentación.
+
+- Estas son algunas formas comunes de encontrar la ubicación de los archivos relacionados con una instalación en Ubuntu. Dependiendo de tus necesidades específicas, una u otra opción puede ser más útil.
