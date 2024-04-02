@@ -4791,7 +4791,7 @@ lionel@lionel-ubuntu:~$ ip -4 a show dev ens33
 80. Dirección de broadcast
 
 Es posible que alguno de vosotros se haya fijado en la siguiente dirección ip que aparece cuando ejecutamos el comando ip a vvv 
-192.168.233.255 (aparece seguido a la direccion IPV4 de la interfaz de red ens33)
+192.168.233.255 (aparece seguido a la direccion IPV4 de la interfaz de red ens33) (comando ip a)
 
 ¿Qué es esta dirección?
 - Esta dirección se denomina dirección de broadcast. 
@@ -4818,7 +4818,7 @@ EXTRA
 
 ¿Que es un router? (https://es.wikipedia.org/wiki/R%C3%BAter)
 
-- Un rúter,1​ enrutador2​ (del inglés router) o encaminador3​ es un dispositivo que permite interconectar redes con distinto prefijo en su dirección IP. 
+- Un rúter,​ enrutador​ (del inglés router) o encaminador​ es un dispositivo que permite interconectar redes con distinto prefijo en su dirección IP. 
 - Su función es la de establecer la mejor ruta que destinará a cada paquete de datos para llegar a la red y al dispositivo de destino. 
 - Es bastante utilizado para conectarse a Internet, ya que conecta la red de nuestro hogar, oficina o cualquier red a la red de nuestro proveedor de este servicio. 
 - La mayoría de los rúteres que se utilizan para el hogar y oficinas tienen incorporadas otras funciones adicionales al enrutador, como por ejemplo: 
@@ -4828,7 +4828,7 @@ EXTRA
 
 ----- 
 
-¿Como sabe nuestro sistema (en este caso nuestro sistema linux) a donde tiene que dirigir los paquetes de red (el trafico de red) si yo puedo disponer disponer de varias interfaces, puedo, pues yo que se, dirigir un paquete, por ejemplo, a una maquina que se encuentre en mi red, o puedo dirigirlo a una maquina que se encuentre en otra red distinta (por lo tanto tiene que ir hacia el router), como sabe nuestro sistema si ese paquete va hacia un dispositivo de nuestra red, va a hacia un router, va por una interfaz o por otra interfaz ... ?
+¿Como sabe nuestro sistema (en este caso nuestro sistema linux) a donde tiene que dirigir los paquetes de red (el trafico de red) si yo puedo disponer de varias interfaces, puedo, pues yo que se, dirigir un paquete, por ejemplo, a una maquina que se encuentre en mi red, o puedo dirigirlo a una maquina que se encuentre en otra red distinta (por lo tanto tiene que ir hacia el router), como sabe nuestro sistema si ese paquete va hacia un dispositivo de nuestra red, va a hacia un router, va por una interfaz o por otra interfaz ... ?
 
 - Bueno, pues esto lo sabe por una serie de rutas 
 - concretamente, rutas que se encuentran en la tabla de rutas del sistema 
@@ -4864,7 +4864,7 @@ default via 192.168.233.2 dev ens33 proto dhcp metric 100
 
 - la primera regla nos esta diciendo que por defecto todo el trafico de red va a ir dirigido a la direccion 192.168.233.2 
 - como hemos bisto en la clase anterior, nosotros nos encontramos en la subred 192.168.233, y concretamente, la .2 (el host .2, el nodo .2) es lo que actua de router dentro de nuestra infraestructura de red virtual que hemos creado con VMWare (en holamundo vimos que una VM dispone de un hardware virtual, un kernel virtual y su capa de aplicaciones)
-- entonces, lo que esta diciendo esta linea es, que por defecto todo el trafico de red lo vas a dirigir a la direccion IP 192.168.233.2 (que va a ser el router) a traves de la interfaz ens33 
+- entonces, lo que esta diciendo esta linea es, que por defecto todo el trafico de red lo vas a dirigir a la direccion IP 192.168.233.2 (que va a ser el router de nuestra VM) a traves de la interfaz ens33 
 
 ----- 
 
@@ -4872,7 +4872,7 @@ default via 192.168.233.2 dev ens33 proto dhcp metric 100
 
 169.254.0.0/16 dev ens33 scope link metric 1000 
 
-- aqui esta diciendo, oye, vas a dirigir todo el trafico por defecto (referencia a la primera ruta), excepto aquel trafico que vaya dirigido a la subred 169.254.0.0/16 (el cual ira dirido a esta subred, a traves de la interfaz ens33)
+- aqui esta diciendo, oye, vas a dirigir todo el trafico por defecto (referencia a la primera ruta), excepto aquel trafico que vaya dirigido a la subred 169.254.0.0/16 (el cual ira dirigido a esta subred, a traves de la interfaz ens33)
 - como hemos visto en la clase anterior, "169.254.0.0/16" es notacion CIDR 
 - los 16 bits "169.254" son los que designarian la subred y los otros 16 bits ("0.0") designarian los hosts
 
@@ -4880,7 +4880,7 @@ default via 192.168.233.2 dev ens33 proto dhcp metric 100
 
 - analizamos la tercera regla vvv
 
-- esta tercera regla que nos dice que todo el trafico que vaya dirigido a cualquier host que se encuentre en 192.168.233.0 va a ir directamente, a travez de nuestra interfaz ens33, a ese host, o sea que no va a pasar por una cosa como el router (.2)
+- esta tercera regla que nos dice que todo el trafico que vaya dirigido a cualquier host que se encuentre en 192.168.233.0 (o sea, a cualquier host dentro de la subred 192.168.233) va a ir directamente, a traves de nuestra interfaz ens33, a ese host, o sea que no va a pasar por una cosa como el router (.2)
 - ¿Por qué? Pues bueno, porque fijaros que cuando estamos dentro de nuestra red local, nos vamos a poder comunicar directamente con cualquier otro nodo que se encuentre dentro de esta red, pero cuando queramos conectarnos con otro nodo que se encuentre fuera de nuestra red local, pues nosotros lo vamos a hacer a traves del router
 
 - esto podemos compobarlo de manera muy sencilla, haciendo uso del comando traceroute
@@ -4936,17 +4936,17 @@ lionel@lionel-ubuntu:~$ man traceroute
 
 ----- 
 
-- hago un traceroute a "www.google.es"
-lionel@lionel-ubuntu:~$ traceroute -T www-google.es
-You do not have enough privileges to use this traceroute method.
-socket: Operation not permitted
-*** permiso denegado
-
 - verifico la tabla de rutas de mi sistema vvv
 lionel@lionel-ubuntu:~$ ip r
 default via 192.168.233.2 dev ens33 proto dhcp metric 100 
 169.254.0.0/16 dev ens33 scope link metric 1000 
 192.168.233.0/24 dev ens33 proto kernel scope link src 192.168.233.128 metric 100 
+
+- hago un traceroute a "www.google.es"
+lionel@lionel-ubuntu:~$ traceroute -T www-google.es
+You do not have enough privileges to use this traceroute method.
+socket: Operation not permitted
+*** permiso denegado
 
 - hago un traceroute a "www.google.es" con privilegios de administrador
 lionel@lionel-ubuntu:~$ sudo traceroute -T www.google.es
@@ -4955,8 +4955,8 @@ traceroute to www.google.es (142.251.134.67), 30 hops max, 60 byte packets
  2  eze10s11-in-f3.1e100.net (142.251.134.67)  12.814 ms  12.700 ms  18.505 ms
 
 - esto quiere decir que yo, obviamente, estoy intentando comunicarme en este caso con un servidor de google que se encuentra en Internet
-- por lo tanto, deberia de salir por nuestro router y por varios routes hasta que llegue  a ese servidor
-- fijaros que nuestro router por defecto es 192.168.233.2, y nosotros hemos dicho que todo trafico que vaya dirigido a otros sitios que no sean las subredes 169.254.0.0/16 o 192.168.233.0/24 (que obviamente no se corresponden con la subred donde se encontrara el servidor de google, que es Internet) tienen que ir a traves de la direccion IP 192.168.233.2
+- por lo tanto, deberia de salir por nuestro router y pasar por varios routes hasta que llegue a ese servidor
+- fijaros que nuestro router por defecto es 192.168.233.2, y nosotros hemos dicho que todo trafico que vaya dirigido a otros sitios que no sean las subredes 169.254.0.0/16 o 192.168.233 (que obviamente no se corresponden con la subred donde se encontrara el servidor de google, que es Internet) tienen que ir a traves de la direccion IP 192.168.233.2
 
 - el primer salto que esta pegando nuestro paquete de red es a "esta direccion de aqui" vvv 
  1  _gateway (192.168.233.2)  0.223 ms  0.247 ms  0.187 ms
@@ -4970,7 +4970,7 @@ traceroute to 192.168.233.2 (192.168.233.2), 30 hops max, 60 byte packets
  1  _gateway (192.168.233.2)  2.645 ms  2.690 ms  0.326 ms
 *** observamos que va directo al host de destino sin pasar por ningun otro sitio (visualizamo un solo salto en lugar de 2)
 *** esto es porque esta comunicacion esta coincidiendo con la tercer regla vvv
-*** "todo el trafico que vaya dirigido a cualquier host o nodo que se encuentre en la subred 192.168.233 va a ir directamente, a travez de nuestra interfaz ens33, a ese host, o sea que no va a pasar por una cosa como el router (.2)"
+*** "todo el trafico que vaya dirigido a cualquier host o nodo que se encuentre en la subred 192.168.233 va a ir directamente, a traves de nuestra interfaz ens33, a ese host, o sea que no va a pasar por una cosa como el router (.2)"
 *** comprobamos que este trafico de red va a directo al host y no pega saltos por ningun lado (esto es porque esta puesto en las tablas de rutas)
 
 ----- 
@@ -4983,10 +4983,10 @@ default via 192.168.233.2 dev ens33 proto dhcp metric 100
 169.254.0.0/16 dev ens33 scope link metric 1000 
 192.168.233.0/24 dev ens33 proto kernel scope link src 192.168.233.128 metric 100 
 
-- creo una nueva ruta y quiero que todo el trafico por defecto vaya por la direccion 192.168.233.3 (nueva ruta) vvv
+- creo una nueva ruta y defino que todo el trafico por defecto vaya por la direccion 192.168.233.3 (nueva ruta) vvv
 lionel@lionel-ubuntu:~$ sudo ip r add default via 192.168.233.3
 lionel@lionel-ubuntu:~$ 
-*** por defecti, va a ir por la interfaz ens33, podria haber indicado cualquier otra interfaz agregando "... dev xxx" al final del comando (sudo ip r add default via 192.168.233.3 dev xxx)
+*** por defecto, va a ir por la interfaz ens33, podria haber indicado cualquier otra interfaz agregando "... dev xxx" al final del comando (sudo ip r add default via 192.168.233.3 dev xxx)
 
 - consultamos nuevamente la tabla de rutas
 lionel@lionel-ubuntu:~$ ip r
@@ -4995,7 +4995,7 @@ default via 192.168.233.2 dev ens33 proto dhcp metric 100
 169.254.0.0/16 dev ens33 scope link metric 1000 
 192.168.233.0/24 dev ens33 proto kernel scope link src 192.168.233.128 metric 100 
 
-- aqui estamos teniendo un problema, ya que por defecto el router virtualde VMWare se encuentra en 192.168.233.2 pero yo he definido (con la nueva regla) que todo el trafico por defecto valla por la 192.168.233.3 (nodo que no actua como ruter virtual dentro de VMWare)
+- aqui estamos teniendo un problema, ya que por defecto el router virtual de VMWare se encuentra en 192.168.233.2 pero yo he definido (con la nueva regla) que todo el trafico por defecto valla por la 192.168.233.3 (nodo que no actua como ruter virtual dentro de VMWare)
 - como prueba, intento acceder a "google.es" desde Chrome y compruebo que no me puedo conectar 
 - el trafico de red parece que no esta saliendo de nuestra maquina
 
@@ -5029,5 +5029,118 @@ traceroute to www.google.es (142.251.134.67), 30 hops max, 60 byte packets
 --------------------
 
 82. Sniffers: Wireshark y Tcpdump 
+
+- hablaremos sobre los sniffers de red
+- si bien esta herramienta no es puramente de linux, es importante que la conozcais por el valor que nos aporta cuando estamos analizando nuestro trafico de red
+
+- un sniffer es una herramienta que va a hacer una copia del trafico de red que entra y sale de nuestra maquina y nos va a permitir visualizarlo
+
+- esto es super importante pues para saber que conexiones tenemos activas, para saber si una herramienta esta funcionando correctamente, para saber que tipo de trafico de red se esta emitiendo, que tipo de trafico de red estamos recibiendo, etc. 
+
+- cuando hablamos de sniffers, y ademas de linux, normalmente nos vamos a referir a 2 principales vvv 
+
+----- 
+
+sniffer tcpdump 
+
+- el primero de ellos, tcpdump, es un sniffer de terminal, que suele venir por default en todas las distribuciones de linux vvv 
+
+- chequeo que lo tengo disponible vvv
+lionel@lionel-ubuntu:~$ whereis tcpdump
+tcpdump: /usr/bin/tcpdump /usr/share/man/man8/tcpdump.8.gz
+
+- compruebo que tengo instalada la version 4.99.1 vvv
+lionel@lionel-ubuntu:~$ tcpdump -h
+tcpdump version 4.99.1
+...
+
+- tcpdump es un sniffer de terminal que nos va a permitir capturar trafico de red a traves de la linea de comandos, y por supuesto redirigir ese trafico de red (esa salida de tcpdump ? ) a trabes de tuberias (pipelines -> "|") y demas a ficheros o a donde nosotros queramos 
+
+- casi siempre, para capturar trafico de red tenemos que hacerlo con privilegios de administracion vvv 
+- vamos a decirle a tcpdump que nos capture (el trafico de red ? ) en una interfaz (-i) que va a ser ens33 vvv
+- cuando yo ejecuto este comando, lo que le estamos indicando a este programita (tcpdump) es que entre y salga de esta interfaz (ens33) lo copie y nos lo muestre , en este caso, por terminal
+lionel@lionel-ubuntu:~$ sudo tcpdump -i ens33
+[sudo] password for lionel: 
+tcpdump: verbose output suppressed, use -v[v]... for full protocol decode
+listening on ens33, link-type EN10MB (Ethernet), snapshot length 262144 bytes
+| (cursor parpadeando...)
+
+- cuando yo lo ejecuto, se queda esperando por trafico de red 
+- (empiezo a navegar por Firefox)
+- cuando abro Firefox (es decir, cuando ejecuto la aplicacion Firefox, proceso) y empiezo a navegar por Internet, podeis observar como empiezan a salir un monton de lineas 
+- estas lineas son paquetes de red que estamos intercambiando, en este caso, con diferentes servidores que tendra Mozilla, y que al abrir el navegador se establecen estas comunicaciones 
+- con cada peticion http, vemos en tiempo real la gran cantidad de trafico de red que entra y sale de esta interfaz ens33 
+
+- matamos el proceso con "ctrl+c" vvv 
+13:55:11.172905 IP eze06s13-in-f3.1e100.net.https > lionel-ubuntu.60883: UDP, length 26
+13:55:11.177766 IP lionel-ubuntu.60883 > eze06s13-in-f3.1e100.net.https: UDP, length 39
+13:55:11.190541 IP eze06s13-in-f3.1e100.net.https > lionel-ubuntu.60883: UDP, length 29
+^C
+3945 packets captured
+3945 packets received by filter
+0 packets dropped by kernel
+
+- observamos que la salida de tcpdump nos da una serie de detalles sobre los paquetes de red, el trafico de red que estamos intercambiando
+- cuando matamos el proceso, en las lineas finales, nos indica cual es el trafico total que ha capturado en esta sesion (el tiempo que duró ejecutandose el proceso tcpdump) vvv 
+3945 packets captured
+3945 packets received by filter
+
+- tcpdump nos permite varias opciones vvv 
+
+- verbose vvv
+lionel@lionel-ubuntu:~$ sudo tcpdump -v -i ens33
+*** nos va a dar mas infromacion sobre cada uno de los paquetes de red y no unicamente 2 lineas
+
+- ahora nos centraremos en el otro sniffer, que es el que vamos a utilizar casi en el 100% de las ocasiones, o en el 90% de las ocasiones, que es wireshark vvv 
+
+----- 
+
+sniffer wireshark
+
+- wireshark no viene instalado por defecto asi que lo instalamos vvv
+lionel@lionel-ubuntu:~$ sudo apt install wireshark
+...
+
+- la diferencia fundamental de wireshark con tcpdump, es que cuando ejecutemos wireshark con sudo vamos a observar que se abre una interfaz grafica vvv
+
+- lo primero que observamos es que nos permite seleccionar la interfaz cuyo trafico queremos capturar vvv
+    ens33
+    any
+    Loopback:lo 
+    bluetooth-monitor
+    ...
+
+- nosotros a dia de hoy tenemos 2 interfaces principales: ens33 y la interfaz de loopback 
+- tambien podemos elegir la opcion "any" que quiere decir capturar en cualquier interfaz
+- luego seleccionamos la interfaz ens33 con doble click
+- luego vemos en tiempo real todo el trafico de red en la interfaz ens33 
+- luego paramos la captura con el icono de stop (cuadradito, segundo icono de izquierda a derecha en el panel superior de la interfaz grafica de wireshark)
+- luego, una vez detenida la captura de trafico, tenemos toda la informacion disponible para analizarla
+
+- mas importante que el propio trafico que nos muestra la interfaz, es el detalle del mismo
+- fijaros de cada paquete de red (uno HTTP po ejemplo), nos aparecen todas las capas que implementan estos paquetes de red
+    Frame 161:
+        ...
+    Ethernet II, Srd: (capa Rthernet, donde se encuentra la direccion MAC de nuestra interfaz ens33)
+        ...
+        Source: VMware_70:a4:c2 (00:0c:29:70:a4:c2)
+    Internet Protocolo Version 4, Src: (capa IP, donde se encuentra nuestra direccion IP)
+        ...
+        Source Address: 192.168.233.128      (la direccion IP de origen)
+        Destination Address: 194.150.169.131 (la direccion IP de destino)
+    Transmission Control Protocol, Src: (capa TCP)
+        ...
+    Hypertext Trasnfer Protocol (capa HTTP)
+        ...
+
+
+CONCLUSION:
+- los sniffers son herramientas de administracion, ya que logicamente esto lo va a utilizar un adminsitrador del servidor para ver el trafico de red
+- no las va a utilizar un usuario en su dia a dia para manejar un sistema linux
+- pero si que de vez en cuando nos puede venir bien 
+
+--------------------
+
+83. Examinando la red: Ping y Nmap
 
 ...
