@@ -5058,7 +5058,7 @@ tcpdump version 4.99.1
 
 - casi siempre, para capturar trafico de red tenemos que hacerlo con privilegios de administracion vvv 
 - vamos a decirle a tcpdump que nos capture (el trafico de red ? ) en una interfaz (-i) que va a ser ens33 vvv
-- cuando yo ejecuto este comando, lo que le estamos indicando a este programita (tcpdump) es que entre y salga de esta interfaz (ens33) lo copie y nos lo muestre , en este caso, por terminal
+- cuando yo ejecuto este comando, lo que le estamos indicando a este programita (tcpdump) es que entre y salga de esta interfaz (ens33) lo copie y nos lo muestre, en este caso, por terminal
 lionel@lionel-ubuntu:~$ sudo tcpdump -i ens33
 [sudo] password for lionel: 
 tcpdump: verbose output suppressed, use -v[v]... for full protocol decode
@@ -5089,7 +5089,7 @@ listening on ens33, link-type EN10MB (Ethernet), snapshot length 262144 bytes
 
 - verbose vvv
 lionel@lionel-ubuntu:~$ sudo tcpdump -v -i ens33
-*** nos va a dar mas infromacion sobre cada uno de los paquetes de red y no unicamente 2 lineas
+*** nos va a dar mas informacion sobre cada uno de los paquetes de red y no unicamente 2 lineas
 
 - ahora nos centraremos en el otro sniffer, que es el que vamos a utilizar casi en el 100% de las ocasiones, o en el 90% de las ocasiones, que es wireshark vvv 
 
@@ -5099,6 +5099,10 @@ sniffer wireshark
 
 - wireshark no viene instalado por defecto asi que lo instalamos vvv
 lionel@lionel-ubuntu:~$ sudo apt install wireshark
+...
+
+- ejecutamos wireshark vvv 
+lionel@lionel-ubuntu:~$ sudo wireshark
 ...
 
 - la diferencia fundamental de wireshark con tcpdump, es que cuando ejecutemos wireshark con sudo vamos a observar que se abre una interfaz grafica vvv
@@ -5118,7 +5122,7 @@ lionel@lionel-ubuntu:~$ sudo apt install wireshark
 - luego, una vez detenida la captura de trafico, tenemos toda la informacion disponible para analizarla
 
 - mas importante que el propio trafico que nos muestra la interfaz, es el detalle del mismo
-- fijaros de cada paquete de red (uno HTTP po ejemplo), nos aparecen todas las capas que implementan estos paquetes de red
+- fijaros de cada paquete de red (uno HTTP por ejemplo), nos aparecen todas las capas que implementan estos paquetes de red
     Frame 161:
         ...
     Ethernet II, Srd: (capa Rthernet, donde se encuentra la direccion MAC de nuestra interfaz ens33)
@@ -5142,5 +5146,176 @@ CONCLUSION:
 --------------------
 
 83. Examinando la red: Ping y Nmap
+
+- veremos como podemos examinar la red en la que se encuentra nuestra maquina linux
+- veremos como podemos identificar que otros nodos (otros ordenadores) se encuentran conectados a nuestra misma red local 
+
+- existen varias opciones a la hora de examinar la red 
+- el comando mas basico para esto es el comando ping vvv
+
+lionel@lionel-ubuntu:~$ man ping
+ping - send ICMP ECHO_REQUEST to network hosts
+... 
+
+- como vemos, lo que hara el comando ping es mandar un paquete ICMP ECHO_REQUEST a la direccion IP que nosotros le indiquemos
+- entonces, cuando llega este paquete ICMP, por ejemplo, a un host que tenemos en nuestra red, lo que hace (este host) es que responde a este ECHO_REQUEST con un ECHO_REPLAY, es decir, con otro paquete ICMP 
+- de esta manera, si nos responde, sabremos que ese host esta activo en nuestra infraestructura de red y si no nos responde, sabremos que ese host no esta activo vvv
+
+- verificamos la direccion IP de nuestra red ens33 vvv
+lionel@lionel-ubuntu:~$ ip -4 a show dev ens33
+2: ens33: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc fq_codel state UP group default qlen 1000
+    altname enp2s1
+    inet 192.168.233.128/24 brd 192.168.233.255 scope global dynamic noprefixroute ens33
+       valid_lft 1608sec preferred_lft 1608sec
+
+- sabemos que nuestra subred es 192.168.233 y concretamente nuestro host es el punto 128
+
+- nuestra tabla de rutas vvv
+lionel@lionel-ubuntu:~$ ip r
+default via 192.168.233.2 dev ens33 proto dhcp metric 100 -> ROUTER VIRTUAL
+169.254.0.0/16 dev ens33 scope link metric 1000 
+192.168.233.0/24 dev ens33 proto kernel scope link src 192.168.233.128 metric 100 
+
+- imaginad que quiero comprobar si existe otro host que tenga la direccion 192.168.233.180 
+- en principio no deberia de existir ninguno: al final nosotros tenemos la subred 192.168.233 que ha creado nuestro VMWare y aqui lo unico que tenemos es nuestra maquina ubuntu (.128) y quizas ese router virtual que creaba VMWare (.2), y quizas alguna direccion mas por ahi que se crea para otras cosas como por ejemplo el servidor de HTTP  del que hablaremos despues
+- entoces, en principio, en 192..168.233.180 no deberiamos tener ninguna maquina activa 
+
+-----
+
+- para comprobarlo, hacemos un ping a esta direccion
+- lo que va a ocurrir es que mando paquetes ICMP ECHO_REQUEST pero no me esta respondiendo ninguna maquina (Destination Host Unreachable == el host de destino no es alcanzable) vvv
+lionel@lionel-ubuntu:~$ ping 192.168.233.180
+PING 192.168.233.180 (192.168.233.180) 56(84) bytes of data.
+From 192.168.233.128 icmp_seq=1 Destination Host Unreachable
+From 192.168.233.128 icmp_seq=2 Destination Host Unreachable
+From 192.168.233.128 icmp_seq=3 Destination Host Unreachable
+From 192.168.233.128 icmp_seq=4 Destination Host Unreachable
+... 
+^C
+--- 192.168.233.180 ping statistics ---
+19 packets transmitted, 0 received, +15 errors, 100% packet loss, time 18409ms
+pipe 3
+lionel@lionel-ubuntu:~$ 
+
+- cuando mato el proceso con "ctrl+c", vemos que nos dice que se han transmitido 19 paquetes a 192.168.233.180 y se han recibido 0 paquetes (no hubo respuesta)
+- esto significa que no hemos obtenido respuesta de ninguno de los ECHO_REQUEST enviados, lo cual significa que este host no esta activo en nuestra infraestructura de red
+
+----- 
+
+- ahora hago un ping al router virtual, que se que es un host activo vvv
+lionel@lionel-ubuntu:~$ ping 192.168.233.2
+PING 192.168.233.2 (192.168.233.2) 56(84) bytes of data.
+64 bytes from 192.168.233.2: icmp_seq=1 ttl=128 time=0.673 ms
+64 bytes from 192.168.233.2: icmp_seq=2 ttl=128 time=0.244 ms
+...
+^C
+--- 192.168.233.2 ping statistics ---
+12 packets transmitted, 12 received, 0% packet loss, time 11265ms
+rtt min/avg/max/mdev = 0.156/0.275/0.673/0.132 ms
+lionel@lionel-ubuntu:~$ 
+
+- ahora vemos que hemos enviado 12 paquetes y recibido 12 paquetes, lo cual indica que el host 192.168.233.2 esta activo dentro de nuestra infraestructura de red 
+
+- hago un nuevo ping al router indicando que para la prueba quiero limitar el envio de paquetes a solo 5 vvv
+lionel@lionel-ubuntu:~$ ping -c 5 192.168.233.2
+PING 192.168.233.2 (192.168.233.2) 56(84) bytes of data.
+64 bytes from 192.168.233.2: icmp_seq=1 ttl=128 time=1.10 ms
+64 bytes from 192.168.233.2: icmp_seq=2 ttl=128 time=0.281 ms
+64 bytes from 192.168.233.2: icmp_seq=3 ttl=128 time=0.295 ms
+64 bytes from 192.168.233.2: icmp_seq=4 ttl=128 time=0.288 ms
+64 bytes from 192.168.233.2: icmp_seq=5 ttl=128 time=0.290 ms
+
+--- 192.168.233.2 ping statistics ---
+5 packets transmitted, 5 received, 0% packet loss, time 4069ms
+rtt min/avg/max/mdev = 0.281/0.450/1.096/0.323 ms
+lionel@lionel-ubuntu:~$ 
+*** observamos que luego del quinto envio se cierra el proceso 
+
+- ahora abrimos wireshark en terminal2, tiramos un ping al router virtual en terminal1 y desde wireshark podemos ver los request y los replays entre nuestra maquina ubuntu (192.168.233.128) y el router (192.168.233.2)
+
+----- 
+
+NMAP
+
+- esta es una forma bastante rudimentaria de identificar los nodos que hay en nuestra infraestructura, es decir, de hacer un examen de la red 
+- utilizando herramientas como nmap podemos hacer este examen de manera mucho mas automatizada
+
+- nmap no es una herramienta propia de linux, pero si que suele utilizarse casi siempre en linux asi que la instalamos vvv 
+lionel@lionel-ubuntu:~$ sudo apt install nmap
+... 
+
+- nmmap nos permite hacer un descubrimiento de todos los nodos que hay en nuestra infraestructura de red, de los servicios que estan exponiendo, de los puertos que tienen abiertos, de manera mucho mas automatizada de lo que resultaria hacerlo con ping 
+- ademas de enviar trafico ICMP, tambien nos permite enviar otros tipos de trafico como TCP, UDP, hacer descubrimiento mediante ARP, etc 
+
+- con "nmap -h" podemos ver todas las opciones que tiene esta herramienta (tambien tiene un "man nmap")
+
+- tambien esta disponible online una guiea de referencia bastante potente y bien hecha vvv 
+https://nmap.org/book/man.html
+*** aca encontraremos todas las opciones para escaneo de puertos, de hosts y demas que tiene implementados 
+
+----- 
+
+- vamos a hacer un escaneo basico, el -sS (synScan), que es el mas tipico, para hacer un descubrimiento de hosts y de los servicios que tienen esos hosts ejecutandose, es decir, los puertos que estan abiertos
+- vamos a utilizar el synScan (-sS) y a continuacion le indico todo el rango completo de mi subred (192.168.233.0/24), con lo que le digo que escanee todos los hosts de la subred 192.168.233 (va a ir escaneando el .0, el .1, el .2, y asi todos los hosts de la subred) para ver que hosts estan activos y que puertos, que servicios tienen ejecutandose
+- tambien podemos abrir wireshark en terminal2, poner a capturar trafico a wireshark en cualquier terminal (any) y ver que hace nmap por detras cuando lo ejecutemos vvv 
+lionel@lionel-ubuntu:~$ sudo nmap -sS 192.168.233.0/24
+... 
+
+- desde wireshark, oberrvamos que nmap escanea todas las direcciones de la subred y para todas las direcciones hace un escaneo de puertos (esta viendo exactamente que es lo que tiene abierto)
+- fijaros que el escaneo inicial para saber que direcciones estan activas lo hace mediante el protocolo ARP del que hablaremos en las siguientes clases 
+- el protocolo ARP sirve para identificar cual es la direccion fisica, la direccion MAC de una maquina, a traves de su direccion IP: yo pregunto quien tiene esta direccion IP (192.168.233.131?), y me responde con su direccion MAC (Tell 192.168.233.128) vvv
+- de esta manera, nmap va mandando un paquete ARP a todas las direcciones dentro del rango de la subred, y aquellos que respondan con su direccion MAC, nmap sabra que son hosts que estan activos en la infraestructura
+No. Time        Source          Destination Protocol Length Info
+504	1.820761146	VMware_70:a4:c2		        ARP	     44	    Who has 192.168.233.131? Tell 192.168.233.128
+505	1.820779796	VMware_70:a4:c2		        ARP	     44	    Who has 192.168.233.135? Tell 192.168.233.128
+
+- este es el resultado de nmap al final del escaneo vvv
+lionel@lionel-ubuntu:~$ sudo nmap -sS 192.168.233.0/24
+Starting Nmap 7.80 ( https://nmap.org ) at 2024-04-04 00:26 -03
+Nmap scan report for 192.168.233.1
+Host is up (0.00024s latency).
+Not shown: 999 filtered ports
+PORT     STATE SERVICE
+7070/tcp open  realserver
+MAC Address: 00:50:56:C0:00:08 (VMware)
+
+Nmap scan report for _gateway (192.168.233.2)
+Host is up (0.00015s latency).
+Not shown: 999 closed ports
+PORT   STATE SERVICE
+53/tcp open  domain
+MAC Address: 00:50:56:F7:49:0E (VMware)
+
+Nmap scan report for 192.168.233.254
+Host is up (0.00014s latency).
+All 1000 scanned ports on 192.168.233.254 are filtered
+MAC Address: 00:50:56:F9:75:B8 (VMware)
+
+Nmap scan report for lionel-ubuntu (192.168.233.128)
+Host is up (0.0000040s latency).
+All 1000 scanned ports on lionel-ubuntu (192.168.233.128) are closed
+
+Nmap done: 256 IP addresses (4 hosts up) scanned in 8.53 seconds
+lionel@lionel-ubuntu:~$ 
+
+*** nos dice que hay una serie de hosts levantados como por ejemplo el 192.168.233.2 vvv 
+Nmap scan report for _gateway (192.168.233.2) (router virtual)
+Host is up (0.00015s latency).
+Not shown: 999 closed ports
+PORT   STATE SERVICE
+53/tcp open  domain                     -> observar que el outer virtual esta actuando tambien como servidor DNS
+MAC Address: 00:50:56:F7:49:0E (VMware) -> fijaros que en la ultima linea nos dice que es creado por VMWare
+
+*** el host 192.168.233.1, que parece que esta actuando como algun tipo de servidor virtual que esta creando VMWare (fijaros que en la ultima linea nos dice que es creado por VMWare)
+    ...
+*** el host 192.168.233.254 (fijaros que en la ultima linea nos dice que es creado por VMWare) 
+    ...
+
+*** el host lionel-ubuntu (192.168.233.128) -> nuestro propio host, que tambien se encuentra levantado
+    ...
+
+--------------------
+
+84. DHCP y DNS
 
 ...
