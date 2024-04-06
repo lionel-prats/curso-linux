@@ -5325,7 +5325,7 @@ MAC Address: 00:50:56:F7:49:0E (VMware) -> fijaros que en la ultima linea nos di
 
 - nuestra maquina ubuntu tiene una direccion IP (192.168.233.128) que no se la hemos asignado nosotros de manera manual (por ejemplo, con el comando "... ip r add ..." que vimos anteriormente) sino que esta direccion IP la ha asignado a nuestra maquina ubuntu el servidor DHCP virtual que ha creado VMWare 
 
-- esta introduccion es importante porque a veces ocurre que el servidor DHCP no funciona correctamente, no llega a asignarnos una direccion IP, no funciona en el proceso de asignacion o incluso cuando reiniciamos nuestra maquina o apagamos nuestra conexion (de red ?) (apaga la conexion (de red ?) a modo de prueba -> click en "Wired Connected|Turn Off" en el icono de la parte superior derecha de la pantalla de nuestra maquina ubuntu) y luego la volvemos a iniciar, a veces no se le asigna una direccion IP a la interfaz de manera rapida vvv 
+- esta introduccion es importante porque a veces ocurre que el servidor DHCP no funciona correctamente, no llega a asignarnos una direccion IP, no funciona el proceso de asignacion o incluso cuando reiniciamos nuestra maquina o apagamos nuestra conexion (de red ?) (apaga la conexion (de red ?) a modo de prueba -> click en "Wired Connected|Turn Off" en el icono de la parte superior derecha de la pantalla de nuestra maquina ubuntu) y luego la volvemos a iniciar, a veces no se le asigna una direccion IP a la interfaz de manera rapida vvv 
 
 - verifico que que al apagar la conexion (de red ?), nuestra interfaz de red ens33 perdio sus direcciones IPv4 IPv6
 lionel@lionel-ubuntu:~$ ip a show dev ens33
@@ -5411,7 +5411,7 @@ lionel@lionel-ubuntu:~$ sudo pico /etc/resolv.conf
 nameserver 8.8.8.8
 options edns0 trust-ad
 search localdomain
-*** comenté la linea que define por default para la IP del servidor DNS de nueestra maquina y asigne en su lugar la IP del servidor DNS de Google
+*** comenté la linea que define por default para la IP del servidor DNS de nuestra maquina y asigne en su lugar la IP del servidor DNS de Google
 
 - vuelvo a ejecutar dig, y compruebo que ahora estoy saliendo por el servidor DNS de Google
 lionel@lionel-ubuntu:~$ dig
@@ -5438,6 +5438,248 @@ lionel@lionel-ubuntu:~$ dig
 ...
 ;; SERVER: 127.0.0.53#53(127.0.0.53) (UDP)
 
+CONCLUSION: entiendo que cuando nosotros queremos conectarnos a un dominio en un servidor fuera de nuestra red, primero le pasamos ese dominio a nuestro servidor DNS, este resuelve ese dominio a la direccion IP que le corresponde, y luego sale la peticion de mi maquina a la red 
+
+--------------------
+
+EXTRA 
+
+- protocolo DNS (chatGTP)
+
+- Cuando intentas conectarte a un dominio en un servidor fuera de tu red, como por ejemplo cuando escribes una URL en tu navegador web, el primer paso es que tu computadora envía una solicitud de resolución de nombre de dominio al servidor DNS configurado en tu red. 
+- Este servidor DNS, que puede ser el propio servidor DNS de tu red local o un servidor DNS público, como el de tu proveedor de servicios de Internet, intenta resolver el nombre de dominio a la dirección IP correspondiente.
+- Si el servidor DNS tiene información sobre ese nombre de dominio en su caché (es decir, ya ha resuelto esa dirección recientemente), devuelve la dirección IP al cliente. 
+- Si no tiene esa información en caché, el servidor DNS realiza una consulta a otros servidores DNS para obtener la dirección IP del dominio solicitado. 
+- Una vez que se obtiene la dirección IP del dominio, esta información se almacena en la caché del servidor DNS para futuras consultas.
+- Una vez que tu computadora tiene la dirección IP del servidor al que deseas conectarte, envía la solicitud al servidor utilizando esa dirección IP, y luego el servidor responde a tu solicitud, permitiendo así la conexión.
+
+- caché del servidor DNS (chatGTP)
+- La "caché" en el contexto de los servidores DNS se refiere a un área de almacenamiento temporario donde se guardan las consultas y sus correspondientes respuestas para mejorar la eficiencia y la velocidad de las operaciones de resolución de nombres de dominio.
+- Cuando un servidor DNS recibe una consulta para resolver un nombre de dominio en una dirección IP, primero verifica su propia caché para ver si ya ha resuelto ese nombre de dominio recientemente. 
+- Si la respuesta está en la caché, el servidor DNS puede devolver la información de inmediato, sin necesidad de realizar consultas adicionales a otros servidores DNS. 
+- Esto acelera el proceso de resolución de nombres de dominio y reduce la carga en la red.
+- La caché en un servidor DNS tiene un tiempo de vida determinado para cada entrada, conocido como "tiempo de vida (TTL)". 
+- Después de que el TTL expire, la entrada se elimina de la caché y el servidor DNS necesitará realizar una nueva consulta si se solicita nuevamente ese nombre de dominio.
+- En resumen, la caché en un servidor DNS ayuda a mejorar el rendimiento al almacenar temporalmente las respuestas a consultas de resolución de nombres de dominio, reduciendo así la necesidad de consultar servidores externos cada vez que se realiza una solicitud.
+
 --------------------
 
 85. Descarga y subida de información: Curl y Wget
+
+- los comandos curl y wget nos van a servir para una tarea similar, que va a ser tanto transferir informacion hacia un servidor, como descargar informacion de un servidor 
+
+----- 
+
+CURL 
+
+- curl no viene instalado por defecto en ubuntu asi que lo instalamos vvv 
+lionel@lionel-ubuntu:~$ sudo apt install curl
+
+- descripcion del comando (man curl)
+curl  is a tool for transferring data from or to a server. It supports these protocols: 
+DICT, FILE, FTP, FTPS, GOPHER, GOPHERS, HTTP, HTTPS, IMAP, IMAPS, LDAP, LDAPS, MQTT, POP3, POP3S, RTMP,
+RTMPS, RTSP, SCP, SFTP, SMB, SMBS, SMTP, SMTPS, TELNET or TFTP. 
+The command is designed to work without user interaction.
+
+- con curl vamos a poder hacer cosas como descargar una pagina web, descargar cualquier tipo de archivo que se este sirviendo en una pagina web, o incluso hacer peticiones para subir informacion, por ejemplo, hacer un HTTP post, un FTP upload, etc (soporta diferentes protocolos de red bastante populares)
+
+- esta herramienta tambien es bastante util para tareas un poquito mas avanzadas como por ejemplo hacer peticiones a una API 
+- si por ejemplo tenemos que comunicarnos con APIs, curl nos permite pasarle las cabeceras (headers) que hagan falta, los argumentos que hagan falta (por ejemplo, el body de la peticion)
+
+----- 
+
+PRACTICA CON CURL 
+
+- en Chrome, nos vamos a la pagina de winrar, "https://www.winrar.es/descargas" (ya sabeis que winrar es un programa que sirve para comprimir y descomprimir, que es algo que veremos mas adelante)
+
+- hacemos un curl de la url de winrar vvv 
+lionel@lionel-ubuntu:~$ curl https://www.winrar.es/descargas
+<!DOCTYPE html><html lang="es">
+<head>
+... 
+
+- observamos que nos sacó el codigo html de la vista (lo mismo que obtenemos en el navegador con "ctrl+u")
+
+- es decir, cuando nosotros introducimos esta url en el navegador, el navegador hace una peticion al servidor web que sesta sirviendo la pagina web "https://www.winrar.es/descargas", y obtiene como respuesta el codigo html, css, etc 
+- entonces curl ha echo esa misma peticion a ese servidor web y ha obtenido la misma respuesta que obtendria el navegador
+
+- redirijo la salida de curl a un fichero .html vvv
+lionel@lionel-ubuntu:~$ curl https://www.winrar.es/descargas > winrar.html
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+100  8658    0  8658    0     0   4330      0 --:--:--  0:00:01 --:--:--  4329
+
+- ejecuto el proceso firefox en segundo plano pasando como argumento el fichero recien creado y vemos que se ejecuta el navegador de Firefox (se abre la ventana) mostrando el contenido de winrar.html (obviamente vemos solo el html, no se cargo ni el css ni el javascript, porque solo descarga el codigo fuente html puro de la pagina) vvv 
+lionel@lionel-ubuntu:~$ firefox winrar.html &
+[1] 7320
+lionel@lionel-ubuntu:~$ jobs
+[1]+  Running                 firefox winrar.html &
+lionel@lionel-ubuntu:~$ ps
+    PID TTY          TIME CMD
+   2331 pts/0    00:00:00 bash
+   7320 pts/0    00:00:03 firefox
+   7489 pts/0    00:00:00 Socket Process
+   7506 pts/0    00:00:00 file:// Content
+   7582 pts/0    00:00:00 WebExtensions
+   7647 pts/0    00:00:00 Web Content
+   7710 pts/0    00:00:00 Utility Process
+   7712 pts/0    00:00:00 Web Content
+   7717 pts/0    00:00:00 Web Content
+   7736 pts/0    00:00:00 Web Content
+   7755 pts/0    00:00:00 Privileged Cont
+   7810 pts/0    00:00:00 ps
+*** observar que la ejecucion del proceso firefox desencadeno una serie de procesos extra ejecutandose en tiempo real
+
+- en la url del navegador que esta mostrando el contenido de winrar.html vemos que esta accediendo al path de la ubicacion de winrar.html en nuestro sistema de ficheros vvv 
+file:///home/lionel/winrar.html
+
+- matamos el proceso de firefox (que esta corriendo en segundo plano) vvv 
+lionel@lionel-ubuntu:~$ kill -KILL -7320
+
+----- 
+
+- esto que vimos lo podemos utilizar para varias cosas
+- por ejemplo, si tenemos que automatizar la descarga de paginas web para buscar contenido en ellas, o si queremos automatizar la busqueda de ciertas cosas en varias paginas podemos descargar todas esas paginas de manera local y luego hacer la busqueda sobre ellas
+
+- nosotros podemos combinar este comando de curl con otras cosas que ya hemos visto, como por ejemplo las shell expansions vvv 
+
+- ejemplo de como combinar curl con shell expansions
+lionel@lionel-ubuntu:~$ curl https://pagina.recurso{1..4}.txt
+curl: (6) Could not resolve host: pagina.recurso1.txt
+curl: (6) Could not resolve host: pagina.recurso2.txt
+curl: (6) Could not resolve host: pagina.recurso3.txt
+curl: (6) Could not resolve host: pagina.recurso4.txt
+*** fijaros como intenta descargar todas las paginas que le indicamos 
+*** como obviamente estas paginas no existen, curl nos indica que no pudo resolver las peticiones
+
+----- 
+
+- obtuvimos el link de descarga de winrar para linux ("https://d.winrar.es/d/97z1712420451/9KDufULLXJRv0RjXtbPXCA/rarlinux-x64-700.tar.gz"), copiando el "enlace de descarga directo" desde la web "https://www.winrar.es/descargas/97/descargar-rar-para-linux-x64-en-ingles"
+- luego hacemos un curl a esta direccion con el flag "-O", que lo que hace es que curl genere un archivo con el mismo nombre que tenga el fichero en la pagina web (en este caso "rarlinux-x64-700.tar.gz") vvv
+lionel@lionel-ubuntu:~$ curl -O https://d.winrar.es/d/97z1712420451/9KDufULLXJRv0RjXtbPXCA/rarlinux-x64-700.tar.gz
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+100  713k  100  713k    0     0   274k      0  0:00:02  0:00:02 --:--:--  274k
+
+- chequeamos
+lionel@lionel-ubuntu:~$ ls -l rarlinux-x64-700.tar.gz 
+-rw-rw-r-- 1 lionel lionel 730268 abr  6 13:18 rarlinux-x64-700.tar.gz
+*** entonces curl ha descargado este fichero ".tar.gz" que es winrar para linux
+
+- podemos lograr lo mismo customizando el nombre del ejecutable con "-o" vvv
+lionel@lionel-ubuntu:~$ curl -o winrar_ejecutable.tar.gz https://d.winrar.es/d/97z1712420451/9KDufULLXJRv0RjXtbPXCA/rarlinux-x64-700.tar.gz
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+100   169  100   169    0     0    159      0  0:00:01  0:00:01 --:--:--   159
+
+- chequeamos vvv
+lionel@lionel-ubuntu:~$ ls -l winrar_ejecutable.tar.gz 
+-rw-rw-r-- 1 lionel lionel 169 abr  6 13:26 winrar_ejecutable.tar.gz
+*** no es lo mismo!! se cargo el codigo html y no el contenido en binario!!
+
+- este es principalmente el funcionamiento de curl 
+- curl nos permite indicar muchisimas mas cosas, como por ejemplo, si estamos en una empresa y nuestra conexion tiene que salir a traves de un proxy, nosotros podemos indicarle a curl, el proxy de la siguiente forma vvv 
+- "curl -x" y a continuacion el nombre del proxy, o la direccion IP, etc, y a continuacion el puerto al que tendriamos que realizarle la peticion a ese proxy, y finalmente la url vvv
+lionel@lionel-ubuntu:~$ curl -x $nombre_proxy:$port $url_domain 
+
+- de esta manera, curl estaria realizando la peticion a la url $url_domain a traves del proxy $nombre_proxy:$port
+
+- ademas, si tanto la url a la que estamos intentando acceder, como si el propio proxy requieren autenticacion (un usuario y contraseña), nosotros podemos hacer tambien la peticion con curl de la siguiente forma vvv 
+lionel@lionel-ubuntu:~$ curl -u $user_name:$password -x $nombre_proxy:$port $url_domain 
+
+-----
+
+WGET
+
+- ya hemos visto que curl sirve principalmente tanto para subir informacion (hacer peticiones a una API, HTTP, FTP, etc) como para descargar informacion 
+- sin embargo no es la herramienta mas recomendada para descargar informacion 
+- tenemos otra mas recomendada para descargar informacion que es wget
+
+- wget es una herramienta que sirve para descargar ficheros de manera no interactiva, es decir, podemos dejar ahi la herramienta descargando cualquier fichero vvv
+lionel@lionel-ubuntu:~$ man wget
+...
+Wget - The non-interactive network downloader.
+... 
+
+- para ficheros livianos, como el ejemplo de la descarga del ejecutable de winrar, con curl estamos bien 
+- pero que pasa si yo quisiera, por ejemplo, descargarme un fichero mas pesado, como por ejemplo, la ultima imagen de kali linux, que pesa 2.9GB?
+*** Kali Linux es una distribución de Linux especializada diseñada principalmente para pruebas de penetración y auditorías de seguridad
+
+- desde "https://www.kali.org/get-kali/#kali-virtual-machines" copio el "enlace de descarga directo" de la imagen de kali linux para VMWare vvv
+https://cdimage.kali.org/kali-2024.1/kali-linux-2024.1-vmware-amd64.7z 
+
+- si yo utilizace curl para descargar esta imagen, tendria bloqueada la terminal, esperando a que termine de descargar, etc (calculo que esporque curl se ejecuta en primer plano, y si fuera asi, no podria hacer la ejecucion en segundo plano ?)
+
+- entonces, para este tipo de descargas, es mucho mejor usar Wget
+
+- ejecutamos wget pasandole primero el falg "-b" (que va a mandar este proceso al background, es decir, al segundo plano), y luego el link de descarga de la imagen vvv 
+lionel@lionel-ubuntu:~$ wget -b https://cdimage.kali.org/kali-2024.1/kali-linux-2024.1-vmware-amd64.7z
+Continuing in background, pid 10210.
+Output will be written to ‘wget-log’.
+
+*** observamos que se crea en background el proceso 10210
+*** observamos que vuelca los resultados en tiempo real del proceso de descarga, en el fichero "wget-log", en el direcrorio actaul
+
+lionel@lionel-ubuntu:~$ ls -l kali-linux-2024.1-vmware-amd64.7z wget-log 
+-rw-rw-r-- 1 lionel lionel 562575896 abr  6 13:55 kali-linux-2024.1-vmware-amd64.7z
+-rw-rw-r-- 1 lionel lionel    867513 abr  6 13:55 wget-log
+
+- entonces podemos ir monitorizando en tiempo real el avance de la descarga, accediendo a las ultimas lineas del wget-log con tail vvv
+lionel@lionel-ubuntu:~$ tail -n 3 wget-log 
+1028250K .......... .......... .......... .......... .......... 33% 3,90M 5m11s
+1028300K .......... .......... .......... .......... .......... 33% 65,0M 5m11s
+1028350K .......... ......
+1050750K .......... .......... .......... ..
+
+lionel@lionel-ubuntu:~$ tail -n 3 wget-log 
+1072100K .......... .......... .......... .......... .......... 34% 3,69M 5m4s
+1072150K .......... .......... .......... .......... .......... 34% 28,3M 5m4s
+1072200K .......... ....
+1072200K .......... ....
+
+lionel@lionel-ubuntu:~$ tail -n 3 wget-log 
+1100000K .......... .......... .......... .......... .......... 35% 90,7M 5m0s
+1100050K .......... .......... .......... .......... .......... 35% 3,68M 5m0s
+1100100K .......... .......... .......... .......... .......... 35% 51,4M 5m0s
+
+----- 
+
+- imaginad ahora que yo quiero descargar 100 ficheros, o 100 archivos que se encuentran donde sea 
+- y me han pasado un txt que tiene las 100 URLs
+- puedo indicarle a wget que descargue todas las URLs que se encuentren en ese fichero vvv
+- con "-i", wget va a ir recorriendo todas las URLs en fichero.txt e ir descargandolas una por una y volcandolas donde nosotros queramos
+lionel@lionel-ubuntu:~$ wget -i fihero.txt
+
+---- 
+
+- tambien puedo descargar una pagina web con un nombre custom para el archivo (en este caso al archivo lo llamé pagina") vvv
+lionel@lionel-ubuntu:~$ wget -o pagina https://www.kali.org/get-kali/#kali-virtual-machines
+
+lionel@lionel-ubuntu:~$ cat pagina
+--2024-04-06 14:11:31--  https://www.kali.org/get-kali/
+Resolving www.kali.org (www.kali.org)... 104.18.5.159, 104.18.4.159, 2606:4700::6812:59f, ...
+Connecting to www.kali.org (www.kali.org)|104.18.5.159|:443... connected.
+HTTP request sent, awaiting response... 200 OK
+Length: unspecified [text/html]
+Saving to: ‘index.html’
+
+     0K .......... .......... .......... .......... .......... 7,13M
+    50K .......... .......... .......... .......... .......... 43,8M
+   100K ...                                                    6,38T=0,008s
+
+2024-04-06 14:11:32 (12,7 MB/s) - ‘index.html’ saved [105905]
+*** observar que el contenido del fichero pagina nos indica que el codigo fuente de la web se guardo en el archivo index.html 
+*** CUIDADO, porque hay que ver si en caso de existir un index.html previo, no pisaba su contenido (curl no funciona asi, y para un caso de copia liviana de html quiza convenga)
+
+- abrimos index.html con firefox y vemos que la pagina descargada se ve tal vual la pagina original (cargado todo su html, css y JS)
+*** calculo que es porque todas las librerias css y js estan cargadas en linea en el codigo fuente de la descarga
+lionel@lionel-ubuntu:~$ firefox index.html 
+
+- realize la misma descarga con curl y obtuve los mismos resultados, asi que se ve igual porque el codigo fuente HTML tiene cargados en linea el CSS y el JS, no porque wget sea mejor que curl para esto en particular vvv
+lionel@lionel-ubuntu:~$ curl -o pagina_kali_descargada_con_curl.html https://www.kali.org/get-kali/#kali-virtual-machines
+
+--------------------
+
+86. Conexiones remotas: SSH
+
+...
