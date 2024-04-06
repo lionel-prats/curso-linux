@@ -1,0 +1,22 @@
+seccion titulo                                                          duracion-minutos
+1	    presentacion del curso		                                    2 	
+2       ¿que es linux?			                                        18	
+3	    preparacion del entorno de aprendizaje		                    16	
+4	    la shell de linux		                                        48	
+5       manejo del sistema de ficheros de linux			                111	
+6	    conceptos avanzados del sistema de ficheros y la shell de linux 98	
+7	    redirecciones y pipelines		                                66	
+8	    permisos y usuarios en linux		                            137	
+9	    procesos en linux		                                        109	
+10	    networking en Linux		                                        130	
+11	    gestion de paquetes y librerias en linux	                    46	
+12	    el entorno de linux	                                            64		
+13	    dispositivos de almacenamiento externo en linux	                32		
+14	    archivando y comprimiendo ficheros en linux	                    27		
+15	    expresiones regulares y busquedas avanzadas	                    76		
+16	    parte II: SHELL SCRIPT	                                        2		
+17	    introducciona shell script	                                    78		
+18	    shell script: control de flujo	                                123		
+19	    shell script: otros componentes importantes                     54		
+20	    despedida del curso	                                            2		
+                                                                        1239 (20 horas 39 minutos)
