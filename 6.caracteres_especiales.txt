@@ -5,6 +5,7 @@ virguilla       -> Alt 126 -> ~
 arrow up        ->         -> ↑
 arrow down      ->         -> ↓
 ↑↓
+@
 
 Sección  1: xxx 
 Sección  2: xxx 

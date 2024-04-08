@@ -1,0 +1,616 @@
+Sección08-Redes
+Video01-Introducción
+
+- en esta seccion vamos a explicar conceptos necesarios a entender para saber como funcionan las conexiones en internet 
+- tambien vamos a ver herramientas que nos permitiran interactuar con maquinas remotas 
+- tambien vamos a ver como podemos crear conexiones de manera segura en un caso practico conectandonos a un servidor remoto 
+- la forma de conectarnos a internet es a traves de una IP, pero ¿como funcionan estas?
+- primero vamos a hablar de los ISP (Internet Service Provider), que en otras palabras seria la empresa que me esta proporcionando a mi internet (personal)
+
+- un ISP es el encargado de almacenar todas las direcciones IP y tambien los clientes a los cuales estos se encuentran asociados
+- cada usuario puede tener asociada solamente una direccion IP
+- lo que significa que solamente una persona por IP puede conectarse a internet
+
+- flujo de un paquete de red: 
+1) el ISP tiene un listado de usuarios (clientes), y a cada uno le asigna una direccion IP 
+2) un usuario hace una peticion a Instagram 
+3) esta peticion es un paquete que va a contener:
+    - la direcccion IP del ususario 
+    - datos (que van a especificar lo que se esta pidiendo, a quien, etc, por ejemplo, una foto de instagram)
+4) este paquete viaja por cables (suspendidos bajo tierra o suspendidos en el aire), desde la maquina del usuario, al ISP 
+5) el ISP se encarga de mandar este paquete a quien corresponda, en este caso a instagram 
+6) para esto, el ISP va a empezar a buscar en todo el listado de usuarios quien tiene la direccion IP de instagram (calculo que porque tomo el dato del paquete que le llego del usuario que esta haciendo la peticion)
+7) si no encuentra entre los usuarios, ninguno que tenga (en cache ?) la direccion de instagram, el ISP se va a conectar con otros ISP hasta obtener la direccion IP de instagram (que matchea con la ip de ig que figura en el paquete de la peticion del usuario)
+8) cuando nuestro ISP da con otro ISP que disponga de la IP de IG buscada, es como que le pasa el paquete del usuario, para que este nuevo ISP le haga llegar este paquete al servidor de IG (gracias a que conoce su IP, que vamos a decir que es 1234)
+9) el servidor de ig pregunta ¿que necesitas? y la respuesta esta dentro del paquete que le acaba de enviar el ISP pivot (que contiene la IP del usuario y los datos de lo que esta solicitando)
+10) entonces el servidor de IG le manda un nuevo paquete al ISP pivot con la informacion solicitada 
+11) el ISP pivot redirige este nuevo paquete a nuestro ISP 
+12) finalmente nuestro ISP nos hace llegar este nuevo paquete con la respuesta del servidor IG a nuestra maquina 
+
+- cada vez que ocurre este intercambio de informacion, los ISP se van a encargar de intentar buscar la ruta mas optima para poder conectar a los usuarios con los destinos (en este ejemplo, la maquina de un usuario y el servidor IG)
+
+- una IP generalmente se va a ver de esta manera -> 104.68.123.42
+- este formato se conoce como IPv4 (IP version 4), y absolutamente todos los dispositivos que se encuentran conectados a Internet tienen una direccion IP 
+
+- ¿como se asignan estas IPs a cada uno de los dispositivos?
+
+- una IP se puede asignar manualmente: esto quiere decir que yo puedo ingresar a la terminal (de mi maquina) y yo asignarle una propia IP (a mi maquina) (curso linux - 84. DHCP y DNS) vvv 
+
+----- 
+
+curso linux - 84. DHCP y DNS
+
+- verifico que mi interfaz de red tiene una sola ipv4 asignada
+lionel@lionel-ubuntu:~$ ip -4 a show dev ens33
+2: ens33: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc fq_codel state UP group default qlen 1000
+    altname enp2s1
+    inet 192.168.233.128/24 brd 192.168.233.255 scope global dynamic noprefixroute ens33
+       valid_lft 1270sec preferred_lft 1270sec
+- le asigno una nueva ipv4 a la interfaz de red de mi maquina
+lionel@lionel-ubuntu:~$ sudo dhclient 
+lionel@lionel-ubuntu:~$
+- compruebo que se le ha asignado una uneva ipv4 a mi interfaz de red
+lionel@lionel-ubuntu:~$ ip -4 a show dev ens33
+2: ens33: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc fq_codel state UP group default qlen 1000
+    altname enp2s1
+    inet 192.168.233.128/24 brd 192.168.233.255 scope global dynamic noprefixroute ens33
+       valid_lft 1270sec preferred_lft 1270sec
+    inet 192.168.233.129/24 brd 192.168.233.255 scope global secondary dynamic ens33
+       valid_lft 1620sec preferred_lft 1620sec
+
+----- 
+
+- o tambien podria esperar que alguien mas (un tercero, un router ?) le asigne a mi maquina una IP, que por lo generar es el mismo proveedor de internet (el ISP)
+- cuando la ip me la asigna un proveedor de internet, por lo general, estas (asignaciones) se hacen mediante un servidor DHCP (contenido en el router de mi casa ?)
+- DHCP = Dynamic Host Configuration Protocol = Protocolo de Configuracion Dinamica de Host
+
+----- 
+
+curso linux - 84. DHCP y DNS
+
+- el protocolo DHCP es una manera de asignar direcciones IP de manera dinamica a los nodos que se conectan en una red  
+- esto es algo con lo que lidiamos todos los dias vvv 
+- cuando nos conectamos con nuestro ordenador portatil a una red (como por ejemplo la red de nuestra casa), nosotros no configuramos una direccion IP de manera manual en ese ordenador, sino que de alguna manera el router de nuestra casa (provisto por el ISP) le asigna una direccion IP que se encuentra adentro de esa red 
+- esa manera de asignar una direccion IP de manera automatica es lo que se denomina DHCP: es un servidor DHCP que tiene el router, servidor que utiliza este protocolo
+
+----- 
+
+- si bien un ISP puede tener servidores DHCP, yo tambien podria configurar uno en una red interna  
+- una red interna vendria siendo donde yo me encuentro en mi casa 
+
+- ahora que sabemos lo que es DHCP y lo que son las IPs, vamos a ver como nos podemos comunicar nosotros con un nombre de dominio
+- un nombre de dominio es algo como "www.holamundo.io"
+- cuando nosotros estamos usando rutas de paginas web como "www.holamundo.io" nos estamos refiriendo a un nombre de dominio
+- los nombres de dominio existen para que nosotros no tengamos que recordar las IPs de las empresas o servicios a los cuales nosotros queremos acceder 
+
+- pero entonces, si internet funciona con IPs ¿como es posible que nosotros utilizemos nombres de dominio para poder acceder a, por ejemplo, instagram?
+- para esto existen los DNS 
+- DNS = Domain Name Server = Servidor de nombres de dominio 
+
+- un DNS es concretamente una empresa, o una organizacion, o una institucion, que contiene un listado de absolutamente todas las (direcciones de) paginas web y tambien la IP a la que este dominio se encuentra asignado 
+- www.holamundo.io -> 123.45.67.890 
+- www.google.com   -> 321.54.76.098 
+
+- entonces, cuando yo ejecuto el dominio "www.holamundo.io" a traves de un explorador web, lo que esta ocurriendo es que mi ISP esta enviando una peticion a un servidor DNS preguntando si conoce el dominio que yo ingrese 
+- el DNS responde: si, la conozco, y esta asignada al IP "123.45.67.890"
+- finalmente, la IP 123.45.67.890 es lo que yo obtengo dentro de mi explorador web
+- entiendo que la IP del dominio es la direccion de la pagina web en el servidor que la contiene
+- luego, con esta ip, yo (calculo que se refiere a mi maquina, usando la interfaz de red, el navegador, etc) voy a buscar la informacion al servidor que corresponde (se como accederlo porque el DNS me indico el IP de la pagina (123.45.67.890) en el servidor que la contiene)
+
+----- 
+
+- yo te habia dicho antes que un ISP solo va a asignar una IP a un usuario vvv
+"
+un ISP es el encargado de almacenar todas las direcciones IP y tambien los clientes a los cuales estos se encuentran asociados
+cada usuario puede tener asociada solamente una direccion IP
+lo que significa que solamente una persona por IP puede conectarse a internet
+"
+
+- sin embargo, muchas personas (dispositivos) dentro de tu casa van a poder conectarse a internet utilizando multiples dispositivos 
+- ¿como se puede hacer esto? a traves de un router 
+
+- un router (en mi casa) va a tener una IP asignada (esta IP se la proporciona el ISP)
+- el router contiene un servidor DHCP, el cual se va a encargar de asignarle una IP a todos los personas (dispositivos) que se esten conectando  
+
+----- 
+
+curso linux - 84. DHCP y DNS
+
+- el protocolo DHCP es una manera de asignar direcciones IP de manera dinamica a los nodos que se conectan en una red  
+- esto es algo con lo que lidiamos todos los dias vvv 
+- cuando nos conectamos con nuestro ordenador portatil a una red (como por ejemplo la red de nuestra casa), nosotros no configuramos una direccion IP de manera manual en ese ordenador, sino que de alguna manera el router de nuestra casa (provisto por el ISP) le asigna una direccion IP que se encuentra adentro de esa red 
+- esa manera de asignar una direccion IP de manera automatica es lo que se denomina DHCP: es un servidor DHCP que tiene el router, servidor que utiliza este protocolo
+
+----- 
+
+- ¿como puede hacer el router para identificar de manera unica a cada uno de los dispositivos que se estan conectando?
+- esto lo hace a traves de una direccion MAC 
+- MAC = Media Access Control (Address) = MAC Address
+- la MAC address de un dispositivo, es un identificador único de cada dispositivo (es del tipo "00:1A:2B:3C:4D:5E")
+
+----- 
+
+- ¿Que es una direccion MAC? (chatGTP) 
+* Una dirección MAC (Media Access Control) es un identificador único asignado a cada interfaz de red de dispositivos que se conectan a una red de área local (LAN). 
+* Esta dirección se utiliza para identificar de manera única un dispositivo en una red de nivel de enlace de datos.
+* Las direcciones MAC son asignadas por el fabricante de hardware de red y están incrustadas en el hardware de la tarjeta de red. 
+* Estas direcciones son permanentes y únicas para cada dispositivo de red. 
+* Una dirección MAC consta de 6 bytes (48 bits) y se representa típicamente en notación hexadecimal, con dos dígitos separados por dos puntos o guiones, como por ejemplo: 00:1A:2B:3C:4D:5E.
+* Las direcciones MAC son utilizadas principalmente para el direccionamiento a nivel de enlace de datos en la capa de enlace de datos del modelo OSI. 
+* Cada trama de datos enviada a través de una red contiene la dirección MAC del remitente y del destinatario, lo que permite a los dispositivos de red enviar y recibir datos de manera adecuada en la red.
+
+----- 
+
+- en teoria yo no deberia poder cambiar la direccion MAC de un dispositivo 
+- sin embargo, si se pueden cambiar en linux 
+
+----- 
+
+- entonces, ya que sabemos que internet funciona con IPs y que se utilizan las direcciones MAC (de los dispositivos) para poder identificar de manera unica a cada uno de los dispositivos que se encuentran dentro de una red local, ¿como es entonces que nos conectamos a internet dentro de una red local?
+
+- supongamos que tengo una LAN, con un router y 2 dispositivos conectados vvv
+- dispositivo1 = MAC 00:01 -> el router le asigno la IP 191
+- dispositivo2 = MAC 00:02 -> el router le asigno la IP 192 
+
+- cuando un dispositivo conectado a una LAN quiere solicitar algo de internet, lo que hace es enviar "a internet", que en este caso vendria siendo al router de nuestra LAN, un paquete que contiene su IP (asignada por el router) y que es lo que este necesita (de internet)
+- por otro lado, el router tiene un registro de todas las IPs (que ha asignado a dispositivos conectados a la LAN) matcheadas con sus correspondientes MAC adress (direcciones univocas de los dispositivos) vvv 
+1) MAC 00:01 | IP 191
+2) MAC 00:02 | IP 192
+
+-----
+
+- 2 dispositivos conectados a la LAN, con sus respectivas IPs asignadas por el router virtual de mi VM, y sus correspondientes direcciones MAC vvv
+lionel@lionel-ubuntu:~$ ip a
+1: lo: <LOOPBACK,UP,LOWER_UP> mtu 65536 qdisc noqueue state UNKNOWN group default qlen 1000
+    link/loopback 00:00:00:00:00:00 brd 00:00:00:00:00:00
+    inet 127.0.0.1/8 scope host lo
+       valid_lft forever preferred_lft forever
+    inet6 ::1/128 scope host 
+       valid_lft forever preferred_lft forever
+2: ens33: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc fq_codel state UP group default qlen 1000
+    link/ether 00:0c:29:70:a4:c2 brd ff:ff:ff:ff:ff:ff
+    altname enp2s1
+    inet 192.168.233.128/24 brd 192.168.233.255 scope global dynamic noprefixroute ens33
+       valid_lft 963sec preferred_lft 963sec
+    inet6 fe80::c61:df04:91cc:8226/64 scope link noprefixroute 
+       valid_lft forever preferred_lft forever
+
+-----
+
+- entonces ahora, el dispositivo1 (IP 191) solicita algo a internet
+- entonces el dispositivo1 le envia al router un paquete que contiene su IP (191) y que es lo que este necesita (de internet)
+
+- entonces el router va a decir: la IP 191 (esta info viene en el paquete recibido) con la MAC 00:01 (lo sabe porque busca en su listado de dispositivos conectados) esta realizando una peticion a instagram 
+- el router manda este paquete a la nube (que vendria siendo internet) y va a guardar un registro de que dispositivo hizo la solicitud 
+- cuando llegue la respuesta a la solicitud (otro paquete), el router se va a encargar de redirigir este paquete al dispositivo 
+
+RESUMEN
+- las IPs se utilizan para poder gestionar las conexiones a internet en lo que vendria siendo la red mas grande, o sea, cuando nosotros nos conectamos directamente con el ISP 
+- las MAC se utilizan para poder gestionar, a traves de un router, cada uno de los dispositivos que se encuentran conectados dentro de una red local (y que tambien van a tener asignada una IP provista por el router, pero estas IPs van a estar delimitadas dentro de un rango en especifico, que lo vamos a ver mas adelante)
+
+--------------------
+
+Sección08-Redes
+Video02-IPs en linux 
+
+- en este video vamos a explicar un poquito mas como funciona internet cuando nos conectamos desde nuestras computadoras 
+
+lionel@lionel-ubuntu:~$ ip r (o "ip route")
+default via 192.168.233.2 dev ens33 
+default via 192.168.233.2 dev ens33 proto dhcp metric 100 
+169.254.0.0/16 dev ens33 scope link metric 1000 
+192.168.233.0/24 dev ens33 proto kernel scope link src 192.168.233.128 metric 100 
+
+- "default via 192.168.233.2 dev ens33" significa que todas las peticiones que nosotros hagamos a internet van a ir a parar a la ip "192.168.233.2"
+- nuestra maquina va a tener una ip asignada, que es "192.168.233.128" 
+- 192.168.233 hace referencia a la subred a la que nuestra VM esta conectada (esta subred la proporciona nuestro router)
+- la IP 192.168.233.2 esta asignada al router
+- 192.168.233.0/24 -> este formato indica que todos los dispositivos que se encuentran en nuestra red local (subred 192.168.233) van a identificarse por el 4to segmento de la direccion IP
+
+- en el caso que estemos conectados a traves de un router por fuera de nuestra red local, las IPs por lo general van a empezar por "192.168.xxx.xxx"
+
+- los paises tienen asignados rangos de IP 
+- cada proveedor de internet (ISP) tiene la responsabilidad de utilizar estos rangos de IP para asignarselos a sus clientes 
+
+- ip range argentina 
+https://lite.ip2location.com/argentina-ip-address-ranges?lang=es
+
+--------------------
+
+Sección08-Redes
+Video03-ping 
+
+- en este video vamos a ver como podemos verificar si estamos llegando a una maquina en particular, ya sea que se encuentre en internet o que se encuentre dentro de nuestra red usando el comando ping 
+
+- ping sirve para poder enviar paquetes echo request a traves de la red (puede ser tanto una red local como una red de internet)
+
+- hago un ping a la IP 142.250.71.78
+lionel@lionel-ubuntu:~$ ping 142.250.71.78
+PING 142.250.71.78 (142.250.71.78) 56(84) bytes of data.
+64 bytes from 142.250.71.78: icmp_seq=1 ttl=128 time=276 ms
+64 bytes from 142.250.71.78: icmp_seq=2 ttl=128 time=277 ms
+64 bytes from 142.250.71.78: icmp_seq=3 ttl=128 time=280 ms
+64 bytes from 142.250.71.78: icmp_seq=4 ttl=128 time=277 ms
+64 bytes from 142.250.71.78: icmp_seq=5 ttl=128 time=277 ms
+64 bytes from 142.250.71.78: icmp_seq=6 ttl=128 time=278 ms
+^C
+--- 142.250.71.78 ping statistics ---
+6 packets transmitted, 6 received, 0% packet loss, time 5011ms
+rtt min/avg/max/mdev = 275.827/277.509/279.581/1.136 ms
+
+- PING 142.250.71.78 (142.250.71.78) 56(84) bytes of data. -> Esto indica que se están enviando paquetes de ping a la dirección IP 142.250.71.78. La dirección IP de destino es 142.250.71.78 y el tamaño de cada paquete es de 56 bytes (84 bytes en total, incluyendo encabezados).
+- cada línea representa una respuesta recibida del host remoto (142.250.71.78) en respuesta a un paquete ICMP (Internet Control Message Protocol) enviado
+- 64 bytes from 142.250.71.78 -> Esta parte indica que se ha recibido una respuesta del host remoto con la dirección IP 142.250.71.78 y que el tamaño del paquete de datos es de 64 bytes
+- icmp_seq=1 -> Esto indica el número de secuencia del paquete ICMP enviado. En este caso, el número de secuencia es 1, lo que significa que esta respuesta corresponde al primer paquete ICMP enviado. 
+- ttl=128 -> El TTL (Time To Live) representa el número máximo de enrutadores que un paquete puede atravesar antes de ser descartado. En este caso, el TTL es 128, lo que es común para conexiones locales o dentro de la misma red.
+- time=276 ms -> Indica el tiempo en milisegundos que tardó en recibir una respuesta del host remoto. En este caso, el tiempo es de 276 milisegundos. Este valor es una medida de la latencia de la conexión entre tu máquina y el host remoto. Cuanto menor sea este valor, mejor será la conexión en términos de velocidad de respuesta.
+
+- limito el envio de paquetes a 4
+lionel@lionel-ubuntu:~$ ping -c 4 142.250.71.78
+PING 142.250.71.78 (142.250.71.78) 56(84) bytes of data.
+64 bytes from 142.250.71.78: icmp_seq=1 ttl=128 time=277 ms
+64 bytes from 142.250.71.78: icmp_seq=2 ttl=128 time=277 ms
+64 bytes from 142.250.71.78: icmp_seq=3 ttl=128 time=277 ms
+64 bytes from 142.250.71.78: icmp_seq=4 ttl=128 time=279 ms
+
+--- 142.250.71.78 ping statistics ---
+4 packets transmitted, 4 received, 0% packet loss, time 3006ms
+rtt min/avg/max/mdev = 276.597/277.440/279.272/1.085 ms
+
+- ping a una ip inactiva de mi red local 
+lionel@lionel-ubuntu:~$ ping 192.168.233.180
+PING 192.168.233.180 (192.168.233.180) 56(84) bytes of data.
+From 192.168.233.128 icmp_seq=1 Destination Host Unreachable
+From 192.168.233.128 icmp_seq=2 Destination Host Unreachable
+From 192.168.233.128 icmp_seq=3 Destination Host Unreachable
+From 192.168.233.128 icmp_seq=4 Destination Host Unreachable
+ping: sendmsg: No route to host
+From 192.168.233.128 icmp_seq=5 Destination Host Unreachable
+From 192.168.233.128 icmp_seq=6 Destination Host Unreachable
+^C
+--- 192.168.233.180 ping statistics ---
+7 packets transmitted, 0 received, +6 errors, 100% packet loss, time 6127ms
+pipe 3
+
+lionel@lionel-ubuntu:~$ ip route
+default via 192.168.233.2 dev ens33 
+default via 192.168.233.2 dev ens33 proto dhcp metric 100 
+169.254.0.0/16 dev ens33 scope link metric 1000 
+192.168.233.0/24 dev ens33 proto kernel scope link src 192.168.233.128 metric 100 
+
+- entonces, el comando de ping sirve solamente para verificar, por ejemplo, si nosotros tenemos internet, o si podemos acceder a una maquina que se encuentre ya sea en nuestra red o a traves de internet
+
+--------------------
+
+Sección08-Redes
+Video04-curl 
+
+- en este video vamos a ver como podemos interactuar con los sitios web utilizando el comando curl
+
+- curl no viene instalado por defecto en ubuntu asi que lo instalamos vvv 
+lionel@lionel-ubuntu:~$ sudo apt install curl
+
+- curl sirve para hacer transferencias a una URL (tanto enviar como recibir datos)
+
+- en este caso, descargamos el codigo html de "www.google.com.nz" y lo guardamos en un archivo
+lionel@lionel-ubuntu:~$ curl www.google.co.nz > google.html
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+100 19388    0 19388    0     0  44518      0 --:--:-- --:--:-- --:--:-- 44467
+
+- ejecutamos este archivo en el navegador firefox con el comando firefox
+lionel@lionel-ubuntu:~$ firefox google.html 
+
+- uno de los usos utiles de curl es cuando nosotros queremos descargar varios sitios web porque queremos analizar algo sobre estos 
+- por ejemplo, podriamos tener una aplicacion que se encargue de ir a buscar a multiples tiendas de distintas empresas... (minuto 2'41")
+
+lionel@lionel-ubuntu:~$ echo https://www.lionelprats{1..4}.com/
+https://www.lionelprats1.com/ https://www.lionelprats2.com/ https://www.lionelprats3.com/ https://www.lionelprats4.com/
+
+- descargo multiples sitios web vvv
+lionel@lionel-ubuntu:~$ curl https://www.lionelprats{1..4}.com/
+curl: (6) Could not resolve host: www.lionelprats1.com
+curl: (6) Could not resolve host: www.lionelprats2.com
+curl: (6) Could not resolve host: www.lionelprats3.com
+curl: (6) Could not resolve host: www.lionelprats4.com
+
+- curl sirve para:
+- descargar codigo html de una web y de multiples webs 
+- descargar cualquier tipo de archivo que se este sirviendo en una pagina web (por ejemplo un comprimido, una imagen ubuntu, etc)
+
+*** ver ejemplos de todo essto en "85. Descarga y subida de información: Curl y Wget" del curso de Linux
+
+-----
+
+- curl tambien sirve para realizar realizarle peticiones a una API restart 
+
+- API
+- cuando nosotros nos conectamos con un servidor (no todos), existen algunas implementaciones que nos van a dar acceso a 4 posibles acciones (o tambien pueden ser 5):
+- GET    -> listar 
+- POST   -> crear 
+- PUT    -> reemplazar 
+- PATCH  -> actualizar 
+- DELETE -> eliminar 
+
+- hacemos una peticion GET a la api jsonplaceholder (https://jsonplaceholder.typicode.com/)
+- cuando la peticion es GET no hace falta especificar el verbo, ya que es el tipo de peticion que ejecuta curl por defecto vvv
+lionel@lionel-ubuntu:~$ curl get https://jsonplaceholder.typicode.com/posts
+...
+
+- realizamos una peticion POST a una API vvv
+- le pasamos un objeto json vvv
+lionel@lionel-ubuntu:~$ curl -X POST -d '{"data": "estos son datos"}' https://jsonplaceholder.typicode.com/posts
+{
+  "{\"data\": \"estos son datos\"}": "",
+  "id": 101
+}
+
+- vemos que la api interpreto el objeto json como una cadena de texto 
+- para que la API interprete al objeto json como un objeto json tenemos que cambiar las cabeceras de la peticion que estamos enviando vvv
+lionel@lionel-ubuntu:~$ curl -X POST -d '{"data": "estos son datos"}' -H "Content-Type: application/json" https://jsonplaceholder.typicode.com/posts
+{
+  "data": "estos son datos",
+  "id": 101
+}
+
+- peticion PUT
+lionel@lionel-ubuntu:~$ curl -X PUT \
+-d '{"data": "estos son datos"}' \
+-H "Content-Type: application/json" \
+https://jsonplaceholder.typicode.com/posts/54
+{
+  "data": "estos son datos",
+  "id": 54
+}
+
+--------------------
+
+Sección08-Redes
+Video05-wget 
+
+- en el video pasado vimos como utilizar la herramienta curl para poder intercambiar datos con los sitios web y tambien con otros servidores (APIs)
+- en este video aprenderemos a usar la herramienta wget
+
+*** ver explicacion y ejemplos de de uso de wget en "85. Descarga y subida de información: Curl y Wget" del curso de Linux
+
+----- 
+
+- link de descarga de la imagen de ubuntu
+https://releases.ubuntu.com/22.04.4/ubuntu-22.04.4-desktop-amd64.iso
+
+- descargo con wget en primer plano la imagen de ubuntu vvv 
+lionel@lionel-ubuntu:~$ wget https://releases.ubuntu.com/22.04.4/ubuntu-22.04.4-desktop-amd64.iso
+--2024-04-07 20:23:17--  https://releases.ubuntu.com/22.04.4/ubuntu-22.04.4-desktop-amd64.iso
+Resolving releases.ubuntu.com (releases.ubuntu.com)... 91.189.91.124, 185.125.190.37, 91.189.91.123, ...
+Connecting to releases.ubuntu.com (releases.ubuntu.com)|91.189.91.124|:443... connected.
+HTTP request sent, awaiting response... 200 OK
+Length: 5017356288 (4,7G) [application/x-iso9660-image]
+Saving to: ‘ubuntu-22.04.4-desktop-amd64.iso’
+
+ubuntu-22.04.4-desktop-amd64.iso                     1%[>  
+C
+
+- interrumpo la descarga con "ctrl+c" y confirmo que la descarga de la imagen ya habia empezado vvv
+lionel@lionel-ubuntu:~$ ls -l ubuntu-22.04.4-desktop-amd64.iso 
+-rw-rw-r-- 1 lionel lionel 225394688 abr  7 20:23 ubuntu-22.04.4-desktop-amd64.iso
+
+- cuando nosotros interrumpimos las descargas, estas despues nosotros las podemos reanudar 
+
+- vamos a reanudar la descarga con wget pasandole el argumento "-c" vvv 
+lionel@lionel-ubuntu:~$ wget -c https://releases.ubuntu.com/22.04.4/ubuntu-22.04.4-desktop-amd64.iso
+--2024-04-07 20:26:22--  https://releases.ubuntu.com/22.04.4/ubuntu-22.04.4-desktop-amd64.iso
+Resolving releases.ubuntu.com (releases.ubuntu.com)... 91.189.91.123, 185.125.190.40, 185.125.190.37, ...
+Connecting to releases.ubuntu.com (releases.ubuntu.com)|91.189.91.123|:443... connected.
+HTTP request sent, awaiting response... 206 Partial Content
+Length: 5017356288 (4,7G), 4791961600 (4,5G) remaining [application/x-iso9660-image]
+Saving to: ‘ubuntu-22.04.4-desktop-amd64.iso’
+
+ubuntu-22.04.4-desktop-amd64.iso                     5%[+++++>     
+C  
+
+- volvimos a pausar la descarga 
+
+- vemos que ahora la imagen pesa mas que luego de la primera interrupcion vvv
+lionel@lionel-ubuntu:~$ ls -l ubuntu-22.04.4-desktop-amd64.iso 
+-rw-rw-r-- 1 lionel lionel 281739264 abr  7 20:26 ubuntu-22.04.4-desktop-amd64.iso
+
+----- 
+
+¿que es lo que pasaria si yo por alguna razon quiero enviar este archivo para otro directorio?
+
+- borre la descarga parcial con rm 
+
+lionel@lionel-ubuntu:~$ ls -ld Downloads/
+drwxr-xr-x 2 lionel lionel 4096 abr  6 13:21 Downloads/
+
+- ahora voy a querer mandar la descarga a /home/lionel/Downloads 
+
+- con -P $destino al final del comando le indicamos a wget donde queremos que descargue esta imagen vvv
+lionel@lionel-ubuntu:~$ wget https://releases.ubuntu.com/22.04.4/ubuntu-22.04.4-desktop-amd64.iso -P Downloads/
+--2024-04-07 20:31:24--  https://releases.ubuntu.com/22.04.4/ubuntu-22.04.4-desktop-amd64.iso
+Resolving releases.ubuntu.com (releases.ubuntu.com)... 185.125.190.37, 185.125.190.40, 91.189.91.124, ...
+Connecting to releases.ubuntu.com (releases.ubuntu.com)|185.125.190.37|:443... connected.
+HTTP request sent, awaiting response... 200 OK
+Length: 5017356288 (4,7G) [application/x-iso9660-image]
+Saving to: ‘Downloads/ubuntu-22.04.4-desktop-amd64.iso’
+
+ubuntu-22.04.4-desktop-amd64.iso                     0%[
+C
+
+lionel@lionel-ubuntu:~$ ls -l Downloads/
+total 341856
+-rw-rw-r-- 1 lionel lionel      2017 sep  5  2023  imagen_udemy.png
+-rw-rw-r-- 1 lionel lionel    730268 abr  6 13:21 'rarlinux-x64-700(1).tar.gz'
+-rw-rw-r-- 1 lionel lionel    730268 abr  6 13:17  rarlinux-x64-700.tar.gz
+-rw-rw-r-- 1 lionel lionel 348585984 abr  7 20:32  ubuntu-22.04.4-desktop-amd64.iso 
+
+- vamos a reanudar la descarga, pero esta vez en segundo plano con la opcion "-b" antes de la url vvv 
+lionel@lionel-ubuntu:~$ wget -bc https://releases.ubuntu.com/22.04.4/ubuntu-22.04.4-desktop-amd64.iso -P Downloads/
+... 
+
+- con tail -f monitarizamos en tiempo real la descarga 
+lionel@lionel-ubuntu:~$ tail -n 3 wget-log 
+... 
+*** matamos el proceso de tail -f con "ctrl+c"
+
+- rastreamos el proceso de descarga para hallar su PID y detener el proceso que se esta ejecutando en segundo plano vvv 
+lionel@lionel-ubuntu:~$ ps aux | grep wget
+... 
+
+- detenemos la descarga en segundo plano de la imagen de ubuntu
+lionel@lionel-ubuntu:~$ kill -9 6812
+
+---- 
+
+- wget nos permite tambien descargar archivos cuyas url se encuentren dentro de otro archivo vvv 
+
+lionel@lionel-ubuntu:~$ echo "https://releases.ubuntu.com/22.04.4/ubuntu-22.04.4-desktop-amd64.iso" > urls.txt
+
+lionel@lionel-ubuntu:~$ cat urls.txt 
+https://releases.ubuntu.com/22.04.4/ubuntu-22.04.4-desktop-amd64.iso
+
+- descargamos la imagen desde urls.txt vvv
+lionel@lionel-ubuntu:~$ wget -i urls.txt 
+--2024-04-07 20:48:11--  https://releases.ubuntu.com/22.04.4/ubuntu-22.04.4-desktop-amd64.iso
+Resolving releases.ubuntu.com (releases.ubuntu.com)... 185.125.190.37, 185.125.190.40, 91.189.91.124, ...
+Connecting to releases.ubuntu.com (releases.ubuntu.com)|185.125.190.37|:443... connected.
+HTTP request sent, awaiting response... 200 OK
+Length: 5017356288 (4,7G) [application/x-iso9660-image]
+Saving to: ‘ubuntu-22.04.4-desktop-amd64.iso’
+ubuntu-22.04.4-desktop-amd64.iso                     0%[ 
+C 
+
+lionel@lionel-ubuntu:~$ ls -l ubuntu-22.04.4-desktop-amd64.iso 
+-rw-rw-r-- 1 lionel lionel 30425088 abr  7 20:48 ubuntu-22.04.4-desktop-amd64.iso
+
+----- 
+
+- tambien le podemos indicar a wget que queremos cambiar el output de descarga otro archivo vvv 
+
+- iniciamos la descarga en primer plano, cambiando el nombre al fichero de logs por default (wget-log) por "monitoreo-descarga.txt" vvv
+wget -o monitoreo-descarga.txt https://releases.ubuntu.com/22.04.4/ubuntu-22.04.4-desktop-amd64.iso
+*** pausamos la descarga con "ctrl+c"
+
+- en terminal2 monitoreamos en tiempo real la descarga de la imagen ubuntu vvv 
+lionel@lionel-ubuntu:~$ tail -f monitoreo-descarga.txt 
+... 
+*** matamos el proceso con "ctrl+c"
+
+--------------------
+
+Sección08-Redes
+Video06-ssh 
+
+- ssh = Secure Shell 
+
+- en este video vamos a ver como nos podemos conectar con servidores de manera remota 
+- va a aplicar para servidores virtualizados que nosotros hayamos contratado (VPS, Servidor Privado Virtual) o tambien nos pueden servir para otras maquinas que se encuentren dentro de nuestra red local y que tambien nosotros hayamos configurado como servidores 
+
+- lo primero que nosostros vamos a necesitar son 2 maquinas para hacer pruebas 
+
+- luego, para nosotros poder conectarnos de forma remota entre maquinas tenemos que asegurarnos de tener 2 servicios instalados primero vvv
+- un cliente SSH en la máquina desde la cual nos queremos conectar de manera remota
+  Este cliente SSH nos permite iniciar la conexión y comunicarnos de forma segura con el servidor SSH en la máquina remota.
+- un servidor SSH en la máquina a la cual queremos conectarnos de manera remota
+  El servidor SSH es responsable de aceptar las conexiones entrantes desde clientes SSH, autenticar a los usuarios y gestionar las sesiones de usuario de forma segura.
+
+- el cliente SSH que vamos a usar es el paquete SSH y ya viene instalado vvv 
+lionel@lionel-ubuntu:~$ ssh -V
+OpenSSH_8.9p1 Ubuntu-3ubuntu0.6, OpenSSL 3.0.2 15 Mar 2022
+lionel@lionel-ubuntu:~$ man ssh
+ssh — OpenSSH remote login client
+
+- el servidor que vamos a usar es openssh-server y no lo tenemos instalado vvv
+lionel@lionel-ubuntu:~$ service ssh status
+Unit ssh.service could not be found.
+- el comando para instalar el servicio openssh-server vvv 
+lionel@lionel-ubuntu:~$ sudo apt install openssh-server
+
+----- 
+
+EXTRA 
+
+- CLIENTE SSH
+lionel@lionel-ubuntu:~$ ssh -V
+OpenSSH_8.9p1 Ubuntu-3ubuntu0.6, OpenSSL 3.0.2 15 Mar 2022
+*** El comando ssh -V te muestra la versión del cliente SSH instalada en tu sistema. 
+*** En tu caso, la salida indica que tienes instalado el cliente SSH con la versión OpenSSH_8.9p1 Ubuntu-3ubuntu0.6. 
+*** Este cliente SSH te permite conectarte a otros servidores remotos de forma segura.
+
+- SERVIDOR SSH
+lionel@lionel-ubuntu:~$ service ssh status
+Unit ssh.service could not be found.
+
+- comando para instalar el servidor SSH vvv
+lionel@lionel-ubuntu:~$ sudo apt install openssh-server
+*** sudo apt install openssh-server es el comando que instalaría el paquete del servidor SSH en tu sistema Ubuntu. 
+*** Una vez instalado, este servidor SSH permitirá que otros usuarios se conecten a tu sistema desde máquinas remotas utilizando un cliente SSH. 
+*** Este servidor SSH es necesario si deseas habilitar la funcionalidad de servidor SSH en tu sistema, lo que te permitirá administrar tu sistema de forma remota a través de conexiones SSH.
+
+- PREGUNTA
+- Dado que tengo un cliente ssh instalado pero no un servidor SSH instalado, significa que yo desde mi VM lionel-ubuntu me puedo conectar de forma remota a otras maquinas porque tengo el cliente ssh instalado, pero no puedo conectarme de manera remota a mi VM lionel-ubuntu porque mi VM lionel-ubuntu no tiene servidor SSH instalado?
+
+- RESPUESTA 
+- Exactamente, has entendido correctamente la situación.
+- Como tienes el cliente SSH instalado en tu VM "lionel-ubuntu", puedes usarlo para conectarte de forma remota a otras máquinas que tengan un servidor SSH instalado y configurado correctamente. 
+- Esto te permite acceder y administrar esas máquinas de forma segura a través de SSH.
+- Sin embargo, como tu VM "lionel-ubuntu" no tiene un servidor SSH instalado y en funcionamiento, no podrás conectarte de forma remota a ella desde otras máquinas externas utilizando SSH. 
+- Aunque puedas iniciar sesión en tu VM a través de su interfaz gráfica o de otro protocolo de acceso remoto (como RDP en el caso de sistemas Windows), no podrás establecer una conexión SSH entrante a menos que instales y configure un servidor SSH en tu VM.
+
+----- 
+
+- para conectarnos a una maquina de manera remota necesitamos obtener la IP del servidor 
+- por lo general cuando nosotros contratamos en algun servicio, en alguna VPS o en algun servidor, este ya nos va a proporcionar la IP de de nuesttro servidor contratado para que nos podamos conectar a el 
+
+- me conecté al servidor de la app juzgamiento-claro desde la VM ubuntu vvv
+lionel@lionel-ubuntu:~$ ssh env@186.122.177.91
+The authenticity of host '186.122.177.91 (186.122.177.91)' can't be established.
+ED25519 key fingerprint is SHA256:mp4WgKtx2f7UMCe5F4jVM7+Ojs/0dKo0OzxnYyMXnBQ.
+This key is not known by any other names
+Are you sure you want to continue connecting (yes/no/[fingerprint])? yes
+Warning: Permanently added '186.122.177.91' (ED25519) to the list of known hosts.
+env@186.122.177.91's password: 
+Linux debian10 4.19.0-24-amd64 #1 SMP Debian 4.19.282-1 (2023-04-29) x86_64
+
+The programs included with the Debian GNU/Linux system are free software;
+the exact distribution terms for each program are described in the
+individual files in /usr/share/doc/*/copyright.
+
+Debian GNU/Linux comes with ABSOLUTELY NO WARRANTY, to the extent
+permitted by applicable law.
+Last login: Mon Apr  8 00:05:50 2024 from 186.152.97.78
+env@debian10:~$ 
+
+- de nuevo en la VM ubuntu, compruebo que en el directorio .ssh, dentro del WD de lionel se crearon 2 archivos vvv
+lionel@lionel-ubuntu:~$ cd .ssh/
+lionel@lionel-ubuntu:~/.ssh$ ls -l
+total 8
+-rw------- 1 lionel lionel 364 abr  8 00:09 known_hosts
+-rw-r--r-- 1 lionel lionel 142 abr  8 00:09 known_hosts.old
+
+- known_hosts vvv 
+- Este archivo almacena las claves públicas de los servidores SSH a los que te has conectado anteriormente. 
+- Cada vez que te conectas a un nuevo servidor SSH, su clave pública se agrega a este archivo para que tu cliente SSH pueda verificar la autenticidad del servidor la próxima vez que te conectes. 
+- Esto ayuda a prevenir ataques de tipo Man-in-the-Middle (MITM) al asegurarse de que estás realmente conectándote al servidor correcto.
+
+known_hosts.old vvv 
+- Este archivo es una copia de seguridad del archivo known_hosts anterior. 
+- Cuando te conectas a un nuevo servidor SSH, se realiza una copia de seguridad del archivo known_hosts anterior en known_hosts.old antes de agregar la nueva clave pública al archivo known_hosts.
+
+----- 
+
+- si me quiero conectar de esta manera, necesariamente tendra que existir un usuario "lionel" en el seervidor remoto vvv 
+lionel@lionel-ubuntu:~/.ssh$ ssh 186.122.177.91
+lionel@186.122.177.91's password: 
+
+----- 
+
+- si nosotros, por alguna razon, tenemos comprado un dominio que esta apuntando hasta esta maquina podriamos conectarnos con el dominio en vez de la ip y esto tambien funcionaria vvv
+lionel@lionel-ubuntu:~$ ssh admin_web@www.lionelprats.com
+
+--------------------
+
+Sección08-Redes
+Video07-ftp
+
+...

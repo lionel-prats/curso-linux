@@ -654,7 +654,7 @@ lionel@lionel-ubuntu:/$ echo $((2 ** 3))
 lionel@lionel-ubuntu:~$ cat fichero$((1+1))*
 contenido fichero2.txt
 
-Brace expansins ("{", "}")
+Brace expansions ("{", "}")
 
 lionel@lionel-ubuntu:~$ echo fichero{1,2,3,Katopodis}.txt
 fichero1.txt fichero2.txt fichero3.txt ficheroKatopodis.txt
@@ -5608,11 +5608,11 @@ Wget - The non-interactive network downloader.
 - desde "https://www.kali.org/get-kali/#kali-virtual-machines" copio el "enlace de descarga directo" de la imagen de kali linux para VMWare vvv
 https://cdimage.kali.org/kali-2024.1/kali-linux-2024.1-vmware-amd64.7z 
 
-- si yo utilizace curl para descargar esta imagen, tendria bloqueada la terminal, esperando a que termine de descargar, etc (calculo que esporque curl se ejecuta en primer plano, y si fuera asi, no podria hacer la ejecucion en segundo plano ?)
+- si yo utilizace curl para descargar esta imagen, tendria bloqueada la terminal, esperando a que termine de descargar, etc (calculo que es porque curl se ejecuta en primer plano, y si fuera asi, no podria hacer la ejecucion en segundo plano ?)
 
 - entonces, para este tipo de descargas, es mucho mejor usar Wget
 
-- ejecutamos wget pasandole primero el falg "-b" (que va a mandar este proceso al background, es decir, al segundo plano), y luego el link de descarga de la imagen vvv 
+- ejecutamos wget pasandole primero el flag "-b" (que va a mandar este proceso al background, es decir, al segundo plano), y luego el link de descarga de la imagen vvv 
 lionel@lionel-ubuntu:~$ wget -b https://cdimage.kali.org/kali-2024.1/kali-linux-2024.1-vmware-amd64.7z
 Continuing in background, pid 10210.
 Output will be written to ‘wget-log’.
@@ -5681,5 +5681,130 @@ lionel@lionel-ubuntu:~$ curl -o pagina_kali_descargada_con_curl.html https://www
 --------------------
 
 86. Conexiones remotas: SSH
+
+- ssh es la herramienta mas popular en linux para establecer una conexion remota  
+- ¿a que nos referimos cuando hablamos de conexion remota?
+- tened en cuenta que en muchas ocasiones nosotros vamos a requerir conectarnos a un sistema linux sin tener acceso fisico a la propia maquina 
+- esto ocurre por ejemplo cuando nosotros levantamos un servidor linux en la nube, por ejemplo en AWS, que es la nube de Amazon, y necesitamos conectarnos 
+- logicamente esa nube, ese servidor que estamos levantando esta virtualizado en algun lugar del mundo y nosotros tenemos que conectarnos, por ejemplo, desde la red privada de nuestra casa 
+- entonces para poder conectarnos a esa maquina (el servidor linux en AWS) necesitamos un software de conexion remota, y el mas popular y el que mas se suele utilizar es ssh 
+
+santi@santi-ubuntu:~$ 
+direccion ip -> inet 192.168.239.170
+
+santi@santi-virtual-machine:~$ 
+direccion ip -> inet 192.168.239.169
+
+- ip de mi maquina host vvv
+C:\Users\User>ipconfig
+...
+IPv4 Address. . . . . . . . . . . : 192.168.0.33 
+...
+
+----- 
+
+- ¿como funciona SSH?
+- SSH es un programa CLIENTE-SERVIDOR 
+- quiere decir que el equipo que se quiere conectar a otra maquina va a necesitar un cliente SSH vvv
+
+- en ubuntu ya viene instalada por defecto la utilidad ssh vvv
+lionel@lionel-ubuntu:~$ ssh
+usage: ssh [-46AaCfGgKkMNnqsTtVvXxYy] [-B bind_interface]
+           [-b bind_address] [-c cipher_spec] [-D [bind_address:]port]
+           [-E log_file] [-e escape_char] [-F configfile] [-I pkcs11]
+           [-i identity_file] [-J [user@]host[:port]] [-L address]
+           [-l login_name] [-m mac_spec] [-O ctl_cmd] [-o option] [-p port]
+           [-Q query_option] [-R address] [-S ctl_path] [-W host:port]
+           [-w local_tun[:remote_tun]] destination [command [argument ...]]
+
+- el manual nos dice que la utilidad ssh es el cliente de OpenSSH para autenticarnos remotamente vvv
+lionel@lionel-ubuntu:~$ man ssh
+ssh — OpenSSH remote login client
+
+- con el cliente nos conectaremos de manera remota a otra maquina
+- esta maquina a la que nos conectaremos, para poder establecer (permitir) esta conexion va a necesitar un servidor, en este caso el OpenSSH Server vvv 
+
+- el servicio openSSH Server no viene por defecto, asi que lo instalamos vvv 
+lionel@lionel-ubuntu:~$ sudo apt install openssh-server
+... 
+Created symlink /etc/systemd/system/sshd.service -> /libsystemd/system/... 
+*** una de las cosas que podemos observar es que este servidor, este servicio, corre precisamente como tal, es decir, corre como un servicio dentro de nuestra maquina, y como tal,   
+
+- chequeamos que ahora existe el servicio ssh vvv
+lionel@lionel-ubuntu:~$ service ssh
+* Usage: /etc/init.d/ssh {start|stop|reload|force-reload|restart|try-restart|status}
+
+- vemos que el servicio ssh se esta ejecutando y vemos su estado (como se encuentra) vvv
+lionel@lionel-ubuntu:~$ service ssh status
+● ssh.service - OpenBSD Secure Shell server
+     Loaded: loaded (/lib/systemd/system/ssh.service; enabled; vendor preset: enabled)
+     Active: active (running) since Mon 2024-04-08 01:12:28 -03; 1min 20s ago
+       Docs: man:sshd(8)
+             man:sshd_config(5)
+   Main PID: 10680 (sshd)
+      Tasks: 1 (limit: 4555)
+     Memory: 1.7M
+        CPU: 23ms
+     CGroup: /system.slice/ssh.service
+             └─10680 "sshd: /usr/sbin/sshd -D [listener] 0 of 10-100 startups"
+abr 08 01:12:28 lionel-ubuntu systemd[1]: Starting OpenBSD Secure Shell server...
+abr 08 01:12:28 lionel-ubuntu sshd[10680]: Server listening on 0.0.0.0 port 22.
+abr 08 01:12:28 lionel-ubuntu sshd[10680]: Server listening on :: port 22.
+abr 08 01:12:28 lionel-ubuntu systemd[1]: Started OpenBSD Secure Shell server.
+
+- tengo un servicio que se encuentra corriendo en mi maquina que se encuentra por aqui -> /lib/systemd/system/ssh.service
+- y que se encuentra en este momento corriendo ("Active: active (running)"), con lo cual permite recibir conexiones SSH (es decir, establecer una conexion remota desde otra maquina) 
+
+- una vez que tenemos el servicio configurado en la maquina que va a ser accedida de forma remota, ya en la otra maquina desde la que queremos acceder a otra de forma remota, podemos hacer uso del cliente SSH que necesariamente tiene que tener instalado esta ultima maquina y conectarnos via SSH a la maquina en la que instalamos el servicio openssh-server 
+
+- con todo correctamente configurado, nos conectamos desde una maquina a la otra de manera remota vvv 
+lionel@lionel-ubuntu:~$ ssh nombre_usuario_maquina_remota@ip_maquina_remota 
+nombre_usuario_maquina_remota@ip_maquina_remota password: 
+nombre_usuario_maquina_remota@nombre_maquina_remota:~$  
+
+- comprobamos que al establecerse correctamente la conexion, recibimos una shell de la maquina remota vvv 
+nombre_usuario_maquina_remota@nombre_maquina_remota:~$  
+
+- entonces, ahora estoy conectado a la maquina "nombre_maquina_remota" con el usuario "nombre_usuario_maquina_remota" de manera remota 
+
+----- 
+
+- este es el uso principal de ssh, es simplemente un software para conectarnos remotamente 
+- ssh permite muchisimas opciones de configuracion 
+- la manera mas segura de conectarse con una maquina no es mediante usuario y contraseña como acabamos de hacer sino que es, por ejemplo, utilizando otros mecanismos como un certificado y que esa autenticacion sea automatica 
+- de hecho cuando vosotros, por ejemplo, intenteis conectaros a una maquina en la nube (por ejemplo en AWS, la nube de Amazon), esta maquina os va a proporcionar un certificado que simplemente tendreis que colocar en un directorio dentro de vuestro sistema de ficheros y ssh automaticamente tomara ese certificado para autenticarse con esa maquina de manera que no tengamos nosotros que ingresar de manera interactiva la contraseña, que siempre es algo bastante mas inseguro 
+
+----- 
+
+- me conecte correctamente via ssh desde la maquina host, usando la CMD vvv 
+C:\Users\User>ssh lionel@192.168.233.128
+...
+lionel@192.168.233.128's password:
+...
+lionel@lionel-ubuntu:~$
+...
+lionel@lionel-ubuntu:~$ exit
+logout
+Connection to 192.168.233.128 closed.
+C:\Users\User>
+
+- apenas me conecte remotamente a la VM ubuntu desde mi pc host, comprobe que se agrego una clave al fichero known_hosts de mi PC anfitriona, mientras que el fihero known_hosts.old no se modifico
+
+----- 
+
+- ip de mi maquina host vvv
+C:\Users\User>ipconfig
+...
+IPv4 Address. . . . . . . . . . . : 192.168.0.33 
+...
+
+- intente conectarme via ssh desde mi VM ubuntu a mi pc anfitriona. fallo vvv
+lionel@lionel-ubuntu:~$ ssh User@192.168.0.33
+ssh: connect to host 192.168.0.33 port 22: Connection refused
+*** investigar como resolverlo...
+
+--------------------
+
+87. Intercambio de ficheros I: FTP
 
 ...
